@@ -1,3 +1,4 @@
+import {ensureFullCatalogElection} from '@/lib/election';
 import {allowed,cors,db,digest,reply} from '@/lib/server';
 import {validateResult} from '@/lib/result-validation.mjs';
 import {syncGitHub} from '@/lib/github-service';
@@ -11,6 +12,8 @@ export async function POST(request:Request){
  try{const raw=await request.text();if(raw.length>100000)return reply(request,{error:'제출 내용이 너무 큽니다.'},413);payload=validateResult(JSON.parse(raw));}catch(e){return reply(request,{error:e instanceof Error?e.message:'결과가 올바르지 않습니다.'},400);}
  let recorded=false;
  try{
+ await ensureFullCatalogElection();
+ const archived=await db().prepare('SELECT id FROM archived_results WHERE id = ?').bind(payload.id).first();if(archived)return reply(request,{error:'이전 집계의 결과입니다. 전체 게임으로 새 월드컵을 시작해 주세요.'},409);
  const hash=await digest(JSON.stringify(payload));const existing=await db().prepare('SELECT id, payload_hash FROM results WHERE id = ?').bind(payload.id).first<{id:string,payload_hash:string}>();
  if(existing&&existing.payload_hash!==hash)return reply(request,{error:'같은 결과 번호로 다른 내용을 제출할 수 없습니다.'},409);
  const g=games.find(g=>g.id===payload.champion)!;const now=Date.now(),ticketHash=await digest(header.slice(7));

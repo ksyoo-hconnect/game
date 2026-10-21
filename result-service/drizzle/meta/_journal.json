@@ -15,6 +15,13 @@
       "when": 1792571466479,
       "tag": "0001_fancy_scrambler",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1792576350946,
+      "tag": "0002_colossal_sasquatch",
+      "breakpoints": true
     }
   ]
 }

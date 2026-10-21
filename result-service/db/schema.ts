@@ -11,3 +11,9 @@ export const tickets = sqliteTable('tickets', {
 export const appSettings = sqliteTable('app_settings', {
  key: text('key').primaryKey(), value: text('value').notNull(), updatedAt: text('updated_at').notNull(),
 });
+
+export const archivedResults = sqliteTable('archived_results', {
+ id: text('id').primaryKey(), nickname: text('nickname').notNull(), champion: text('champion').notNull(),
+ title: text('title').notNull(), author: text('author').notNull(), submittedAt: text('submitted_at').notNull(),
+ matches: text('matches').notNull(), payloadHash: text('payload_hash').notNull(), archivedAt: text('archived_at').notNull(),
+});
