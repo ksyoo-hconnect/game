@@ -10,6 +10,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   sync:
+    if: vars.RESULTS_SYNC_ENABLED == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
