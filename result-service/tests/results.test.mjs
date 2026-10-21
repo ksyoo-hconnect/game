@@ -1,0 +1,8 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {validateResult,GAME_IDS,csvDocument,csvCell} from '../lib/result-validation.mjs';
+function fixture(){let queue=[...GAME_IDS],winners=[],round=8,matches=[];for(let i=0;i<7;i++){let[a,b]=queue.splice(0,2);matches.push({a,b,winner:a,round});winners.push(a);if(!queue.length&&winners.length>1){queue=winners;winners=[];round=queue.length;}}return {id:'819df051-9d0b-4d8a-9c87-e9d67a9d5f14',nickname:'테스트',order:[...GAME_IDS],matches,champion:matches.at(-1).winner};}
+test('valid 8-player bracket produces the expected champion',()=>{const f=fixture();assert.equal(validateResult(f).champion,'yks');assert.equal(validateResult({...f,nickname:'  '} ).nickname,'익명');});
+test('reject incomplete, tampered and out-of-order brackets',()=>{for(const change of [f=>f.matches.pop(),f=>f.matches[0].winner='unknown',f=>f.order[0]=f.order[1],f=>f.matches[4].round=8,f=>f.champion='ldy',f=>f.matches.reverse(),f=>f.id='bad-id',f=>f.nickname='x\nBAD']){const f=fixture();change(f);assert.throws(()=>validateResult(f));}});
+test('never accept arbitrary extra or forged game winners',()=>{const f=fixture();f.matches[0]={a:'lsl',b:'kgt',winner:'lsl',round:8};assert.throws(()=>validateResult(f));});
+test('CSV preserves Unicode and quoting, blocks spreadsheet formulas, uses KST',()=>{assert.equal(csvCell('=1+1'),'"\'=1+1"');assert.equal(csvCell('닉네임 "A"'),'"닉네임 ""A"""');const csv=csvDocument([{id:'1',nickname:'한글',champion:'yks',title:'여정',author:'유경석',submitted_at:'2026-10-21T06:00:00.000Z'}]);assert(csv.startsWith('\ufeff'));assert(csv.includes('2026-10-21T15:00:00.000+09:00'));assert(csv.includes('한글'));});
