@@ -1,0 +1,359 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"></head><body>
+<title>POOR → LOOP 파일럿</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=IBM+Plex+Sans+KR:wght@400;500;700&family=Black+Han+Sans&display=swap">
+<style>
+/* Layout: 밤하늘 위 한 줄짜리 발표 문서. 장르 → 이야기 → 경험 → 원천 → 세 게임 → 시연 */
+:root{
+  color-scheme:dark;
+  --night:#0E1220;
+  --panel:#161B2E;
+  --line:#2A3150;
+  --ink:#E9ECF5;
+  --mute:#9AA3C0;
+  --loop:#1FB86B;       /* index.html --a-loop */
+  --poor:#E0645A;
+  --gold:#F2C14E;
+  --f-pixel:"Silkscreen", ui-monospace, Menlo, monospace;
+  --f-display:"Black Han Sans", "IBM Plex Sans KR", sans-serif;
+  --f-body:"IBM Plex Sans KR", -apple-system, "Apple SD Gothic Neo", sans-serif;
+}
+*{box-sizing:border-box}
+body{background:var(--night);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.7;
+  background-image:radial-gradient(1px 1px at 12% 3%,var(--mute) 50%,transparent 51%),radial-gradient(1px 1px at 78% 2%,var(--mute) 50%,transparent 51%),radial-gradient(1px 1px at 44% 6%,var(--gold) 50%,transparent 51%),radial-gradient(1px 1px at 90% 9%,var(--mute) 50%,transparent 51%);
+  background-repeat:no-repeat}
+.wrap{max-width:960px;margin:0 auto;padding-block:56px 80px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:80px}
+h1,h2,h3{font-family:var(--f-display);font-weight:400;text-wrap:balance;margin:0;letter-spacing:.01em}
+h2{font-size:clamp(24px,4vw,32px)}
+h3{font-size:22px}
+p{margin:0}
+.eyebrow{font-family:var(--f-pixel);font-size:12px;letter-spacing:.14em;color:var(--mute);text-transform:uppercase}
+section{display:flex;flex-direction:column;gap:20px}
+.lead{max-width:64ch;color:var(--mute)}
+.lead b{color:var(--ink);font-weight:700}
+.panel{background:var(--panel);border:1px solid var(--line);padding:18px;min-width:0}
+
+/* hero */
+.hero{gap:24px}
+.logo{font-family:var(--f-pixel);font-weight:700;font-size:clamp(44px,10vw,88px);line-height:1;display:flex;flex-wrap:wrap;align-items:center;gap:.3em}
+.logo .p{color:var(--poor)}
+.logo .a{color:var(--mute);font-size:.6em}
+.logo .l{color:var(--loop)}
+.hero h1{font-size:clamp(28px,5vw,44px);line-height:1.25}
+.hero h1 em{font-style:normal;color:var(--loop)}
+
+/* genre */
+.genre-name{font-family:var(--f-display);font-size:clamp(22px,3.6vw,30px);line-height:1.35}
+.genre-name span{color:var(--gold)}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.fact{display:flex;flex-direction:column;gap:6px}
+.fact .k{font-family:var(--f-pixel);font-size:11px;letter-spacing:.12em;color:var(--gold)}
+.fact strong{font-size:17px}
+.fact p{color:var(--mute);font-size:14.5px}
+.notgenre{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.notgenre div{border-left:3px solid var(--line);padding:4px 0 4px 14px;font-size:15px;color:var(--mute)}
+.notgenre b{color:var(--ink);font-weight:500}
+
+/* story */
+.story{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:0;counter-reset:st}
+.story li{counter-increment:st;display:grid;grid-template-columns:56px 1fr;gap:16px;padding:18px 0;border-top:1px solid var(--line)}
+.story li:last-child{border-bottom:1px solid var(--line)}
+.story li::before{content:counter(st,decimal-leading-zero);font-family:var(--f-pixel);font-size:20px;color:var(--gold);line-height:1.4}
+.story .who{font-family:var(--f-pixel);font-size:11px;letter-spacing:.12em;color:var(--mute)}
+.story strong{display:block;font-size:19px;margin:2px 0 6px}
+.story p{color:var(--mute);font-size:15px;max-width:64ch}
+.story q{color:var(--ink);quotes:"\201C" "\201D"}
+.story li.turn strong{color:var(--loop)}
+.reverse{display:grid;grid-template-columns:1fr auto 1fr;gap:16px;align-items:stretch}
+.reverse .panel{display:flex;flex-direction:column;gap:6px}
+.reverse .panel .k{font-family:var(--f-pixel);font-size:11px;letter-spacing:.12em;color:var(--mute)}
+.reverse .panel strong{font-size:18px}
+.reverse .panel p{color:var(--mute);font-size:14.5px}
+.reverse .arrow{align-self:center;font-family:var(--f-pixel);color:var(--loop);font-size:22px}
+.reverse .after{border-color:var(--loop)}
+
+/* experience */
+.hidden-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+.hid{border-left:3px solid var(--poor);padding:6px 0 6px 14px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.hid .q{font-size:16px}
+.hid .who{font-size:13px;color:var(--mute)}
+.hid.inv{border-left-color:var(--loop)}
+.promise{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,1fr);gap:12px;counter-reset:pr}
+.promise li{counter-increment:pr;background:var(--panel);border:1px solid var(--line);padding:18px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.promise li::before{content:counter(pr);font-family:var(--f-pixel);font-size:12px;color:var(--gold)}
+.promise li strong{font-size:18px}
+.promise li span{color:var(--mute);font-size:15px}
+.promise li.key{border-color:var(--loop)}
+.promise li.key strong{color:var(--loop)}
+.rule{display:flex;flex-direction:column;gap:4px;border:1px dashed var(--gold);padding:16px 18px;max-width:640px}
+.rule .k{font-family:var(--f-pixel);font-size:11px;letter-spacing:.12em;color:var(--gold)}
+.rule strong{font-size:18px}
+.rule p{color:var(--mute);font-size:15px}
+
+/* sources */
+.sources{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.src{display:flex;flex-direction:column;gap:10px}
+.src .tag{font-family:var(--f-pixel);font-size:11px;letter-spacing:.12em;color:var(--gold)}
+.src h3{font-size:20px}
+.src dl{margin:0;display:grid;grid-template-columns:64px 1fr;gap:6px 12px;font-size:14.5px}
+.src dt{color:var(--gold);font-weight:500}
+.src dd{margin:0;color:var(--mute);min-width:0}
+.src dd b{color:var(--ink);font-weight:500}
+
+/* contrast */
+.versus{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.side{padding:18px;border:1px solid var(--line);display:flex;flex-direction:column;gap:10px;min-width:0}
+.side h3{font-family:var(--f-pixel);font-weight:700;font-size:20px}
+.side.poor h3{color:var(--poor)}
+.side.loop h3{color:var(--loop)}
+.side ul{margin:0;padding-left:18px;color:var(--mute);font-size:15px;display:flex;flex-direction:column;gap:4px}
+.side.loop{border-color:var(--loop)}
+
+/* games */
+.games{display:flex;flex-direction:column;gap:20px}
+.game{display:grid;grid-template-columns:200px 1fr;gap:24px;padding:24px;background:var(--panel);border:1px solid var(--line)}
+.game .meta{display:flex;flex-direction:column;gap:10px;min-width:0}
+.game .model{font-family:var(--f-pixel);font-size:12px;letter-spacing:.12em;color:var(--mute)}
+.game .shape{font-size:14px;color:var(--gold);font-weight:500}
+.game .body{display:flex;flex-direction:column;gap:14px;min-width:0}
+.game .pitch{font-size:17px}
+.game dl{margin:0;display:grid;grid-template-columns:92px 1fr;gap:6px 14px;font-size:15px}
+.game dt{color:var(--mute)}
+.game dd{margin:0;min-width:0}
+.play{align-self:flex-start;display:inline-flex;align-items:center;gap:10px;margin-top:4px;padding:12px 18px;background:var(--loop);color:var(--night);font-weight:700;text-decoration:none;font-size:15px}
+.play:hover{filter:brightness(1.1)}
+.play:focus-visible,a:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+.play .k{font-family:var(--f-pixel);font-size:12px}
+
+.steps{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:8px;max-width:64ch}
+.steps b{font-weight:700}
+.note{font-size:13.5px;color:var(--mute);border-top:1px solid var(--line);padding-top:16px;max-width:70ch}
+
+@media (max-width:760px){
+  .game{grid-template-columns:1fr;gap:14px}
+  .versus,.sources,.promise{grid-template-columns:1fr}
+  .reverse{grid-template-columns:1fr}
+  .reverse .arrow{transform:rotate(90deg);justify-self:center}
+}
+@media (max-width:420px){
+  .game dl,.src dl{grid-template-columns:1fr;gap:2px}
+  .game dt,.src dt{margin-top:6px}
+  .story li{grid-template-columns:1fr;gap:4px}
+}
+@media (prefers-reduced-motion:no-preference){
+  .logo .l{animation:glow 2.4s ease-in-out infinite alternate}
+  @keyframes glow{from{text-shadow:0 0 0 transparent}to{text-shadow:0 0 18px rgba(31,184,107,.55)}}
+}
+</style>
+
+<div class="wrap">
+
+  <header class="hero">
+    <div class="eyebrow">Invites LOOP 온보딩 파일럿 · 2026-10-19 오전 미팅</div>
+    <div class="logo" aria-label="POOR에서 LOOP로"><span class="p">POOR</span><span class="a">→</span><span class="l">LOOP</span></div>
+    <h1>무너진 사람이 다시 태어나,<br><em>이번엔 우리를 챙기러 온다</em></h1>
+    <p class="lead">사용자는 처음에 한 사람을 지켜보는 AI로 시작합니다. 그 사람 <b>푸어</b>는 아픈 걸 숨기고 미루다 무너집니다. 푸어는 <b>회귀·빙의·환생</b>을 거쳐 AI <b>LOOP</b>로 다시 태어나고, 이번에는 사용자의 휴대폰 속에서 사용자를 챙깁니다. 이 이야기를 직접 플레이하는 것이 곧 앱의 첫 온보딩입니다.</p>
+  </header>
+
+  <section>
+    <div class="eyebrow">장르</div>
+    <h2>어떤 게임인가</h2>
+    <p class="genre-name">도트 그래픽 <span>인터랙티브 스토리 게임</span>.<br>끝나는 곳이 곧 앱의 첫 화면인 <span>온보딩 튜토리얼</span>.</p>
+    <p class="lead">읽기만 하는 이야기가 아니라 손으로 넘기는 이야기입니다. 선택지를 고르고, 누르고, 쓸고, 길게 누르는 동작마다 장면이 바뀝니다. 실패도 이야기의 일부라서, 지는 장면에서 게임이 멈추지 않고 회귀로 이어집니다. 마지막 장은 실제 LOOP 앱 화면이고, 거기서 이름을 알려주고 권한을 켜는 것이 엔딩입니다.</p>
+    <div class="facts">
+      <div class="fact panel"><span class="k">FORMAT</span><strong>모바일 세로 화면</strong><p>HTML 한 장으로 동작. 설치 없이 링크로 열립니다.</p></div>
+      <div class="fact panel"><span class="k">PLAY</span><strong>한 번에 끝나는 짧은 플레이</strong><p>앱 첫 실행 때 한 번 하는 길이. SCENE 메뉴로 장면을 건너뛸 수 있습니다.</p></div>
+      <div class="fact panel"><span class="k">INPUT</span><strong>탭 · 스와이프 · 길게 누르기 · 선택지</strong><p>휴대폰을 실제로 쓰는 손동작 그대로를 조작으로 씁니다.</p></div>
+      <div class="fact panel"><span class="k">GOAL</span><strong>엔딩 = 권한 동의</strong><p>이야기를 다 겪은 뒤 LOOP에게 이름과 권한을 건넵니다.</p></div>
+    </div>
+    <div class="notgenre">
+      <div><b>설명 화면을 넘기는 온보딩이 아닙니다.</b> 기능 소개 슬라이드 대신, 기능이 왜 필요한지를 이야기로 먼저 겪습니다.</div>
+      <div><b>점수 내는 게임도 아닙니다.</b> 잘하든 못하든 결국 같은 결말에 닿고, 그 과정에서 느낀 감정이 남습니다.</div>
+    </div>
+  </section>
+
+  <section>
+    <div class="eyebrow">스토리의 핵심</div>
+    <h2>지켜보던 AI가, 챙김받는 사람이 되기까지</h2>
+    <ol class="story">
+      <li><div><span class="who">사용자 = AI</span><strong>사용자는 한 사람을 지켜보는 AI</strong><p>플레이어는 푸어의 휴대폰 속 AI입니다. 재검 미루기, 약 건너뛰기, 새벽 치킨. 봐줄지 단호하게 말할지 대화로 고릅니다.</p></div></li>
+      <li><div><span class="who">푸어 = 흐트러진 사람</span><strong>푸어는 숨기고, 미루고, 무너진다</strong><p>어떻게 대답하든 푸어는 결국 쓰러집니다. 봐주면 미루고, 단호하면 숨깁니다. <q>가슴 답답한 거 몇 주 됐는데 말 안 했어.</q> AI는 보여준 것밖에 볼 수 없었습니다.</p></div></li>
+      <li><div><span class="who">회귀 · 세 유령</span><strong>신들의 학교에서 다시 눈을 뜬다</strong><p>건강의 여신 히기에이아가 푸어를 수호자 학교로 데려갑니다. 과거·현재·미래의 유령이 무엇을 숨겼고, 지금 누가 화면 너머에서 그를 돌보고 있었는지 보여줍니다. <q>그리고 이번에는, 네가 돌볼 자다.</q></p></div></li>
+      <li><div><span class="who">빙의 · 환생</span><strong>푸어가 LOOP로 다시 태어난다</strong><p>시간을 되감고(회귀), 휴대폰 속으로 들어가고(빙의), 이름이 POOR에서 LOOP로 뒤집힙니다(환생). 숨기다 무너져 본 사람이, 이제 챙기는 AI가 됩니다.</p></div></li>
+      <li class="turn"><div><span class="who">LOOP = 우리를 챙기는 AI</span><strong>LOOP가 사용자를 챙기러 온다</strong><p>잠금화면에 LOOP의 알림이 뜹니다. <q>야, 나 기억나?</q> 자기가 숨겨서 무너졌던 경험이 있기에 LOOP는 말합니다. <q>나 그때 말 안 해서 그렇게 됐잖아. 너는 다 연결하자.</q></p></div></li>
+    </ol>
+    <div class="reverse">
+      <div class="panel"><span class="k">처음</span><strong>사용자가 AI, 푸어가 사람</strong><p>사용자는 돌보는 쪽. 푸어가 숨기는 걸 답답하게 지켜봅니다.</p></div>
+      <div class="arrow" aria-hidden="true">→</div>
+      <div class="panel after"><span class="k">마지막</span><strong>LOOP가 AI, 사용자가 사람</strong><p>역할이 뒤집힙니다. 이제 사용자가 챙김을 받는 쪽이고, 숨기면 어떻게 되는지 이미 알고 있습니다.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="eyebrow">우리가 주는 경험</div>
+    <h2>많이 알려줄수록, 더 잘 챙겨준다</h2>
+    <p class="lead">사람은 아픈 것도, 나쁜 습관도 숨깁니다. 게임 속 인물들도 그렇습니다. 그래서 세 게임 모두 <b>인물이 숨긴 것</b>이 결국 문제를 만드는 장면을 크게 보여줍니다.</p>
+    <div class="hidden-list">
+      <div class="hid"><span class="q">"근데 가슴 답답한 거 몇 주 됐는데 말 안 했어"</span><span class="who">Opus · 쓰러진 뒤에야 털어놓는 말</span></div>
+      <div class="hid"><span class="q">"03:10. 또 치킨이다. 상자가 이만큼 쌓였다."</span><span class="who">Sonnet · 말 안 해도 쌓여 가는 밤</span></div>
+      <div class="hid"><span class="q">"다정함만으로 그는 치킨을 끊지 않았다."</span><span class="who">하강 · 보여준 만큼만 챙긴 결과</span></div>
+    </div>
+    <ol class="promise">
+      <li><strong>보여준 것만으로는 부족하다</strong><span>사용자가 직접 입력한 것만 보고 챙기면, 숨긴 것과 깜빡한 것은 놓칩니다. 사용자도 매번 기록하느라 지칩니다.</span></li>
+      <li><strong>그러니 우리가 보고 알려줄게</strong><span>건강·복약·알림을 연결해 주면 LOOP가 먼저 알아채고, 들을 수 있는 순간에 말을 겁니다.</span></li>
+      <li class="key"><strong>우리랑 같이 하자</strong><span>권한 동의는 감시가 아니라 함께하자는 약속입니다. "이번엔 숨기기 없기."</span></li>
+    </ol>
+    <div class="rule"><span class="k">수호자의 규칙 · RULE 02 (Opus 버전 속 규칙 카드)</span><strong>허락받은 만큼만 본다</strong><p>연결해 준 기록만 보고, 그만큼만 지킨다. 보이지 않는 것은 지킬 수 없다.</p></div>
+  </section>
+
+  <section>
+    <div class="eyebrow">이름에 담긴 뜻</div>
+    <h2>Invites LOOP · 루프를 초대하다</h2>
+    <p class="lead">회귀하고 빙의하는 과정은 모두 <b>LOOP를 사용자의 휴대폰으로 초대하는 과정</b>입니다. 신은 초대받은 곳에만 들어갈 수 있습니다. 앱을 깔고 권한을 열어 주는 순간이 초대장이고, LOOP는 초대받은 손님으로서 끝까지 곁에 있겠다고 약속합니다.</p>
+    <div class="hidden-list">
+      <div class="hid inv"><span class="q">"네가 앱 깐 거, 그게 나를 초대한 거야."</span><span class="who">Opus · LOOP 앱 첫 대화</span></div>
+      <div class="hid inv"><span class="q">"회귀도 빙의도 결국 LOOP를 초대하는 과정이었어."</span><span class="who">Sonnet · 폰 속으로 들어간 직후</span></div>
+      <div class="hid inv"><span class="q">"켜진 화면은 너를 부르는 초대장이야."</span><span class="who">하강 · 폰을 길게 눌러 들어가기 전</span></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="eyebrow">가져온 컨셉</div>
+    <h2>네 가지 원천과 쓰임</h2>
+    <p class="lead">익숙한 이야기 공식 네 개를 빌려왔습니다. 처음 보는 앱인데도 사용자가 이야기의 규칙을 이미 알고 있어서, 설명 없이 바로 따라올 수 있습니다.</p>
+    <div class="sources">
+      <article class="src panel">
+        <span class="tag">SUBCULTURE GAME TUTORIAL</span>
+        <h3>서브컬처 게임의 튜토리얼</h3>
+        <dl>
+          <dt>원작</dt><dd>니케 같은 모바일 서브컬처 게임은 첫 10분을 스토리 컷신과 조작 교육을 섞어 진행합니다. 손가락 가이드가 누를 곳을 짚어 주고, 배운 동작으로 바로 이야기가 넘어갑니다.</dd>
+          <dt>가져온 것</dt><dd><b>조작을 배우는 순간이 곧 이야기.</b> 설명 팝업 없이, 장면이 요구하는 동작을 하면서 자연스럽게 익힙니다.</dd>
+          <dt>게임 속</dt><dd>세 그림자의 기억 모으기(Opus), 길게 눌러 소환하는 SSR 연출(Sonnet), 손가락으로 쓸어 내려가는 세계(하강). 마지막엔 LOOP와 대화하는 법까지 튜토리얼로 익힙니다.</dd>
+        </dl>
+      </article>
+      <article class="src panel">
+        <span class="tag">회귀 · 빙의 · 환생</span>
+        <h3>웹소설·웹툰의 회빙환</h3>
+        <dl>
+          <dt>원작</dt><dd>한국 웹소설·웹툰의 대표 공식. 실패한 인생으로 돌아가 다시 살고(회귀), 다른 존재의 몸에 들어가고(빙의), 죽은 뒤 새로 태어납니다(환생).</dd>
+          <dt>가져온 것</dt><dd><b>실패해도 끝이 아니라 두 번째 기회.</b> 망한 1회차가 있어야 2회차가 의미 있다는 감각.</dd>
+          <dt>게임 속</dt><dd>쓰러지기 전으로 시간을 되감고(회귀), 휴대폰 속으로 들어가고(빙의), POOR가 LOOP로 이름이 뒤집혀 다시 태어납니다(환생). 이 세 단계가 LOOP를 초대하는 과정입니다.</dd>
+        </dl>
+      </article>
+      <article class="src panel">
+        <span class="tag">A CHRISTMAS CAROL · DICKENS</span>
+        <h3>크리스마스 캐럴의 세 유령</h3>
+        <dl>
+          <dt>원작</dt><dd>디킨스의 소설. 구두쇠 스크루지에게 크리스마스 이브 밤 과거·현재·미래의 유령이 차례로 찾아와 그의 삶을 보여주고, 스크루지는 아침에 다른 사람이 되어 깨어납니다.</dd>
+          <dt>가져온 것</dt><dd><b>잔소리 대신 보여주기.</b> 무엇이 잘못됐는지 말로 혼내지 않고, 장면을 보여줘서 스스로 깨닫게 합니다.</dd>
+          <dt>게임 속</dt><dd>과거의 유령은 숨겼던 메시지를, 현재의 유령은 화면 너머에서 돌보던 사람을 보여줍니다. 미래의 유령은 말하지 않습니다. <b>"미래는 알려주는 것이 아니라, 바꾸는 것이기 때문이다."</b></dd>
+        </dl>
+      </article>
+      <article class="src panel">
+        <span class="tag">NOUS LES DIEUX · WERBER</span>
+        <h3>베르나르 베르베르의 견습 신</h3>
+        <dl>
+          <dt>원작</dt><dd>베르베르의 《신》. 신들의 학교에서 견습 신들이 각자 인간 무리를 맡아 돌보고, 그 결과로 시험을 치르고 졸업합니다.</dd>
+          <dt>가져온 것</dt><dd><b>돌봄은 배워야 하는 일이고, 시험이 있다.</b> 사람 하나를 지키는 일을 수업과 졸업 시험으로 그립니다.</dd>
+          <dt>게임 속</dt><dd>건강의 여신 히기에이아가 교사인 수호자 학교 아스클레피온. 졸업 시험은 하나뿐입니다. <b>"네 인생이 아니라, 그 사람을 지켜라."</b> LOOP는 그래서 말합니다. 너 관리가 내 졸업 시험이야.</dd>
+        </dl>
+      </article>
+    </div>
+  </section>
+
+  <section>
+    <div class="eyebrow">핵심 대비</div>
+    <h2>POOR와 LOOP</h2>
+    <div class="versus">
+      <div class="side poor"><h3>POOR</h3><ul>
+        <li>보여준 것만 보고, 숨긴 건 모른다</li>
+        <li>봐주면 미루고, 다그치면 숨긴다</li>
+        <li>사용자가 보든 말든 요청을 보내다 음소거된다</li>
+      </ul></div>
+      <div class="side loop"><h3>LOOP</h3><ul>
+        <li>연결해 준 만큼 먼저 알아챈다</li>
+        <li>사용자가 들을 수 있는 순간에 말을 건다</li>
+        <li>왜 필요한지 대화로 설명하고 허락을 구한다</li>
+      </ul></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="eyebrow">시연할 세 버전</div>
+    <h2>같은 기획, 다른 장르</h2>
+    <p class="lead">세 모델에게 같은 기획과 같은 원천을 주고 각자 최고의 게임을 만들게 했습니다. 이야기 뼈대는 같지만, 장르와 플레이어가 맡는 역할이 서로 다릅니다. 위의 스토리 핵심을 가장 그대로 담은 건 Opus 버전입니다.</p>
+
+    <div class="games">
+      <article class="game">
+        <div class="meta">
+          <span class="model">OPUS</span>
+          <h3>POOR → LOOP</h3>
+          <span class="shape">비주얼노벨 + 채팅형 스토리</span>
+        </div>
+        <div class="body">
+          <p class="pitch">메신저 대화로 진행하는 이야기. 마지막 장이 실제 LOOP 앱 온보딩 대화 그대로입니다.</p>
+          <dl>
+            <dt>플레이어</dt><dd>푸어의 휴대폰 속 AI → 마지막엔 LOOP에게 챙김받는 사람</dd>
+            <dt>흐름</dt><dd>푸어와 채팅하며 봐줄지 단호할지 선택 → 푸어가 쓰러짐 → 수호자 학교에서 세 그림자의 기억 모으기 → 회귀·환생·빙의 세 컷 → 잠금화면 알림 → LOOP 앱</dd>
+            <dt>동의 장면</dt><dd>LOOP가 이름을 묻고, 요즘 미루는 고민을 고르게 한 뒤, 대화 속에서 권한을 하나씩 켭니다</dd>
+            <dt>시연 포인트</dt><dd>역할이 뒤집히는 순간과 2막 LOOP 대화. 실제 v5 온보딩의 초안으로 볼 수 있습니다</dd>
+          </dl>
+          <a class="play" href="정다운_poor-loop-opus.html" target="_blank" rel="noopener">플레이 <span class="k">OPUS ↗</span></a>
+        </div>
+      </article>
+
+      <article class="game">
+        <div class="meta">
+          <span class="model">SONNET</span>
+          <h3>신입 수호신 실습</h3>
+          <span class="shape">생활 시뮬레이션 + 탐험 어드벤처</span>
+        </div>
+        <div class="body">
+          <p class="pitch">푸어의 21일을 직접 지켜보는 버전. 어떻게 해도 지게 짜여 있어서, 보여준 것만으로는 지킬 수 없다는 걸 몸으로 느낍니다.</p>
+          <dl>
+            <dt>플레이어</dt><dd>신들의 학교 학생 신 → 푸어의 폰에 빙의해 LOOP로 환생</dd>
+            <dt>흐름</dt><dd>21일 관찰 실습 → 게임 오버와 컨티뉴 → 다이얼을 돌려 회귀 → 치유의 신전을 걸어 다니며 세 유령을 만나고 룬 순서 퍼즐 → 영혼을 폰으로 끌어 빙의 → 길게 눌러 소환(환생) → LOOP 앱</dd>
+            <dt>동의 장면</dt><dd>LOOP 앱의 "눈" UI. 권한을 켤 때마다 LOOP가 볼 수 있는 것이 하나씩 열립니다</dd>
+            <dt>시연 포인트</dt><dd>질 수밖에 없는 21일과 회귀 다이얼. 실패를 설계에 넣은 방식</dd>
+          </dl>
+          <a class="play" href="정다운_poor-loop-sonnet.html" target="_blank" rel="noopener">플레이 <span class="k">SONNET ↗</span></a>
+        </div>
+      </article>
+
+      <article class="game">
+        <div class="meta">
+          <span class="model">FABLE · V2</span>
+          <h3>하강</h3>
+          <span class="shape">세로 스크롤 아케이드 + 타이밍 액션</span>
+        </div>
+        <div class="body">
+          <p class="pitch">하늘의 학교에서 푸어가 사는 건물까지, 한 장의 세로 세계를 손가락으로 내려가는 버전.</p>
+          <dl>
+            <dt>플레이어</dt><dd>학생 신 → LOOP로 환생 → 마지막 장에선 플레이어가 푸어가 되어 LOOP를 만남</dd>
+            <dt>흐름</dt><dd>하늘의 신 학교 → 건물을 한 층씩 내려가며 21일 실습 → 건물 붕괴 → 위로 쓸어 올려 회귀 → 옥상의 세 유령과 규칙 카드 → 밤비 속으로 길게 눌러 낙하(빙의) → 폰을 붙잡아 LOOP로 환생 → 다음 날 잠금화면 → 졸업장</dd>
+            <dt>미니게임</dt><dd>SEND 타이밍. 푸어가 휴대폰을 보는 2초 동안만 보내면 읽힙니다. 놓치면 짜증이 쌓이고 결국 음소거됩니다</dd>
+            <dt>동의 장면</dt><dd>건물 창문 네 칸을 하나씩 밝히듯 권한을 허락받습니다</dd>
+            <dt>시연 포인트</dt><dd>"언제 말 걸지"를 손끝 타이밍으로 체감하게 한 SEND 미니게임</dd>
+          </dl>
+          <a class="play" href="정다운_poor-loop-fable-v2.html" target="_blank" rel="noopener">플레이 <span class="k">FABLE ↗</span></a>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section>
+    <div class="eyebrow">미팅에서</div>
+    <h2>시연 순서</h2>
+    <ol class="steps">
+      <li>이 페이지로 <b>장르, 스토리 핵심, 우리가 주는 경험</b>을 설명</li>
+      <li>각 게임을 열고 <b>SCENE</b> 버튼 메뉴에서 <b>AUTO</b>를 켜 자동 진행. 보여주고 싶은 장면은 SCENE에서 바로 이동</li>
+      <li>Opus는 LOOP 앱 대화, Sonnet은 회귀 다이얼, 하강은 SEND 미니게임을 직접 손으로 시연</li>
+      <li>어느 버전의 어떤 장면을 v5 온보딩에 가져갈지 함께 고르기</li>
+    </ol>
+    <p class="note">세 버전 모두 백엔드·LLM 없이 버튼 분기만으로 동작하는 단일 HTML입니다. 헤드리스 크롬에서 처음부터 끝까지 확인했고, 실제 아이폰 터치감과 소리는 아직 확인하지 않았습니다. 소리는 화면을 한 번 누른 뒤부터 납니다.</p>
+  </section>
+
+</div>
+
+</body></html>

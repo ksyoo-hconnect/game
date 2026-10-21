@@ -1,0 +1,970 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#e9f0f7">
+<title>루프 마을</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Gaegu:wght@400;700&family=Silkscreen:wght@400;700&family=IBM+Plex+Sans+KR:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#e9f0f7; --panel:#fff; --soft:#f5f8fb; --ink:#25303c; --muted:#677686; --line:#b4c3d3;
+  --clay:#c2754d; --clay-d:#8e4e2d; --arc:#3d78dc; --arc-soft:#e3ecfb; --clay-soft:#f7e9e0;
+  --sky:#cfe5fa; --sky2:#eef6fd; --ground:#a9d18e; --ground2:#93c178; --warn:#e0533d; --ok:#2f9e6a; --gold:#f2b632;
+  --k:#3b2a2a;
+  --f-display:"Jua","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --f-body:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --f-hand:"Gaegu","Apple SD Gothic Neo","Malgun Gothic",cursive;
+  --f-pixel:"Silkscreen","Courier New",monospace;
+  color-scheme:light;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:#cfdceb;overscroll-behavior:none}
+body{font-family:var(--f-body);color:var(--ink);font-size:15px;line-height:1.5;-webkit-user-select:none;user-select:none;touch-action:manipulation}
+button{font:inherit;color:inherit;touch-action:manipulation;cursor:pointer}
+button:focus-visible{outline:3px solid var(--arc);outline-offset:2px}
+canvas.sp{image-rendering:pixelated;image-rendering:crisp-edges;display:block}
+[hidden]{display:none!important}
+
+#app{position:relative;max-width:440px;margin:0 auto;height:100vh;height:100dvh;background:var(--bg);display:grid;grid-template-rows:auto minmax(0,1fr);overflow:hidden;box-shadow:0 0 0 1px var(--line),0 20px 60px rgba(40,60,90,.18)}
+
+/* HUD */
+.hud{display:flex;align-items:center;gap:8px;padding:calc(8px + env(safe-area-inset-top,0px)) 12px 8px;background:var(--panel);border-bottom:2px dashed var(--line)}
+.timer{font-family:var(--f-pixel);font-size:14px;background:var(--ink);color:#fff;border-radius:8px;padding:3px 8px;min-width:66px;text-align:center}
+.timer.over{background:var(--warn)}
+.loopline{flex:1;display:flex;align-items:center;justify-content:center;gap:2px;font-family:var(--f-pixel);font-size:10px;color:var(--muted);min-width:0}
+.loopline b{font-weight:400;padding:2px 4px;border-radius:5px;border:1px solid var(--line);background:var(--soft);transition:.3s}
+.loopline b.on{background:var(--arc);border-color:var(--arc);color:#fff;transform:translateY(-2px)}
+.loopline b.done{background:var(--arc-soft);color:var(--arc);border-color:var(--arc-soft)}
+.loopline i{font-style:normal;opacity:.6}
+.icon-btn{border:2px solid var(--line);background:var(--soft);border-radius:8px;width:32px;height:28px;padding:0;font-size:14px;line-height:1}
+.coin{display:flex;align-items:center;gap:5px;font-family:var(--f-pixel);font-size:14px;background:var(--gold);color:var(--k);border:2px solid var(--k);border-radius:99px;padding:1px 9px 1px 3px;box-shadow:2px 2px 0 var(--k)}
+.coin .L{display:grid;place-items:center;width:18px;height:18px;border-radius:50%;background:#fff3c4;border:2px solid var(--k);font-size:10px;font-weight:700}
+.coin.bump{animation:bump .45s}
+@keyframes bump{40%{transform:scale(1.25) rotate(-6deg)}}
+.plus{position:absolute;right:20px;top:46px;font-family:var(--f-pixel);color:var(--clay);font-size:16px;font-weight:700;pointer-events:none;animation:up 1s forwards;z-index:60;text-shadow:1px 1px 0 #fff}
+@keyframes up{to{transform:translateY(-26px);opacity:0}}
+
+main{position:relative;min-height:0}
+.scene{position:absolute;inset:0;display:none;grid-template-rows:minmax(200px,1fr) auto;min-height:0}
+.scene.on{display:grid;animation:fadein .35s}
+@keyframes fadein{from{opacity:0;transform:translateY(8px)}}
+.stage{position:relative;overflow:hidden;margin:10px 12px 0;border-radius:16px;border:2px solid var(--k);box-shadow:3px 3px 0 var(--k);min-height:0}
+.ctl{padding:10px 12px calc(12px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:9px;max-height:56dvh;overflow:auto}
+.head{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.head .tag{font-family:var(--f-pixel);font-size:10px;color:#fff;background:var(--arc);padding:1px 7px;border-radius:5px;letter-spacing:.04em}
+.head h2{font-family:var(--f-display);font-weight:400;font-size:20px;margin:0;line-height:1.2}
+.tags{display:flex;flex-wrap:wrap;gap:5px}
+.tags span{font-size:10.5px;border:1px dashed var(--line);padding:1px 8px;border-radius:99px;color:var(--muted);background:var(--panel)}
+.tags span.lit{border-style:solid;border-color:var(--arc);color:var(--arc);background:var(--arc-soft);animation:bump .45s}
+.row{display:flex;flex-wrap:wrap;gap:7px}
+.row.grid3{display:grid;grid-template-columns:repeat(3,1fr)}
+.chip{border:2px solid var(--line);border-bottom-width:4px;background:var(--panel);border-radius:12px;padding:8px 11px;font-family:var(--f-display);font-size:15px;line-height:1.2;transition:transform .05s}
+.chip:active{transform:translateY(2px);border-bottom-width:2px}
+.chip[aria-pressed=true]{border-color:var(--arc);background:var(--arc-soft);color:var(--arc)}
+.chip:disabled{opacity:.4;cursor:default}
+.chip.hot{border-color:var(--clay);animation:wiggle 1.6s infinite}
+@keyframes wiggle{0%,80%,100%{transform:none}85%{transform:rotate(-2deg)}90%{transform:rotate(2deg)}}
+.go{width:100%;background:var(--clay);color:#fff;border:2px solid var(--k);border-bottom-width:5px;border-radius:14px;padding:11px;font-family:var(--f-display);font-size:19px;animation:popin .4s}
+.go:active{transform:translateY(3px);border-bottom-width:2px}
+.go.blue{background:var(--arc)}
+.go.ghost{background:var(--panel);color:var(--ink)}
+@keyframes popin{from{transform:scale(.85);opacity:0}}
+.sys{font-family:var(--f-pixel);font-size:10px;color:var(--muted);min-height:15px;letter-spacing:.03em}
+.hint{font-family:var(--f-hand);font-size:17px;color:var(--clay);line-height:1.2}
+
+/* bubbles & actors */
+.actor{position:absolute;bottom:18%;transform:translateX(-50%);transition:left .9s ease-in-out;z-index:8}
+.actor > canvas{margin:0 auto}
+.bub{position:absolute;bottom:calc(100% + 10px);left:50%;transform:translateX(-50%);background:#fff;border:2px solid var(--k);border-radius:12px;padding:6px 10px;font-size:13.5px;line-height:1.35;width:max-content;max-width:210px;box-shadow:2px 2px 0 var(--k);z-index:5;color:var(--ink);font-weight:600}
+.bub::after{content:"";position:absolute;left:50%;top:100%;transform:translateX(-50%);border:7px solid transparent;border-top-color:var(--k)}
+.bub.l{left:-6px;transform:none}.bub.l::after{left:22px}
+.bub.r{left:auto;right:-6px;transform:none}.bub.r::after{left:auto;right:16px;transform:none}
+.bub.ai{background:#f4efff;border-color:#6b4fb3;box-shadow:2px 2px 0 #6b4fb3}.bub.ai::after{border-top-color:#6b4fb3}
+.bub.pop{animation:bpop .3s}
+@keyframes bpop{from{transform:translateX(-50%) scale(.6);opacity:0}}
+.bub.l.pop,.bub.r.pop{animation:bpop2 .3s}
+@keyframes bpop2{from{transform:scale(.6);opacity:0}}
+.lupy{animation:bob 2.2s ease-in-out infinite}
+@keyframes bob{50%{transform:translateX(-50%) translateY(-7px)}}
+.lupy .glow{position:absolute;inset:-8px;border-radius:50%;background:radial-gradient(#fff8 0,#fff0 70%);pointer-events:none}
+.zz{position:absolute;left:100%;bottom:80%;font-family:var(--f-pixel);color:#6b4fb3;font-size:12px;animation:zz 2s infinite;white-space:nowrap}
+@keyframes zz{50%{transform:translate(4px,-6px);opacity:.4}}
+.jump{animation:jump .5s}
+@keyframes jump{40%{transform:translateX(-50%) translateY(-18px)}}
+.stamp{position:absolute;left:50%;top:42%;transform:translate(-50%,-50%) rotate(-12deg);border:4px solid var(--warn);color:var(--warn);font-family:var(--f-display);font-size:24px;padding:4px 14px;border-radius:12px;background:#fff9;z-index:20;animation:stamp .35s cubic-bezier(.3,1.6,.6,1);pointer-events:none;white-space:nowrap}
+@keyframes stamp{from{transform:translate(-50%,-50%) rotate(-12deg) scale(3);opacity:0}}
+
+/* title / map layer */
+#map{position:absolute;inset:0;z-index:40;background:var(--bg);display:grid;grid-template-rows:auto 1fr auto;transition:opacity .3s}
+#map.off{opacity:0;pointer-events:none}
+#map .ttl{padding:calc(26px + env(safe-area-inset-top,0px)) 20px 0;display:flex;flex-direction:column;gap:8px}
+#map.travel .ttl,#map.travel .start{display:none}
+#map.travel{grid-template-rows:1fr auto 1fr;padding-top:52px}
+#map:not(.travel) .tcap{display:none}
+.tcap{text-align:center;font-family:var(--f-display);font-size:20px;align-self:start}
+.tcap small{display:block;font-family:var(--f-pixel);font-size:11px;color:var(--muted);letter-spacing:.1em}
+#app.playing .hud{position:relative;z-index:45}
+.logo{font-family:var(--f-display);font-size:58px;line-height:1;margin:0;font-weight:400}
+.logo .dot{color:var(--clay)}
+.sub{font-size:16px;margin:0;font-weight:600}
+.today{align-self:flex-start;font-family:var(--f-hand);font-size:18px;color:var(--muted);border:1px dashed var(--line);border-radius:10px;padding:3px 12px;background:var(--soft)}
+.today b{color:var(--clay)}
+.facts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:4px}
+.facts div{border-left:3px solid var(--arc);padding-left:8px}
+.facts small{display:block;font-size:11px;color:var(--muted)}
+.facts strong{font-family:var(--f-display);font-weight:400;font-size:16px}
+.village{position:relative;margin:14px 12px;border-radius:16px;overflow:hidden;background:linear-gradient(var(--sky),var(--sky2) 70%);border:2px solid var(--k);box-shadow:3px 3px 0 var(--k);min-height:230px}
+#map.travel .village{margin:12px;align-self:end;height:300px;grid-row:1}
+.cloud{position:absolute;height:12px;background:#fff;opacity:.9;border-radius:2px;box-shadow:8px -8px 0 #fff,20px 0 0 #fff}
+.c1{top:24px;left:8%;width:38px;animation:drift 40s linear infinite}
+.c2{top:56px;left:58%;width:28px;animation:drift 55s linear infinite reverse}
+@keyframes drift{from{transform:translateX(-40px)}to{transform:translateX(60px)}}
+.sun{position:absolute;right:16px;top:14px;width:30px;height:30px;border-radius:50%;background:#ffd76a;box-shadow:0 0 0 6px #ffd76a44}
+.ground{position:absolute;left:0;right:0;bottom:0;height:30%;background:repeating-linear-gradient(90deg,var(--ground) 0 16px,var(--ground2) 16px 32px)}
+.path{position:absolute;left:0;right:0;bottom:15%;height:12px;background:repeating-linear-gradient(90deg,#e6cfa6 0 10px,#dcc195 10px 20px)}
+.bldg{position:absolute;bottom:30%;width:22%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;transition:transform .3s}
+.bldg.on{transform:translateX(-50%) translateY(-6px)}
+.roof{width:100%;height:24px;clip-path:polygon(50% 0,100% 100%,0 100%);background:var(--clay)}
+.bldg.h .roof{background:#5b8fd9}
+.wall{width:84%;height:50px;background:#fff7ec;border:2px solid var(--k);border-top:none;position:relative}
+.wall .door{position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:26%;height:24px;background:#8a5a3c;border:2px solid var(--k);border-bottom:none}
+.wall .win{position:absolute;top:8px;left:10%;width:22%;height:14px;background:#bfe0ff;border:2px solid var(--k)}
+.wall .cross{position:absolute;top:5px;right:9%;width:18px;height:18px;background:linear-gradient(var(--warn),var(--warn)) center/6px 100% no-repeat,linear-gradient(var(--warn),var(--warn)) center/100% 6px no-repeat}
+.wall .pot{position:absolute;bottom:0;right:4px;font-size:12px}
+.sign{margin-top:-1px;font-family:var(--f-pixel);font-size:10px;background:var(--k);color:#fff;padding:1px 6px;border-radius:0 0 6px 6px;white-space:nowrap}
+.sign small{font-family:var(--f-body);font-size:9.5px;opacity:.85;margin-left:3px}
+#walker{bottom:9%;transition:none}
+#mapLupy{bottom:24%;transition:none}
+.start{padding:0 20px calc(22px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:8px}
+.disclaimer{font-size:10.5px;color:var(--muted);text-align:center;margin:0}
+
+/* scene card */
+#card{position:absolute;inset:0;z-index:30;display:grid;place-items:center;background:#25303ce6;color:#fff;text-align:center;opacity:0;pointer-events:none;transition:opacity .25s}
+#card.on{opacity:1}
+#card .t{font-family:var(--f-pixel);font-size:12px;letter-spacing:.12em;color:#ffd76a}
+#card h3{font-family:var(--f-display);font-weight:400;font-size:30px;margin:6px 0 4px}
+#card p{margin:0;font-family:var(--f-hand);font-size:19px;opacity:.9}
+
+/* S1 room */
+.room{position:absolute;inset:0;background:var(--wall,#f6dcc2);transition:background .4s}
+.room .floor{position:absolute;left:0;right:0;bottom:0;height:30%;background:repeating-linear-gradient(90deg,#d9a877 0 28px,#cf9c6a 28px 30px);border-top:3px solid var(--k)}
+.room .rwin{position:absolute;left:10%;top:12%;width:24%;height:22%;background:linear-gradient(#bfe0ff,#e9f5ff);border:3px solid var(--k);box-shadow:inset 0 0 0 3px #fff}
+.room .rwin::after{content:"";position:absolute;left:50%;top:0;bottom:0;border-left:3px solid #fff}
+.room .poster{position:absolute;right:12%;top:13%;width:16%;height:20%;background:#fff;border:3px solid var(--k);display:grid;place-items:center;font-family:var(--f-pixel);font-size:9px;color:var(--clay);transform:rotate(3deg)}
+.room .rug{position:absolute;left:50%;bottom:7%;transform:translateX(-50%);width:44%;height:9%;border-radius:50%;background:#ffffff55;border:2px dashed #ffffff99}
+.room .slot{position:absolute;bottom:14%;display:flex;align-items:flex-end;gap:4px}
+.room .itemL{left:8%}.room .itemR{right:7%}
+.room .me{position:absolute;left:50%;bottom:12%;transform:translateX(-50%);background:none;border:0;padding:0}
+.room .greet{bottom:calc(100% + 8px)}
+.room.dark .poster{background:#3d4a5e;color:#ffd76a}
+.room .rlupy{position:absolute;right:4%;left:auto;bottom:auto;top:40%;opacity:.95}
+.room.mini{pointer-events:none}
+.qcard{background:var(--panel);border:2px solid var(--k);border-radius:14px;padding:10px 12px;display:flex;flex-direction:column;gap:8px;box-shadow:3px 3px 0 var(--k)}
+.qtop{display:flex;justify-content:space-between;align-items:center}
+.dots{display:flex;gap:4px}
+.dots i{width:9px;height:9px;border-radius:50%;background:var(--line)}
+.dots i.on{background:var(--clay)}
+.qtxt{font-family:var(--f-display);font-size:18px}
+
+/* S2 outdoor */
+.out{position:absolute;inset:0;background:linear-gradient(var(--sky),var(--sky2) 65%)}
+.out .ground{height:24%}
+.hill{position:absolute;bottom:22%;width:70%;height:30%;border-radius:50% 50% 0 0;background:#bfe0a6}
+.tree{position:absolute;bottom:22%;width:44px}
+.tree::before{content:"";display:block;width:44px;height:44px;border-radius:50%;background:#6fb35e;border:2px solid var(--k)}
+.tree::after{content:"";display:block;margin:-2px auto 0;width:10px;height:20px;background:#8a5a3c;border:2px solid var(--k)}
+.isig{position:absolute;left:8px;top:8px;right:8px;background:#fffffff0;border:2px solid var(--k);border-radius:10px;padding:4px 8px;font-size:11.5px;font-weight:600;display:flex;gap:6px;align-items:center;z-index:6}
+.isig b{font-family:var(--f-pixel);font-size:9px;font-weight:400;color:#fff;background:var(--warn);border-radius:4px;padding:0 5px}
+.tired canvas{filter:saturate(.45) brightness(.92)}
+.tired::after{content:"💧";position:absolute;right:-8px;top:2px;font-size:16px;animation:zz 1.4s infinite}
+.scan{position:absolute;left:0;right:0;height:5px;background:#6fe3ff;box-shadow:0 0 16px 6px #6fe3ffaa;top:10%;opacity:0;z-index:4}
+.scanning .scan{animation:scan 2.3s ease-in-out}
+@keyframes scan{0%{top:12%;opacity:1}50%{top:78%;opacity:1}100%{top:12%;opacity:0}}
+.selves{position:absolute;left:8px;right:8px;top:44px;display:grid;grid-template-columns:repeat(3,1fr);gap:5px;z-index:6}
+.selves div{background:#fffffff2;border:2px solid var(--k);border-radius:9px;padding:3px 6px;font-size:11px;line-height:1.3;animation:popin .35s backwards}
+.selves div:nth-child(2){animation-delay:.12s}.selves div:nth-child(3){animation-delay:.24s}
+.selves b{display:block;font-family:var(--f-pixel);font-size:9px;font-weight:400;color:var(--arc)}
+.detail{position:absolute;left:8px;right:8px;top:44px;background:#fff;border:2px solid var(--k);border-radius:10px;padding:6px 8px;z-index:7;animation:popin .3s;font-size:11.5px}
+.detail b{font-family:var(--f-pixel);font-weight:400;font-size:10px;color:var(--arc)}
+
+/* S3 gym & diet */
+.gymbg{position:absolute;inset:0;background:linear-gradient(#e9eef8 0 70%,#c9ced8 70%)}
+.gymbg .mirror{position:absolute;left:8%;right:8%;top:8%;height:46%;background:linear-gradient(120deg,#dcebff,#f5faff 40%,#dcebff);border:3px solid var(--k);border-radius:6px}
+.gymbg .mirror::after{content:"SiBC GYM";position:absolute;left:8px;top:4px;font-family:var(--f-pixel);font-size:10px;color:var(--muted)}
+.lifter{position:absolute;left:38%;bottom:20%;transform:translateX(-50%);background:none;border:0;padding:0}
+.lifter .bell{position:absolute;left:50%;transform:translateX(-50%);bottom:10px;transition:bottom .08s;z-index:2}
+.lifter.up .bell{bottom:84px}
+.lifter.up canvas.body{transform:translateY(-3px)}
+.gymLupy{left:80%;bottom:52%}
+.gauge{position:absolute;left:10px;right:10px;bottom:8px;display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center;font-family:var(--f-pixel);font-size:13px;z-index:6}
+.bar{position:relative;height:18px;background:#fff;border:2px solid var(--k);border-radius:9px;overflow:hidden}
+.band{position:absolute;top:0;bottom:0;background:#7fd38f;transition:.4s}
+.fill{position:absolute;left:0;top:4px;bottom:4px;width:0;background:var(--clay);border-radius:0 5px 5px 0;opacity:.85;transition:width .08s}
+.tapzone{position:absolute;inset:0;z-index:3;background:none;border:0;padding:0}
+.tapzone:disabled{pointer-events:none}
+.table{position:absolute;inset:0;background:linear-gradient(#fdf3e3 0 40%,#d9a877 40%)}
+.table::before{content:"";position:absolute;left:0;right:0;top:40%;height:6px;background:#b9845a}
+.plate{position:absolute;left:38%;top:62%;transform:translate(-50%,-50%);width:168px;height:116px;border-radius:50%;background:#fff;border:3px solid var(--k);box-shadow:inset 0 0 0 9px #eef3f8;display:flex;align-items:center;justify-content:center;gap:4px}
+.plate button{font-size:36px;background:none;border:0;padding:0;line-height:1;animation:popin .25s}
+.plate .slot{width:34px;height:34px;border-radius:50%;border:2px dashed var(--line)}
+.dietLupy{left:82%;bottom:58%}
+.foods{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.food{border:2px solid var(--line);border-bottom-width:4px;background:var(--panel);border-radius:12px;padding:5px 2px;font-size:12.5px;font-weight:600;display:flex;flex-direction:column;align-items:center}
+.food span{font-size:26px;line-height:1.1}
+.food:active{transform:translateY(2px);border-bottom-width:2px}
+
+/* S4 clinic & ward */
+.clinic{position:absolute;inset:0;background:linear-gradient(#e2f4ef 0 66%,#cfe1dc 66%)}
+.kiosk{position:absolute;left:12%;bottom:18%;width:58px;height:110px;background:#fff;border:3px solid var(--k);border-radius:8px 8px 2px 2px;display:flex;flex-direction:column;align-items:center;padding-top:8px;transform:translateX(-50%)}
+.kscreen{width:44px;height:44px;background:#2b3b55;color:#7fffd4;font-family:var(--f-pixel);font-size:8.5px;line-height:1.2;display:grid;place-items:center;text-align:center;border-radius:4px}
+.kiosk.glow{box-shadow:0 0 0 4px #7fffd4aa,0 0 18px 6px #7fffd466;animation:glow 1.2s infinite}
+@keyframes glow{50%{box-shadow:0 0 0 7px #7fffd455,0 0 26px 10px #7fffd433}}
+.kiosk.ok .kscreen{background:var(--ok);color:#fff}
+.desk{position:absolute;right:4%;bottom:18%;width:44%;height:40px;background:#b9845a;border:3px solid var(--k);border-radius:4px;z-index:2}
+.monitor{position:absolute;right:30%;bottom:calc(18% + 40px);width:62px;height:42px;background:#2b3b55;border:3px solid var(--k);border-radius:4px;z-index:2;color:#9fe;font-family:var(--f-pixel);font-size:7px;padding:3px;line-height:1.25;overflow:hidden}
+.monitor.lit{background:#173a5c}
+.actor.doc{left:82%;bottom:calc(18% + 30px);z-index:1}
+.cme{left:24%}
+.cme.at-desk{left:46%}
+.rx{border:2px solid var(--k);border-radius:12px;background:#fffdf6;padding:8px 10px;font-size:13px;position:relative}
+.rx h4{margin:0 0 3px;font-family:var(--f-display);font-weight:400;font-size:15px}
+.rx ul{margin:0;padding-left:18px}
+.rx del{color:var(--muted)} .rx ins{text-decoration:none;color:var(--ok);font-weight:700;background:#e5f6ee;border-radius:4px;padding:0 3px}
+.rx .empty{color:var(--muted);font-size:12.5px}
+.rx .ap{position:absolute;right:10px;top:8px;border:3px solid var(--warn);color:var(--warn);font-family:var(--f-display);border-radius:50%;width:48px;height:48px;display:grid;place-items:center;transform:rotate(-14deg);font-size:15px;animation:stamp .35s cubic-bezier(.3,1.6,.6,1)}
+.outs{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px}
+.outs span{font-size:11px;background:var(--arc-soft);color:var(--arc);border-radius:6px;padding:1px 6px;animation:popin .3s backwards}
+.outs span:nth-child(2){animation-delay:.15s}.outs span:nth-child(3){animation-delay:.3s}
+.steps{display:flex;flex-direction:column;gap:5px}
+.step{display:flex;align-items:center;gap:8px;text-align:left;border:2px solid var(--line);border-bottom-width:4px;background:var(--panel);border-radius:12px;padding:7px 10px;font-family:var(--f-display);font-size:15px}
+.step i{font-style:normal;font-family:var(--f-pixel);font-size:11px;width:20px;height:20px;border-radius:50%;display:grid;place-items:center;background:var(--soft);border:2px solid var(--line);flex:none}
+.step em{margin-left:auto;font-style:normal;font-family:var(--f-pixel);font-size:11px;color:var(--clay)}
+.step.now{border-color:var(--clay);background:var(--clay-soft);animation:wiggle 1.6s infinite}
+.step.now i{background:var(--clay);color:#fff;border-color:var(--clay)}
+.step.done{opacity:.55}.step.done i{background:var(--ok);border-color:var(--ok);color:#fff}
+.step:disabled{cursor:default}
+.ward{position:absolute;inset:0;background:linear-gradient(#f3f0fb 0 60%,#ddd8ee 60%);display:flex;flex-direction:column;justify-content:flex-end;padding:10px}
+.beds{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:6px}
+.bed{border:2px solid var(--k);border-bottom-width:5px;border-radius:12px;background:#fff;padding:8px 4px 6px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:12px;font-weight:600;position:relative}
+.bed .bd{width:80%;height:22px;background:#dfe9f7;border:2px solid var(--k);border-radius:6px 6px 2px 2px;position:relative}
+.bed .bd::before{content:"";position:absolute;left:4px;top:3px;width:14px;height:10px;background:#fff;border:2px solid var(--k);border-radius:4px}
+.bed .p{font-family:var(--f-pixel);font-size:14px;padding:0 6px;border-radius:5px;color:#fff}
+.bed .p1{background:var(--warn)}.bed .p2{background:#e8902e}.bed .p3{background:#6aa0d8}
+.bed.done{background:#e5f6ee;opacity:.7}.bed.done::after{content:"✓";position:absolute;top:2px;right:6px;color:var(--ok);font-size:18px;font-weight:700}
+.bed.wrong{animation:shake .35s}
+@keyframes shake{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.wardmsg{text-align:center;font-family:var(--f-display);font-size:16px;min-height:24px}
+.wardmsg.good{color:var(--ok)}.wardmsg.bad{color:var(--warn)}
+.actor.nurse{left:50%;bottom:52%}
+
+/* S5 shared view */
+.shared{position:absolute;inset:0;background:linear-gradient(#fdf7ee,#f1e6d6);display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:12px 10px 10px;align-items:stretch;transition:grid-template-columns .4s}
+.shared.m-pt{grid-template-columns:1fr 0fr}.shared.m-dr{grid-template-columns:0fr 1fr}
+.scr{border:3px solid var(--k);border-radius:18px;background:#fff;padding:12px 8px 8px;display:flex;flex-direction:column;gap:6px;text-align:left;overflow:hidden;min-width:0;position:relative;transition:opacity .3s}
+.shared.m-pt .scr.d,.shared.m-dr .scr.p{opacity:0;padding:0;border-width:0}
+.scr .who{font-family:var(--f-pixel);font-size:9.5px;color:#fff;align-self:flex-start;border-radius:5px;padding:0 6px;white-space:nowrap}
+.scr.p .who{background:var(--clay)}.scr.d .who{background:var(--arc)}
+.scr.p{background:#fff8f2}
+.scr.d{background:#f3f7fd;font-family:var(--f-pixel)}
+.scr svg{width:100%;height:auto;flex:none}
+.scr .pt{font-family:var(--f-hand);font-size:18px;line-height:1.2;font-weight:700}
+.scr .dr{font-size:11px;line-height:1.5;color:#22406f}
+.scr .mm{display:flex;align-items:flex-end;gap:6px}
+.same{position:absolute;left:50%;top:6px;transform:translateX(-50%);font-family:var(--f-pixel);font-size:9px;background:var(--k);color:#fff;border-radius:5px;padding:0 6px;z-index:3;white-space:nowrap}
+.shared.m-pt .same,.shared.m-dr .same{display:none}
+.gift{width:100%;border:2px solid var(--k);border-bottom-width:5px;border-radius:14px;padding:10px;font-family:var(--f-display);font-size:18px;background:#ffe9a8;animation:wiggle 1.4s infinite}
+.gift.opened{background:#e5f6ee;animation:none}
+.modal{position:absolute;inset:0;z-index:35;background:#25303ccc;display:grid;place-items:center;padding:20px;animation:fadein .25s}
+.mbox{width:100%;max-width:340px;background:var(--panel);border:3px solid var(--k);border-radius:18px;box-shadow:4px 4px 0 var(--k);padding:14px;display:flex;flex-direction:column;gap:10px;text-align:center}
+.mbox h3{margin:0;font-family:var(--f-display);font-weight:400;font-size:22px}
+.minihome{position:relative;height:180px;border:2px solid var(--k);border-radius:12px;overflow:hidden}
+.newbadge{position:absolute;left:6px;top:6px;z-index:5;font-family:var(--f-pixel);font-size:9px;background:var(--warn);color:#fff;border-radius:5px;padding:0 6px}
+
+/* S6 ending */
+.endbg{position:absolute;inset:0;background:radial-gradient(circle at 50% 46%,#fff 0,#eaf1fb 55%,#dbe6f5 100%)}
+.endbg svg{position:absolute;inset:0;width:100%;height:100%}
+.spiral{fill:none;stroke:var(--arc);stroke-width:3.5;stroke-linecap:round;stroke-dasharray:1;stroke-dashoffset:0}
+.spiral.drawing{animation:draw 1.6s ease-out}
+@keyframes draw{from{stroke-dashoffset:1}}
+.lab{font-family:var(--f-pixel);font-size:11px;fill:var(--ink)}
+.endme{position:absolute;left:50%;top:46%;transform:translate(-50%,-50%)}
+.clear{position:absolute;left:0;right:0;top:8px;text-align:center;font-family:var(--f-pixel);z-index:3}
+.clear .big{font-size:30px;color:var(--clay);text-shadow:2px 2px 0 #fff;animation:popin .5s}
+.clear .s{font-size:10.5px;color:var(--muted)}
+.laps{position:absolute;left:10px;bottom:8px;font-family:var(--f-pixel);font-size:11px;background:#fff;border:2px solid var(--k);border-radius:7px;padding:1px 7px;z-index:3}
+.gb{font-family:var(--f-hand);font-size:19px;line-height:1.25;background:var(--panel);border:2px dashed var(--line);border-radius:12px;padding:6px 10px}
+.gb small{font-family:var(--f-pixel);font-size:9.5px;color:var(--muted);display:block}
+.flow{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;align-items:center;gap:4px;text-align:center}
+.flow div{background:var(--panel);border:2px solid var(--k);border-radius:10px;padding:3px 2px}
+.flow small{display:block;font-size:10.5px;color:var(--muted)}
+.flow strong{font-family:var(--f-pixel);font-size:15px;font-weight:400}
+.flow i{font-style:normal;color:var(--muted)}
+.btns{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.btns .go{font-size:16px;padding:9px}
+.friendv{position:relative;height:200px;border:2px solid var(--k);border-radius:12px;overflow:hidden;background:linear-gradient(#ffd9e8,#fff0f6 70%)}
+.friendv .ground{background:repeating-linear-gradient(90deg,#c9e3a6 0 16px,#b6d78f 16px 32px)}
+.friendv .bldg{bottom:30%;width:30%}
+.friendv .roof{background:#e07aa5}
+.confetti{position:absolute;inset:0;pointer-events:none;z-index:50;overflow:hidden}
+.confetti i{position:absolute;top:-12px;width:8px;height:12px;animation:fall 1.8s linear forwards}
+@keyframes fall{to{transform:translateY(105dvh) rotate(540deg)}}
+
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+@media (max-height:640px){.logo{font-size:46px}.village{min-height:190px}.ctl{gap:7px}.head h2{font-size:18px}}
+
+/* 데스크톱: 폰 껍데기 — 화면이 커져도 폰 크기 유지 */
+@media (min-width:600px){
+  html{--ph:min(844px,calc(100vh - 48px));height:100%;background:#cfdceb!important;display:grid;place-items:center;overflow:hidden}
+  body{position:relative!important;width:390px!important;height:var(--ph)!important;min-height:0!important;margin:0!important;overflow:hidden!important;border-radius:44px;transform:translateZ(0);box-shadow:0 0 0 10px #15171f,0 0 0 11px #3b4050,0 30px 80px rgba(0,0,0,.45)}
+  #app{height:100%!important;max-width:none!important}
+  .ctl{max-height:calc(var(--ph)*.56)}
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <header class="hud" id="hud">
+    <div class="timer" id="timer" aria-label="플레이 시간">00:00</div>
+    <div class="loopline" id="loopline" aria-label="환자 여정"><b>W</b><i>›</i><b>M1</b><i>›</i><b>M2</b><i>›</i><b>M3</b><i>›</i><b>W</b></div>
+    <button class="icon-btn" id="mute" aria-label="소리 끄기">🔊</button>
+    <div class="coin" id="coinhud" aria-label="루프 코인"><span class="L">L</span><span id="coinNum">0</span></div>
+  </header>
+
+  <main id="main">
+    <!-- SCENE 1 · 내 방 -->
+    <section class="scene" id="s1">
+      <div class="stage" id="roomStage"></div>
+      <div class="ctl">
+        <div class="head"><span class="tag">SCENE 1 · W 우리집</span><h2>내 방 꾸미기</h2></div>
+        <div class="qcard">
+          <div class="qtop"><span class="sys" id="qstep">첫 실행 1/5</span><span class="dots" id="qdots"></span></div>
+          <div class="qtxt" id="qtxt"></div>
+          <div class="row" id="qopts"></div>
+        </div>
+        <div class="sys" id="s1sys"></div>
+        <div id="s1next"></div>
+      </div>
+    </section>
+
+    <!-- SCENE 2 · 루피 -->
+    <section class="scene" id="s2">
+      <div class="stage" id="walk">
+        <div class="out">
+          <div class="cloud c1"></div><div class="cloud c2"></div>
+          <div class="hill" style="left:-15%"></div><div class="hill" style="left:55%;width:60%;height:24%"></div>
+          <div class="tree" style="left:4%"></div><div class="tree" style="right:3%"></div>
+          <div class="ground"></div>
+        </div>
+        <div class="scan"></div>
+        <div id="s2panel"></div>
+        <div class="actor" id="walkMe" style="left:28%"><div class="bub l" id="sayMe" hidden></div><canvas class="sp" data-look="me" data-scale="4"></canvas></div>
+        <div class="actor lupy" id="walkLupy" style="left:70%;bottom:32%"><div class="bub r ai" id="sayAi" hidden></div><span class="zz" id="zz2">z z</span><span class="glow"></span><canvas class="sp" data-fairy="1" data-scale="5"></canvas></div>
+      </div>
+      <div class="ctl">
+        <div class="head"><span class="tag">SCENE 2 · W 일상</span><h2>마을 산책: 루피에게 말 걸기</h2></div>
+        <div class="row" id="qa"></div>
+        <div class="row"><button class="chip" id="tiredBtn">😪 피곤한 하루 보내기</button></div>
+        <div class="sys" id="sys2"></div>
+        <div id="s2next"></div>
+      </div>
+    </section>
+
+    <!-- SCENE 3 · 운동·식단 -->
+    <section class="scene" id="s3">
+      <div class="stage" id="s3stage">
+        <div id="paneGym">
+          <div class="gymbg"><div class="mirror"></div></div>
+          <button class="lifter" id="lifter" aria-label="들어올리기"><span class="bell" id="bellWrap"></span><canvas class="sp body" data-look="me" data-scale="4"></canvas></button>
+          <div class="actor lupy gymLupy"><div class="bub r ai" id="sayGym" hidden></div><span class="glow"></span><canvas class="sp" data-fairy="1" data-scale="4"></canvas></div>
+          <button class="tapzone" id="tapzone" disabled aria-label="연타 영역"></button>
+          <div class="gauge"><span id="gymTime">05.0</span><div class="bar"><div class="band" id="band"></div><div class="fill" id="fill"></div></div><span id="cnt">0회</span></div>
+        </div>
+        <div id="paneDiet" hidden>
+          <div class="table"></div>
+          <div class="plate" id="plate"></div>
+          <div class="actor lupy dietLupy"><div class="bub r ai" id="sayDiet" hidden></div><span class="glow"></span><canvas class="sp" data-fairy="1" data-scale="4"></canvas></div>
+        </div>
+      </div>
+      <div class="ctl">
+        <div class="head"><span class="tag">SCENE 3 · W 웰니스</span><h2 id="s3title">헬스장: 오늘 내 몸만큼</h2></div>
+        <div id="ctlGym" class="row" style="display:grid;grid-template-columns:1fr 1.4fr;gap:7px">
+          <button class="go ghost" id="gymStart">시작 (5초)</button>
+          <button class="go" id="gymLift" disabled>💪 들어올리기!</button>
+        </div>
+        <div id="ctlDiet" hidden><div class="foods" id="foods"></div></div>
+        <div id="s3next"></div>
+      </div>
+    </section>
+
+    <!-- SCENE 4 · 병원 -->
+    <section class="scene" id="s4">
+      <div class="stage">
+        <div id="paneClinic">
+          <div class="clinic"></div>
+          <div class="kiosk glow" id="kiosk"><div class="kscreen" id="kscreen">CHECK<br>IN</div></div>
+          <div class="monitor" id="monitor">PATIENT<br>SUMMARY<br>…</div>
+          <div class="desk"></div>
+          <div class="actor doc"><div class="bub r" id="sayDoc" hidden></div><canvas class="sp" data-look="doc" data-scale="3"></canvas></div>
+          <div class="actor cme" id="cme"><div class="bub l" id="sayPt" hidden></div><canvas class="sp" data-look="me" data-scale="3"></canvas></div>
+          <div class="isig" id="sysC" style="justify-content:center">마을 병원 도착! 키오스크부터</div>
+        </div>
+        <div id="paneWard" hidden>
+          <div class="ward">
+            <div class="actor nurse"><div class="bub c" id="sayNurse">알람 대신 순서만 보면 돼요. P1부터!</div><canvas class="sp" data-look="nurse" data-scale="3"></canvas></div>
+            <div class="beds" id="beds">
+              <button class="bed" data-p="3"><span class="bd"></span>Bed 118<span class="p p3">P3</span>관찰</button>
+              <button class="bed" data-p="1"><span class="bd"></span>Bed 214<span class="p p1">P1</span>지금</button>
+              <button class="bed" data-p="2"><span class="bd"></span>Bed 307<span class="p p2">P2</span>10분 내</button>
+            </div>
+            <div class="wardmsg" id="wardmsg"></div>
+          </div>
+        </div>
+      </div>
+      <div class="ctl">
+        <div class="head"><span class="tag" id="s4tag">SCENE 4 · M1 외래</span><h2>마을 병원: 진료 받고 처방전</h2></div>
+        <div class="rx" id="rx"><h4>📋 내 처방전</h4><div id="rxBody"><span class="empty">진료를 받으면 여기에 채워져요.</span></div></div>
+        <div class="steps" id="steps">
+          <button class="step" data-s="0"><i>1</i>키오스크 체크인<em>+10</em></button>
+          <button class="step" data-s="1"><i>2</i>의사쌤께 "출장이 잦아요"<em>+20</em></button>
+          <button class="step" data-s="2"><i>3</i>처방전 받기<em>+20</em></button>
+          <button class="step" data-s="3"><i>4</i>보너스: 병동 간호사 돕기<em>+30</em></button>
+        </div>
+        <div id="s4next"></div>
+      </div>
+    </section>
+
+    <!-- SCENE 5 · 집으로 -->
+    <section class="scene" id="s5">
+      <div class="stage">
+        <div class="shared" id="shared">
+          <span class="same">같은 데이터</span>
+          <button class="scr p" data-m="pt">
+            <span class="who">미니미 화면</span>
+            <svg viewBox="0 0 120 50" aria-hidden="true"><polyline fill="none" stroke="var(--clay)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" points="4,40 20,38 36,36 52,34 68,30 84,26 100,22 116,18"/><circle cx="116" cy="18" r="5" fill="#ffd76a" stroke="var(--k)" stroke-width="1.5"/></svg>
+            <span class="mm"><canvas class="sp" data-look="me" data-scale="2"></canvas><span class="pt">요즘 혈압이 살짝 올라가는 흐름이에요. 소금 조금만 줄여볼까요?</span></span>
+          </button>
+          <button class="scr d" data-m="dr">
+            <span class="who">의사 화면</span>
+            <svg viewBox="0 0 120 50" aria-hidden="true"><g stroke="#c9d6ea" stroke-width=".6"><line x1="0" y1="10" x2="120" y2="10"/><line x1="0" y1="25" x2="120" y2="25"/><line x1="0" y1="40" x2="120" y2="40"/></g><polyline fill="none" stroke="var(--arc)" stroke-width="2.5" stroke-linejoin="round" points="4,40 20,38 36,36 52,34 68,30 84,26 100,22 116,18"/><g fill="var(--arc)"><circle cx="4" cy="40" r="1.8"/><circle cx="36" cy="36" r="1.8"/><circle cx="68" cy="30" r="1.8"/><circle cx="100" cy="22" r="1.8"/><circle cx="116" cy="18" r="1.8"/></g></svg>
+            <span class="dr">SBP 138 mmHg<br>14일 상승 추세<br>계획: 유지 · 재확인 2주</span>
+          </button>
+        </div>
+      </div>
+      <div class="ctl">
+        <div class="head"><span class="tag">SCENE 5 · M3 퇴원 후</span><h2>집으로: 같은 그래프, 다른 말투</h2></div>
+        <div class="row grid3" id="viewRow"><button class="chip" data-m="pt">미니미 화면</button><button class="chip" data-m="dr">의사 화면</button><button class="chip" data-m="" aria-pressed="true">둘 다</button></div>
+        <button class="gift" id="gift">🎁 퇴원 선물 열기</button>
+        <div id="s5next"></div>
+      </div>
+    </section>
+
+    <!-- SCENE 6 · 엔딩 -->
+    <section class="scene" id="s6">
+      <div class="stage">
+        <div class="endbg">
+          <svg viewBox="0 0 300 260" preserveAspectRatio="xMidYMid meet" aria-hidden="true"><path class="spiral" id="spiral" pathLength="1" d=""/><g id="spLabels"></g></svg>
+        </div>
+        <div class="clear"><div class="big" id="clearT">CLEAR 00:00</div><div class="s" id="clearS">목표 02:05</div></div>
+        <div class="endme"><canvas class="sp" data-look="me" data-scale="3"></canvas></div>
+        <div class="laps" id="laps">LAP 1 · COIN 0</div>
+      </div>
+      <div class="ctl">
+        <div class="head"><span class="tag">SCENE 6 · 엔딩</span><h2>지나온 길이 나선으로</h2></div>
+        <div class="gb" id="gb"><small>방명록</small><span></span></div>
+        <div class="btns">
+          <button class="go blue" id="lapBtn">🌀 한 바퀴 더 돌기</button>
+          <button class="go ghost" id="friendBtn">🏡 일촌 마을 놀러가기</button>
+        </div>
+        <div class="btns">
+          <button class="go ghost" id="homeBtn">🪴 내 방 보기</button>
+          <button class="go ghost" id="restart">↺ 처음부터</button>
+        </div>
+      </div>
+    </section>
+
+    <div id="card"><div><div class="t" id="cardT"></div><h3 id="cardH"></h3><p id="cardP"></p></div></div>
+  </main>
+
+  <!-- title + travel map -->
+  <div id="map">
+    <div class="ttl">
+      <h1 class="logo">루프 마을<span class="dot">.</span></h1>
+      <span class="today">today is… <b>내 건강 가꾸는 날</b></span>
+    </div>
+    <div class="village" id="village">
+      <div class="sun"></div><div class="cloud c1"></div><div class="cloud c2"></div>
+      <div class="ground"></div><div class="path"></div>
+      <div class="bldg" style="left:12.5%"><div class="roof"></div><div class="wall"><span class="win"></span><span class="door"></span></div><span class="sign">W<small>우리집</small></span></div>
+      <div class="bldg h" style="left:37.5%"><div class="roof"></div><div class="wall"><span class="cross"></span><span class="door"></span></div><span class="sign">M1<small>외래</small></span></div>
+      <div class="bldg h" style="left:62.5%"><div class="roof"></div><div class="wall"><span class="cross"></span><span class="win"></span><span class="door"></span></div><span class="sign">M2<small>병동</small></span></div>
+      <div class="bldg" style="left:87.5%"><div class="roof"></div><div class="wall"><span class="win"></span><span class="door"></span><span class="pot">🪴</span></div><span class="sign">M3<small>다시 우리집</small></span></div>
+      <div class="actor lupy" id="mapLupy" style="left:4%"><span class="glow"></span><canvas class="sp" data-fairy="1" data-scale="3"></canvas></div>
+      <div class="actor" id="walker" style="left:6%"><div class="bub l" id="mapBub">어디부터 가볼까?</div><canvas class="sp" data-look="me" data-scale="3"></canvas></div>
+    </div>
+    <div class="tcap" id="tcap"></div>
+    <div class="start">
+      <button class="go" id="startBtn">▶ 시작하기 · BGM ON</button>
+    </div>
+  </div>
+
+  <template id="roomTpl">
+    <div class="room">
+      <div class="rwin"></div><div class="poster">MY<br>LOOP</div>
+      <div class="floor"></div><div class="rug"></div>
+      <div class="slot itemL"></div><div class="slot itemR"></div>
+      <div class="actor rlupy lupy"><span class="zz">z z</span><span class="glow"></span><canvas class="sp" data-fairy="1" data-scale="3"></canvas></div>
+      <button class="me actor" aria-label="미니미"><div class="bub greet"></div><canvas class="sp" data-look="me" data-scale="5"></canvas></button>
+    </div>
+  </template>
+</div>
+
+<script>
+(()=>{
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const wait=ms=>new Promise(r=>setTimeout(r,reduce?Math.min(ms,60):ms));
+
+/* ---------- sound (WebAudio, no files) ---------- */
+let AC=null, master=null, soundOn=true, bgmTick=null;
+function initAudio(){
+  if(AC) return; const C=window.AudioContext||window.webkitAudioContext; if(!C) return;
+  AC=new C(); master=AC.createGain(); master.gain.value=.6; master.connect(AC.destination);
+}
+function tone(f,d,type='square',v=.06,when=0,slide=0){
+  if(!AC||!soundOn) return;
+  const t=AC.currentTime+when, o=AC.createOscillator(), g=AC.createGain();
+  o.type=type; o.frequency.setValueAtTime(f,t); if(slide) o.frequency.exponentialRampToValueAtTime(slide,t+d);
+  g.gain.setValueAtTime(v,t); g.gain.exponentialRampToValueAtTime(.0001,t+d);
+  o.connect(g); g.connect(master); o.start(t); o.stop(t+d+.03);
+}
+function noise(d,v){
+  if(!AC||!soundOn) return;
+  const b=AC.createBuffer(1,AC.sampleRate*d|0,AC.sampleRate), a=b.getChannelData(0);
+  for(let i=0;i<a.length;i++) a[i]=(Math.random()*2-1)*(1-i/a.length)**2;
+  const s=AC.createBufferSource(), g=AC.createGain(); g.gain.value=v; s.buffer=b; s.connect(g); g.connect(master); s.start();
+}
+const SFX={
+  tap:()=>tone(880,.05,'square',.03),
+  coin:()=>{tone(988,.07,'square',.05);tone(1319,.2,'square',.05,.07)},
+  stamp:()=>{tone(150,.3,'sine',.5,0,45);noise(.15,.35)},
+  thud:()=>{tone(120,.16,'sine',.4,0,55);noise(.05,.12)},
+  sparkle:()=>[1568,2093,2637,3136].forEach((f,i)=>tone(f,.14,'triangle',.035,i*.05)),
+  bad:()=>tone(240,.18,'square',.04,0,150),
+  ok:()=>{tone(660,.08,'triangle',.06);tone(990,.16,'triangle',.06,.08)},
+  step:()=>tone(520+Math.random()*80,.03,'triangle',.025),
+  fanfare:()=>[523,659,784,1047,0,784,1047].forEach((f,i)=>f&&tone(f,i===6?.6:.13,'square',.055,i*.12))
+};
+// gentle pentatonic BGM: C – Am – F – G arpeggio
+const CH=[[261.6,329.6,392,523.3],[220,261.6,329.6,440],[174.6,220,261.6,349.2],[196,246.9,293.7,392]];
+let beat=0;
+function startBGM(){
+  if(bgmTick||!AC) return;
+  bgmTick=setInterval(()=>{
+    if(!soundOn) return;
+    const c=CH[(beat>>3)%4], i=beat%8, n=[0,1,2,3,2,1,2,1][i];
+    tone(c[n]*2,.26,'triangle',.018);
+    if(i===0) tone(c[0]/2,.9,'sine',.05);
+    if(i===4) tone(c[2]/2,.5,'sine',.03);
+    beat++;
+  },300);
+}
+$('#mute').addEventListener('click',()=>{ soundOn=!soundOn; $('#mute').textContent=soundOn?'🔊':'🔈'; $('#mute').setAttribute('aria-label',soundOn?'소리 끄기':'소리 켜기'); });
+
+/* ---------- pixel sprites (기획안의 오리지널 미니미) ---------- */
+const BASE={k:'#3b2a2a',s:'#ffe1c9',b:'#ff9fb0',e:'#2a1f1f',m:'#d9536b',w:'#ffffff',f:'#3b2a2a',g:'#5fb35a',o:'#c2754d',r:'#ff5a6e',d:'#3b3f4a',a:'#9aa3ad',y:'#9b7fd4',Y:'#b9a3e8',u:'#bfe3ff',U:'#8fcaf7'};
+const LOOKS={me:{h:'#5a3b2e',c:'#4f8cff',p:'#3d4f7a'},doc:{h:'#2b2b33',c:'#f4f6f8',p:'#56627a'},nurse:{h:'#7a4a2e',c:'#7fd3c0',p:'#5aa897'},friend:{h:'#e07aa5',c:'#ffcf5a',p:'#7a5ab8'}};
+const HEAD=["....kkkkkkkk....","..kkhhhhhhhhkk..",".khhhhhhhhhhhhk.",".khhhhhhhhhhhhk.","khhhhsshhsshhhhk","khhsssssssssshhk","khsssssssssssshk","khsseesssseesshk","khsseesssseesshk","khsbbssssssbbshk",".ksssssmmsssssk.","..kssssssssssk..","...kkkkkkkkkk...","....kcccccck....","...kcccccccck...","..ksccccccccsk..","..ksccccccccsk..","...kppppppppk..."];
+const LEGS_A=["...kpppkkpppk...","...kffk..kffk..."], LEGS_B=["...kppk..kppk...","..kffk....kffk.."];
+const PLANT=["...gg...",".g.gg.g.",".gggggg.","..gggg..","...gg...",".kkkkkk.",".kooook.","..kook..","..kkkk.."];
+const HEART=[".rr..rr.","rrrrrrrr","rrrrrrrr",".rrrrrr.","..rrrr..","...rr..."];
+const BELL=["dd..........dd","ddaaaaaaaaaadd","dd..........dd"];
+const MAT=["yyyyyyyyyyyyyyyy","yYyYyYyYyYyYyYyY","yyyyyyyyyyyyyyyy"];
+const FAIRY=["uu.......uu","uUu.kkk.uUu","uUukYYYkuUu",".uuYYYYYuu.","..kYeYeYk..","..kYbmbYk..","...kYYYk...","....kyk....","....y.y...."];
+function draw(cv,rows,look,scale){
+  const w=rows[0].length,h=rows.length; cv.width=w; cv.height=h;
+  cv.style.width=w*scale+'px'; cv.style.height=h*scale+'px';
+  const x=cv.getContext('2d'); x.clearRect(0,0,w,h);
+  for(let j=0;j<h;j++) for(let i=0;i<w;i++){ const c=rows[j][i]; if(c==='.') continue; x.fillStyle=(look&&look[c])||BASE[c]||'#000'; x.fillRect(i,j,1,1); }
+}
+function person(cv,frame=0){ draw(cv,HEAD.concat(frame?LEGS_B:LEGS_A),LOOKS[cv.dataset.look||'me'],+cv.dataset.scale||3); }
+function paintSprites(root=document){
+  $$('canvas.sp[data-look]',root).forEach(c=>person(c));
+  $$('canvas.sp[data-fairy]',root).forEach(c=>draw(c,FAIRY,null,+c.dataset.scale||3));
+}
+function sprite(rows,scale){ const c=document.createElement('canvas'); c.className='sp'; draw(c,rows,null,scale); return c; }
+paintSprites();
+
+/* ---------- state ---------- */
+let S;
+function fresh(){ return {coins:0,earned:new Map(),tired:false,tiredCount:0,wall:'#f6dcc2',greet:'오늘 컨디션 괜찮아 보여요',item:'plant',gym:'mat',bonus:false,lap:1,t0:0,tEnd:0,stop:-1,done:new Set()}; }
+S=fresh();
+
+const hud=$('#coinhud'), coinNum=$('#coinNum');
+function earn(key,n){
+  if(S.earned.has(key)) return; S.earned.set(key,n); S.coins+=n; coinNum.textContent=S.coins;
+  hud.classList.remove('bump'); void hud.offsetWidth; hud.classList.add('bump'); SFX.coin();
+  const p=document.createElement('span'); p.className='plus'; p.textContent='+'+n; $('#app').appendChild(p); setTimeout(()=>p.remove(),1000);
+  renderLaps();
+}
+function lit(key){ $$(`[data-lit="${key}"]`).forEach(t=>t.classList.add('lit')); }
+function say(el,text){ if(!text){ el.hidden=true; return; } el.hidden=false; el.textContent=text; el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop'); }
+function stamp(stage,text){ const s=document.createElement('div'); s.className='stamp'; s.textContent=text; stage.appendChild(s); SFX.stamp(); setTimeout(()=>s.remove(),1500); if(navigator.vibrate) navigator.vibrate(30); }
+function nextBtn(slot,label,fn,cls=''){ slot.innerHTML=''; const b=document.createElement('button'); b.className='go '+cls; b.textContent=label; b.addEventListener('click',()=>{ SFX.tap(); b.disabled=true; fn(); },{once:true}); slot.appendChild(b); }
+
+/* ---------- timer & loop line ---------- */
+const timerEl=$('#timer'); let timerRaf=null;
+const fmt=ms=>{ const s=Math.floor(ms/1000); return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0'); };
+function tickTimer(){ const ms=performance.now()-S.t0; timerEl.textContent=fmt(ms); timerEl.classList.toggle('over',ms>125000); timerRaf=requestAnimationFrame(tickTimer); }
+function setStop(i){ S.stop=i; $$('#loopline b').forEach((b,j)=>{ b.classList.toggle('on',j===i); b.classList.toggle('done',j<i); }); }
+
+/* ---------- title / travel map ---------- */
+const map=$('#map'), walker=$('#walker'), wcv=$('canvas',walker), mapLupy=$('#mapLupy'), mapBub=$('#mapBub');
+const ST=[12.5,37.5,62.5,87.5,12.5]; let curX=6;
+function placeWalker(x){ walker.style.left=x+'%'; mapLupy.style.left=Math.max(2,x-6)+'%'; }
+function travel(i,line){
+  return new Promise(res=>{
+    map.classList.add('travel'); map.classList.remove('off');
+    $('#tcap').innerHTML='<small>'+['W','M1','M2','M3','W'][i]+'</small>'+['우리집','마을 병원 · 외래','병동','다시 우리집','한 바퀴 완주!'][i];
+    $$('.bldg',map).forEach((b,j)=>b.classList.toggle('on',j===(i===4?0:i)));
+    mapBub.hidden=true;
+    // loop back home: walk off the right edge, re-enter from the left
+    const legs = i===4 ? [[curX,106],[-6,ST[4]]] : [[curX,ST[i]]];
+    let k=0, frame=0;
+    function leg(){
+      const [from,to]=legs[k], dur=reduce?0:Math.max(500,Math.abs(to-from)*22), t0=performance.now(); let last=0;
+      function step(now){
+        const p=dur?Math.min(1,(now-t0)/dur):1; curX=from+(to-from)*p; placeWalker(curX);
+        if(now-last>150){ frame^=1; person(wcv,frame); SFX.step(); last=now; }
+        if(p<1) return requestAnimationFrame(step);
+        if(++k<legs.length) return leg();
+        person(wcv,0); say(mapBub,line); setStop(i); earn('b'+i,5);
+        wait(1100).then(()=>{ map.classList.add('off'); res(); });
+      }
+      requestAnimationFrame(step);
+    }
+    leg();
+  });
+}
+async function card(t,h,p){
+  $('#cardT').textContent=t; $('#cardH').textContent=h; $('#cardP').textContent=p;
+  const c=$('#card'); c.classList.add('on'); await wait(1050); c.classList.remove('on');
+}
+function show(id){ $$('.scene').forEach(s=>s.classList.toggle('on',s.id===id)); }
+
+$('#startBtn').addEventListener('click',async()=>{
+  $('#startBtn').disabled=true; $('#app').classList.add('playing');
+  initAudio(); if(AC&&AC.state==='suspended') AC.resume(); startBGM(); SFX.sparkle();
+  S.t0=performance.now(); cancelAnimationFrame(timerRaf); tickTimer();
+  await travel(0,'오늘은 내 건강 가꾸는 날!');
+  startS1();
+});
+
+/* ---------- SCENE 1 · 내 방 ---------- */
+const ROOMQ=[
+  {k:'wall',q:'벽지는 어떤 톤이 좋아요?',o:[['라이트','#f4f8fc'],['다크','#2f3949'],['웜','#f6dcc2']]},
+  {k:'greet',q:'방에 들어오면 뭐라고 인사할까요?',o:[['이름만','YK님, 왔어요?'],['컨디션 한마디','오늘 컨디션 괜찮아 보여요'],['조용히','']]},
+  {k:'item',q:'방에 무엇을 놓을까요?',o:[['🪴 루틴(화분)','plant'],['❤️ 바이탈(하트)','heart'],['빈 공간','']]},
+  {k:'gym',q:'홈짐도 하나 둘까요?',o:[['요가매트','mat'],['덤벨','bell'],['둘 다','both'],['없음','']]},
+  {k:'own',q:'마지막! 이 방은 누구 거예요?',o:[['🙋 내 방이야!','me']]}
+];
+function makeRoom(target,{mini=false,scale}={}){
+  target.innerHTML=''; const r=$('#roomTpl').content.firstElementChild.cloneNode(true);
+  if(mini){ r.classList.add('mini'); $('canvas[data-look]',r).dataset.scale=scale||3; }
+  target.appendChild(r); paintSprites(r); paintRoom(r); return r;
+}
+function paintRoom(r){
+  r.style.setProperty('--wall',S.wall); r.classList.toggle('dark',S.wall==='#2f3949');
+  const g=$('.greet',r); g.textContent=S.greet; g.hidden=!S.greet;
+  const L=$('.itemL',r), R=$('.itemR',r), big=!r.classList.contains('mini');
+  L.innerHTML=''; R.innerHTML='';
+  if(S.item) L.appendChild(sprite(S.item==='plant'?PLANT:HEART,big?5:3));
+  if(S.bonus){ const p=sprite(PLANT,big?4:3); L.appendChild(p); }
+  if(S.gym==='mat'||S.gym==='both') R.appendChild(sprite(MAT,big?4:2));
+  if(S.gym==='bell'||S.gym==='both') R.appendChild(sprite(BELL,big?4:2));
+}
+let qi=0, roomEl=null;
+function startS1(){
+  show('s1'); qi=0; roomEl=makeRoom($('#roomStage'));
+  const me=$('.me',roomEl), g=$('.greet',roomEl);
+  me.addEventListener('click',()=>{
+    me.classList.remove('jump'); void me.offsetWidth; me.classList.add('jump'); SFX.ok();
+    g.hidden=false; g.textContent='헤헤, 반가워요!'; clearTimeout(me._t);
+    me._t=setTimeout(()=>paintRoom(roomEl),1200);
+  });
+  renderQ();
+}
+function renderQ(){
+  const q=ROOMQ[qi];
+  $('#qstep').textContent='첫 실행 '+(qi+1)+'/5';
+  $('#qdots').innerHTML=ROOMQ.map((_,j)=>`<i class="${j<=qi?'on':''}"></i>`).join('');
+  $('#qtxt').textContent=q.q; const box=$('#qopts'); box.innerHTML='';
+  q.o.forEach(([label,v])=>{
+    const b=document.createElement('button'); b.className='chip'+(q.k==='own'?' hot':''); b.textContent=label;
+    b.addEventListener('click',async()=>{
+      SFX.tap(); $$('button',box).forEach(x=>{ x.setAttribute('aria-pressed',String(x===b)); x.disabled=true; });
+      if(q.k==='own'){
+        stamp($('#roomStage'),'공간의 주인 ✓'); lit('own'); earn('room',10);
+        $('#s1sys').textContent='';
+        nextBtn($('#s1next'),'마을 산책 가기 ▶',startS2); return;
+      }
+      S[q.k]=v; paintRoom(roomEl); await wait(380); qi++; renderQ();
+    });
+    box.appendChild(b);
+  });
+}
+
+/* ---------- SCENE 2 · 루피 ---------- */
+const QA=[['오늘 운동해도 돼?','오늘은 가볍게 30분 걷기면 충분해요.'],['왜?','이틀 동안 잠이 평소보다 짧았어요.'],['내 몸 보여줘','SCAN'],['자세히','IRS+ 분석표랑 2주 그래프 열어둘게요.']];
+let asked=0, scanning=false;
+const walk=$('#walk'), walkMe=$('#walkMe'), sayMe=$('#sayMe'), sayAi=$('#sayAi'), sys2=$('#sys2'), zz2=$('#zz2'), panel2=$('#s2panel');
+function lupyTalk(t){ zz2.hidden=true; say(sayAi,t); SFX.sparkle(); }
+function lupyQuiet(){ say(sayAi,''); zz2.hidden=false; }
+function renderQA(){
+  const box=$('#qa'); box.innerHTML='';
+  QA.forEach(([q],i)=>{
+    const b=document.createElement('button'); b.className='chip'+(i===asked?' hot':''); b.textContent=(i>asked?'🔒 ':'')+q; b.disabled=i>asked;
+    b.addEventListener('click',()=>askQ(i)); box.appendChild(b);
+  });
+}
+async function askQ(i){
+  if(scanning) return; SFX.tap();
+  const [q,a]=QA[i]; earn('q'+i,5); if(i===asked) asked++; renderQA(); lit('nav');
+  say(sayMe,q); lupyQuiet(); sys2.textContent=''; panel2.innerHTML='';
+  await wait(450);
+  if(a==='SCAN'){
+    scanning=true; lupyTalk('잠깐만요, 쭉 훑어볼게요…'); sys2.textContent='BODY SCAN';
+    walk.classList.remove('scanning'); void walk.offsetWidth; walk.classList.add('scanning');
+    for(let k=0;k<6;k++) tone(600+k*120,.08,'sine',.03,k*.3);
+    await wait(2400); walk.classList.remove('scanning'); sys2.textContent='';
+    panel2.innerHTML='<div class="selves"><div><b>iSignature</b>타고난 나<br>심혈관 민감</div><div><b>iPresent</b>지금의 나<br>수면·회복 약함</div><div><b>iFuture</b>되고 싶은 나<br>혈압 안정</div></div>';
+    lupyTalk('수면·회복 쪽이 조금 약해 보여요.'); scanning=false;
+  } else {
+    lupyTalk(a);
+    if(i===3) panel2.innerHTML='<div class="detail"><b>IRS+ 분석표 · 2주 그래프</b><svg viewBox="0 0 120 30" style="width:100%;height:34px"><polyline fill="none" stroke="#3d78dc" stroke-width="2.5" points="4,26 20,25 36,23 52,22 68,19 84,16 100,13 116,10"/></svg></div>';
+  }
+  if(!$('#s2next').firstChild) nextBtn($('#s2next'),'헬스장 & 식탁으로 ▶',startS3);
+}
+$('#tiredBtn').addEventListener('click',async()=>{
+  SFX.tap(); S.tiredCount++; S.tired=true; walkMe.classList.add('tired'); say(sayMe,''); panel2.innerHTML='';
+  if(S.tiredCount===1){
+    sys2.textContent='';
+    $('#tiredBtn').textContent='😪 한 번 더 피곤하기'; $('#tiredBtn').classList.add('hot');
+    await wait(500); lupyTalk('오늘은 좀 무리하지 않는 게 좋겠어요.'); earn('tired',5);
+  } else {
+    lupyQuiet(); sys2.textContent=''; lit('silent'); earn('silence',5);
+    $('#tiredBtn').classList.remove('hot'); $('#tiredBtn').disabled=true; $('#tiredBtn').textContent='🤫 루피가 참는 중';
+  }
+});
+async function startS2(){
+  await card('SCENE 2 · W 일상','마을 산책','요정 루피는 평소엔 조용해요');
+  show('s2'); renderQA(); lupyQuiet();
+}
+
+/* ---------- SCENE 3 · 운동 & 식단 ---------- */
+const MAXR=24, lifter=$('#lifter'), fill=$('#fill'), band=$('#band'), cnt=$('#cnt'), gymTime=$('#gymTime'), gymStart=$('#gymStart'), gymLift=$('#gymLift'), tapzone=$('#tapzone'), sayGym=$('#sayGym');
+$('#bellWrap').appendChild(sprite(BELL,5));
+let reps=0, running=false, gEnd=0, gRaf=null, gymTried=false;
+const bandRange=()=>S.tired?[5,9]:[11,16];
+function drawBand(){ const [a,b]=bandRange(); band.style.left=a/MAXR*100+'%'; band.style.width=(b-a)/MAXR*100+'%'; }
+function lift(e){
+  if(!running) return; if(e) e.preventDefault();
+  reps++; cnt.textContent=reps+'회'; fill.style.width=Math.min(100,reps/MAXR*100)+'%'; SFX.thud();
+  lifter.classList.add('up'); setTimeout(()=>lifter.classList.remove('up'),90);
+}
+[gymLift,tapzone].forEach(el=>el.addEventListener('pointerdown',lift));
+gymLift.addEventListener('keydown',e=>{ if(e.key===' '||e.key==='Enter') lift(e); });
+function gymTick(){
+  const left=Math.max(0,gEnd-performance.now()); gymTime.textContent=(left/1000).toFixed(1).padStart(4,'0');
+  if(left<=0) return gymFinish(); gRaf=requestAnimationFrame(gymTick);
+}
+function gymFinish(){
+  running=false; gymLift.disabled=true; tapzone.disabled=true; gymStart.disabled=false; gymStart.textContent='다시 하기'; gymTime.textContent='00.0';
+  const [a,b]=bandRange(); lit('how');
+  if(reps>=a&&reps<=b){ say(sayGym,'딱 좋아요! 오늘 운동은 이걸로 완료 ✓'); stamp($('#s3stage'),'운동 완료 ✓'); earn('gym',20); }
+  else if(reps<a){ say(sayGym,'조금만 더 해볼까요? 초록 구간까지 '+(a-reps)+'회 남았어요.'); SFX.bad(); }
+  else { say(sayGym,'오늘은 이 정도면 충분해요. 무리는 금물!'); SFX.bad(); }
+  if(!gymTried){ gymTried=true; nextBtn($('#s3next'),'식단 만들기 ▶',startDiet,'blue'); }
+}
+gymStart.addEventListener('click',()=>{
+  SFX.tap(); reps=0; cnt.textContent='0회'; fill.style.width='0%'; drawBand();
+  running=true; gymLift.disabled=false; tapzone.disabled=false; gymStart.disabled=true;
+  say(sayGym,'시작! 연타!'); gEnd=performance.now()+5000; cancelAnimationFrame(gRaf); gRaf=requestAnimationFrame(gymTick);
+});
+async function startS3(){
+  await card('SCENE 3 · W 웰니스','헬스장 & 식탁','초록 구간을 노려라!');
+  show('s3'); drawBand();
+  say(sayGym,S.tired?'어제 잠이 부족했죠. 오늘은 가볍게만 해요.':'컨디션 좋아요! 초록 구간까지만 해볼까요?');
+}
+// diet
+const FOODS=[{e:'🥗',n:'샐러드',t:'veg'},{e:'🐟',n:'고등어구이',t:'pro'},{e:'🍚',n:'현미밥',t:'grain'},{e:'🍜',n:'라면',t:'grain',salt:1},{e:'🍲',n:'김치찌개',t:'veg',salt:1},{e:'🍗',n:'치킨',t:'pro',salt:1}];
+const plateEl=$('#plate'), sayDiet=$('#sayDiet'); let plate=[];
+FOODS.forEach((f,i)=>{
+  const b=document.createElement('button'); b.className='food'; b.innerHTML='<span>'+f.e+'</span>'+f.n;
+  b.addEventListener('click',()=>{ SFX.tap(); if(plate.length<3){ plate.push(i); renderPlate(); } else say(sayDiet,'접시가 꽉 찼어요. 하나를 눌러 빼 주세요.'); });
+  $('#foods').appendChild(b);
+});
+function renderPlate(){
+  plateEl.innerHTML='';
+  plate.forEach((fi,idx)=>{ const b=document.createElement('button'); b.textContent=FOODS[fi].e; b.setAttribute('aria-label',FOODS[fi].n+' 빼기');
+    b.addEventListener('click',()=>{ SFX.tap(); plate.splice(idx,1); renderPlate(); }); plateEl.appendChild(b); });
+  for(let k=plate.length;k<3;k++){ const s=document.createElement('span'); s.className='slot'; plateEl.appendChild(s); }
+  dietFeedback();
+}
+function dietFeedback(){
+  if(plate.length<3){ say(sayDiet,plate.length?'좋아요, '+(3-plate.length)+'개 더 골라 볼까요?':'오늘 저녁 한 끼, 세 가지만 골라 볼까요?'); return; }
+  const it=plate.map(i=>FOODS[i]), salty=it.filter(f=>f.salt).length, ty=new Set(it.map(f=>f.t)); lit('what');
+  if(salty>=2){ say(sayDiet,'짠 음식이 겹쳤어요. 심혈관엔 하나만 바꿔볼까요?'); SFX.bad(); }
+  else if(ty.has('veg')&&ty.has('pro')&&ty.has('grain')&&!salty){ say(sayDiet,'완벽해요! 심혈관에 딱 좋은 한 끼 ✓'); stamp($('#s3stage'),'한 끼 완성 ✓'); earn('diet',20); }
+  else if(salty===1) say(sayDiet,'괜찮아요. 국물이나 양념은 반만 드세요.');
+  else if(!ty.has('veg')) say(sayDiet,'채소 하나만 넣으면 더 좋아요.');
+  else say(sayDiet,'좋아요! 단백질을 하나 넣으면 더 든든해요.');
+  if(!$('#s3next').dataset.diet){ $('#s3next').dataset.diet=1; nextBtn($('#s3next'),'마을 병원 가기 ▶',startS4); }
+}
+function startDiet(){
+  $('#paneGym').hidden=true; $('#paneDiet').hidden=false; $('#ctlGym').style.display='none'; $('#ctlDiet').hidden=false;
+  $('#s3title').textContent='식탁: 접시 비우기'; $('#s3next').innerHTML=''; renderPlate();
+}
+
+/* ---------- SCENE 4 · 병원 ---------- */
+const steps=$$('#steps .step'), kiosk=$('#kiosk'), cme=$('#cme'), sayDoc=$('#sayDoc'), sayPt=$('#sayPt'), rxBody=$('#rxBody'), monitor=$('#monitor');
+let hStep=0, busy=false;
+function setStep(n){ hStep=n; steps.forEach((s,i)=>{ s.disabled=i!==n; s.classList.toggle('now',i===n); s.classList.toggle('done',i<n); }); }
+steps.forEach(s=>s.addEventListener('click',()=>{ const i=+s.dataset.s; if(i===hStep&&!busy) doStep(i); }));
+kiosk.addEventListener('click',()=>{ if(hStep===0&&!busy) doStep(0); });
+async function doStep(i){
+  busy=true; SFX.tap();
+  if(i===0){
+    kiosk.classList.remove('glow'); kiosk.classList.add('ok'); $('#kscreen').innerHTML='✓ 질문<br>전달'; $('#sysC').textContent='키오스크 이어받기 · 앱 질문 → 의사 화면';
+    SFX.ok(); say(sayPt,'앱에 써둔 질문이 그대로 넘어갔어!'); earn('h0',10); lit('h0'); setStep(1);
+    await wait(1100); say(sayPt,''); cme.classList.add('at-desk');
+    await wait(900); monitor.classList.add('lit'); monitor.innerHTML='PATIENT SUMMARY<br>SBP ↑ 14D<br>Q: 출장중 운동?'; lit('h1');
+    say(sayDoc,'출장 중 운동 질문 봤어요. 혈압이 2주째 올랐네요.');
+  }
+  if(i===1){
+    cme.classList.add('at-desk'); say(sayPt,'근데 출장이 잦아서 헬스장은 힘들어요'); setStep(2);
+    await wait(1000); say(sayPt,'');
+    say(sayDoc,'그럼 호텔 방 스트레칭 15분으로 바꿀게요.');
+    rxBody.innerHTML='<ul><li>혈압약: 지금처럼 유지</li><li>식단: 저염 2주</li><li>운동: <del>헬스장 30분</del> → <ins>방 스트레칭 15분</ins></li></ul>';
+    SFX.ok(); earn('h1',20);
+  }
+  if(i===2){
+    $('#rx').insertAdjacentHTML('beforeend','<span class="ap">승인</span>'); SFX.stamp(); say(sayPt,'');
+    say(sayDoc,'승인했어요. 관리계획은 앱으로 보냈어요.'); lit('h2');
+    rxBody.insertAdjacentHTML('beforeend','<div class="outs"><span>진료기록 초안</span><span>내 맞춤 설명문</span><span>관리계획 → 앱</span></div>');
+    earn('h2',20); setStep(3);
+    nextBtn($('#s4next'),'퇴원하고 집으로 ▶',goS5,'ghost');
+  }
+  if(i===3){
+    await travel(2,'병동 간호사 도우러 가요!');
+    $('#paneClinic').hidden=true; $('#paneWard').hidden=false; $('#s4tag').textContent='SCENE 4 · M2 병동';
+    $('#wardmsg').textContent='';
+  }
+  busy=false;
+}
+let nextP=1;
+$$('.bed').forEach(b=>b.addEventListener('click',()=>{
+  const p=+b.dataset.p, msg=$('#wardmsg'); if(b.classList.contains('done')) return;
+  if(p===nextP){
+    b.classList.add('done'); nextP++; msg.className='wardmsg good'; SFX.ok();
+    msg.textContent=p===1?'정답! 가장 급한 환자예요.':p===2?'좋아요, 다음은 10분 내 확인.':'끝! 간호사님이 고맙대요.';
+    say($('#sayNurse'),p===3?'고마워요! 덕분에 살았어요 🙏':'다음은 P'+nextP+'!');
+    if(p===3){ earn('h3',30); lit('h3'); setStep(4); nextBtn($('#s4next'),'퇴원하고 집으로 ▶',goS5); }
+  } else {
+    b.classList.remove('wrong'); void b.offsetWidth; b.classList.add('wrong'); SFX.bad();
+    msg.className='wardmsg bad'; msg.textContent='앗, P'+nextP+' 먼저예요!';
+  }
+}));
+async function startS4(){
+  await travel(1,'의사쌤이 내 질문을 벌써 봤대!');
+  await card('SCENE 4 · M1 외래 + M2 병동','마을 병원','진료 받고 처방전 받기');
+  show('s4'); setStep(0);
+}
+
+/* ---------- SCENE 5 · 집으로 ---------- */
+const shared=$('#shared'), viewBtns=$$('#viewRow button'), seen=new Set();
+function setView(m){
+  shared.classList.remove('m-pt','m-dr'); if(m) shared.classList.add('m-'+m);
+  viewBtns.forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.m===m)));
+  if(m){ seen.add(m); lit('view'); } if(seen.size===2) earn('view',5);
+}
+viewBtns.forEach(b=>b.addEventListener('click',()=>{ SFX.tap(); setView(b.dataset.m); }));
+$$('.scr').forEach(s=>s.addEventListener('click',()=>{ SFX.tap(); setView(shared.classList.contains('m-'+s.dataset.m)?'':s.dataset.m); }));
+$('#gift').addEventListener('click',async()=>{
+  const g=$('#gift'); if(g.classList.contains('opened')) return showRoomModal('내 방','',false);
+  SFX.sparkle(); g.classList.add('opened'); g.textContent='✓ 내 방에 새 화분이 놓였어요'; S.bonus=true; earn('gift',10);
+  if(roomEl) paintRoom(roomEl);
+  await wait(250); showRoomModal('🎁 퇴원 선물!','1장의 내 방에 새 화분이 생겼어요',true);
+  if(!$('#s5next').firstChild) nextBtn($('#s5next'),'한 바퀴 마무리 ▶',goS6);
+});
+function showRoomModal(h,p,isNew){
+  const m=document.createElement('div'); m.className='modal';
+  m.innerHTML=`<div class="mbox"><h3>${h}</h3><div class="minihome"></div>${p?`<p class="hint" style="margin:0">${p}</p>`:''}<button class="go">닫기</button></div>`;
+  const r=makeRoom($('.minihome',m),{mini:true,scale:3});
+  if(isNew) r.insertAdjacentHTML('beforeend','<span class="newbadge">NEW 🪴</span>');
+  $('.go',m).addEventListener('click',()=>{ SFX.tap(); m.remove(); });
+  $('#app').appendChild(m);
+}
+async function goS5(){
+  await travel(3,'같은 그래프인데 내 말투로 보여주네');
+  await card('SCENE 5 · M3 퇴원 후','집으로','같은 그래프, 다른 말투');
+  show('s5'); setView('');
+  setTimeout(()=>{ if(!$('#s5next').firstChild) nextBtn($('#s5next'),'선물은 나중에 · 한 바퀴 마무리 ▶',goS6,'ghost'); },6000);
+}
+
+/* ---------- SCENE 6 · 엔딩 ---------- */
+const GB=['첫 바퀴. 마을이 나를 알아가기 시작했다.','두 바퀴. 루피가 내 말투를 알아들었다.','세 바퀴. 의사쌤이 내 질문을 먼저 꺼냈다.','네 바퀴. 이 마을은 이제 꽤 나를 닮았다.'];
+function renderLaps(){
+  $('#laps').textContent='LAP '+S.lap+' · COIN '+S.coins;
+}
+function buildSpiral(n){
+  const pts=[], cx=150, cy=150, turns=1+n*.9, end=Math.PI*2*turns;
+  for(let a=0;a<=end;a+=.08){ const r=12+a*(92/end); pts.push([cx+r*Math.cos(a), cy+r*Math.sin(a)*.7-a*1.5]); }
+  const sp=$('#spiral'); sp.setAttribute('d','M'+pts.map(p=>p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' L'));
+  const g=$('#spLabels'), L=pts.length, at=f=>pts[Math.floor(f*(L-1))]; let h='';
+  for(let f=.12;f<.58;f+=.07){ const p=at(f); h+=`<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="2.5" fill="var(--arc)" opacity=".45"/>`; }
+  ['W','M1','M2','M3'].forEach((lab,i)=>{ const p=at([.62,.74,.86,.98][i]);
+    h+=`<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="4.5" fill="var(--clay)"/><text class="lab" x="${(p[0]+6).toFixed(1)}" y="${(p[1]-6).toFixed(1)}">${lab}</text>`; });
+  g.innerHTML=h;
+  sp.classList.remove('drawing'); void sp.getBoundingClientRect(); if(!reduce) sp.classList.add('drawing');
+  $('span',$('#gb')).textContent=GB[Math.min(n,GB.length)-1]; renderLaps();
+}
+function confetti(){
+  const c=document.createElement('div'); c.className='confetti';
+  const cols=['#c2754d','#3d78dc','#f2b632','#7fd38f','#ff9fb0','#9b7fd4'];
+  for(let i=0;i<46;i++){ const p=document.createElement('i'); p.style.left=Math.random()*100+'%'; p.style.background=cols[i%6]; p.style.animationDelay=Math.random()*.6+'s'; p.style.animationDuration=1.4+Math.random()*1.2+'s'; c.appendChild(p); }
+  $('#app').appendChild(c); setTimeout(()=>c.remove(),3200);
+}
+async function goS6(){
+  await travel(4,'한 바퀴 완료! 루프가 한 층 쌓였어요');
+  cancelAnimationFrame(timerRaf); const ms=performance.now()-S.t0; timerEl.textContent=fmt(ms);
+  $('#clearT').textContent='CLEAR '+fmt(ms); $('#clearS').textContent=ms<=125000?'목표 02:05 안에 클리어 ✓':'목표 02:05 · 다음엔 더 빨리!';
+  show('s6'); buildSpiral(S.lap); SFX.fanfare(); confetti();
+}
+$('#lapBtn').addEventListener('click',()=>{
+  SFX.sparkle();
+  if(S.lap>=4){ $('#lapBtn').textContent='🌀 네 바퀴 완주!'; return; }
+  S.lap++; buildSpiral(S.lap); earn('lap'+S.lap,10); if(S.lap>=4) $('#lapBtn').textContent='🌀 네 바퀴 완주!';
+});
+$('#homeBtn').addEventListener('click',()=>{ SFX.tap(); showRoomModal('내 미니홈피 · 내 방','돌수록 나를 닮아가는 공간',false); });
+$('#friendBtn').addEventListener('click',()=>{
+  SFX.sparkle();
+  const m=document.createElement('div'); m.className='modal';
+  m.innerHTML=`<div class="mbox"><h3>🌊 일촌 마을 파도타기</h3>
+    <div class="friendv"><div class="cloud c1"></div><div class="ground"></div>
+      <div class="bldg" style="left:28%"><div class="roof"></div><div class="wall"><span class="win"></span><span class="door"></span></div><span class="sign">W<small>일촌네</small></span></div>
+      <div class="actor" style="left:62%;bottom:12%"><div class="bub r">파도 타고 왔구나! 🌊</div><canvas class="sp" data-look="friend" data-scale="3"></canvas></div>
+      <div class="actor" style="left:82%;bottom:12%"><canvas class="sp" data-look="me" data-scale="3"></canvas></div>
+    </div>
+    <div class="gb" style="text-align:left"><small>일촌평</small>너 벌써 ${S.lap}바퀴 돌았어? 루프 코인 ${S.coins}개 부럽다…</div>
+    <button class="go">우리 마을로 돌아가기</button></div>`;
+  paintSprites(m); $('.go',m).addEventListener('click',()=>{ SFX.tap(); m.remove(); });
+  $('#app').appendChild(m);
+});
+$('#restart').addEventListener('click',()=>location.reload());
+})();
+</script>
+</body>
+</html>

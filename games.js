@@ -1,4 +1,4 @@
-/* 게임 소개와 제작자 정보는 이 파일에서 수정할 수 있습니다. */
+/* 게임·팀·제작자 정보 */
 const GAMES = [
   {
     "id": "yks",
@@ -10,7 +10,8 @@ const GAMES = [
     "desc": "기억을 잇는 카드, 상황에 맞는 도구 찾기, 직접 이어 보는 나의 루프. 세 가지 체험으로 검사부터 진료, 퇴원, 다시 일상까지 이어지는 돌봄을 배워요. 가상 인물 지민 님과 함께 요약을 저장하고 공유하며, 내 이야기가 다음 돌봄으로 이어지는 과정을 경험합니다.",
     "controls": "마우스로 카드와 항목을 선택해요. 세 가지 모드를 원하는 순서로 즐길 수 있어요.",
     "image": "images/yks.jpg",
-    "external": false
+    "external": false,
+    "team": "SiBC팀"
   },
   {
     "id": "kgt",
@@ -22,7 +23,8 @@ const GAMES = [
     "desc": "5분 안에 W → M1 → M2 → M3 한 바퀴! 놀다 보면 인바이츠루프 V5가 이해되는 아케이드 게임입니다. AI 건강비서 루피와 함께 건강 기억을 지우려는 리셋몬에 맞서세요. 여러 챕터와 보스를 지나 연결된 건강 여정을 지켜요.",
     "controls": "마우스·터치 또는 키보드로 조작해요. 각 챕터에서 조작법을 안내합니다.",
     "image": "images/kgt.jpg",
-    "external": false
+    "external": false,
+    "team": "SiBC팀"
   },
   {
     "id": "ksi",
@@ -34,7 +36,8 @@ const GAMES = [
     "desc": "4초마다 떨어지는 명령 하나를 해내는 미니게임 14판으로 인바이츠루프 V5를 배우는 게임입니다. 환자 홍길동, 김 교수, 박 간호사와 함께 일상, 외래, 입원, 퇴원 후를 두 바퀴 돕니다. 판이 끝날 때마다 실제 V5 화면으로 방금 한 일과 앱 기능을 연결해 줍니다. 둘째 바퀴는 더 빨라지고 마지막에는 돌봄 로봇 보스가 기다려요. 도장을 모은 루프 지도로 앱 전체 흐름을 살펴보세요.",
     "controls": "마우스 하나로 플레이해요. Enter로 시작하고 M으로 소리를 켜고 끌 수 있어요.",
     "image": "images/ksi.jpg",
-    "external": true
+    "external": true,
+    "team": "SiBC팀"
   },
   {
     "id": "ojh",
@@ -46,7 +49,8 @@ const GAMES = [
     "desc": "일상의 기록을 모아 진료로 연결하고, 다시 일상으로 돌아오는 게임형 온보딩입니다. 다양한 미션을 통해 인바이츠루프 V5의 핵심 흐름과 활용법을 배워요. 틀려도 정답과 이유를 확인하며 부담 없이 즐길 수 있습니다. 나의 신호를 깨우고, 돌봄의 길을 연결하고, 나에게 맞는 루프를 완성해 보세요.",
     "controls": "마우스·터치·키보드로 즐겨요. 미션마다 조작을 안내하며 천천히 읽어도 점수가 줄지 않아요.",
     "image": "images/ojh.jpg",
-    "external": true
+    "external": true,
+    "team": "SiBC팀"
   },
   {
     "id": "psj",
@@ -58,7 +62,8 @@ const GAMES = [
     "desc": "살아남고, 연결하고, 진화하라. 자동 공격 스킬을 고르고 W → M1 → M2 → M3를 지나 최종 보스에 도전하는 서바이벌 게임입니다. 주 이용 고객층인 60대 이상에 더해, 2030도 즐길 수 있는 경험을 만들고자 기획했습니다. 다양한 연령층의 참여로 데이터 편향을 줄이려는 제작 의도를 담았어요.",
     "controls": "WASD·방향키 또는 드래그로 이동하고 Space로 대시해요. 공격은 자동입니다. 가로 화면을 권장해요.",
     "image": "images/psj.jpg",
-    "external": false
+    "external": false,
+    "team": "SiBC팀"
   },
   {
     "id": "ksw",
@@ -70,7 +75,8 @@ const GAMES = [
     "desc": "여정을 함께할 요정을 고르고, 미니게임을 수행하며 앱이 무엇을 할 수 있고 어떻게 사용하는지 알아봐요. 아이템을 얻어 요정을 꾸미고 성장시키면서 사용법을 익히는 육성형 온보딩입니다. 나를 알아갈수록 함께 자라는 귀여운 반려 요정과 건강 보물지도를 탐험해 보세요.",
     "controls": "마우스·터치로 요정을 고르고 지도와 미션을 탐험해요.",
     "image": "images/ksw.jpg",
-    "external": false
+    "external": false,
+    "team": "SiBC팀"
   },
   {
     "id": "ldy",
@@ -82,7 +88,8 @@ const GAMES = [
     "desc": "대화와 선택에 따라 엔딩이 달라지는 미연시형 스토리와 물풍선으로 슬라임을 잡는 아케이드를 결합했습니다. 루미와 하루의 모험 속에서 일상부터 병원, 다시 일상까지 이어지는 건강 여정을 만나요. 별빛으로 우리의 평범한 하루를 지켜 주세요.",
     "controls": "WASD·방향키 이동 / J 별 공격 / F 물풍선 / Space 대시·팡 / E 대화. 화면 버튼도 지원해요.",
     "image": "images/ldy.jpg",
-    "external": false
+    "external": false,
+    "team": "SiBC팀"
   },
   {
     "id": "lsl",
@@ -94,6 +101,397 @@ const GAMES = [
     "desc": "남녀노소 누구나 짧은 시간 안에 간단한 조작으로 즐길 수 있는 게임형 온보딩입니다. 꽃을 키우는 모티브에 따라 일상, 외래, 입원, 퇴원 후로 이어지는 서비스의 핵심 흐름을 자연스럽게 이해하도록 기획했어요. 네 개의 스테이지를 지나 나만의 건강 꽃을 피워 보세요.",
     "controls": "마우스·터치로 스테이지를 고르고 질문과 미션에 참여해요.",
     "image": "images/lsl.jpg",
-    "external": false
+    "external": false,
+    "team": "SiBC팀"
+  },
+  {
+    "id": "ichms-acy",
+    "team": "iCHMS팀",
+    "author": "안찬영",
+    "title": "나를 알아가는 작은 도약",
+    "genre": "점프 · 수집",
+    "time": "7단계 여정",
+    "url": "https://invitesloop-game-doodle-acy-hc.vercel.app/",
+    "desc": "Patient Journey OS의 각 단계에서 건강·유전체·루틴 요소를 모으며 계속 올라갑니다. 나의 Twin과 함께 정보를 모으고 나에게 맞는 건강 여정을 탐험해요.",
+    "controls": "PC는 좌우 버튼·방향키, 모바일은 기울이기로 이동해요.",
+    "external": true,
+    "image": "images/ichms-acy.jpg"
+  },
+  {
+    "id": "ichms-yjw",
+    "team": "iCHMS팀",
+    "author": "유재우",
+    "title": "헬스타이쿤",
+    "genre": "타이쿤 · 미니게임",
+    "time": "약 5분",
+    "url": "https://claude.ai/artifact/NvwTi8bkmyMtdKUiZ6C5mm",
+    "desc": "AI 건강비서의 첫 출근! 사용자를 돕는 비서가 되어 채팅 요청을 미니게임으로 해결합니다. 서비스를 제공하는 입장에서 사용자의 다양한 의도를 살피고, 익숙하면서도 원하는 도움을 주는 비서의 사용법을 체험하도록 만들었습니다.",
+    "controls": "연령대에 따른 난이도를 고르고, 요청별 안내에 따라 마우스·터치로 해결해요.",
+    "external": true,
+    "image": "images/ichms-yjw.jpg"
+  },
+  {
+    "id": "ichms-yjy",
+    "team": "iCHMS팀",
+    "author": "연제윤",
+    "title": "인바이츠루프 AI가 되어보자",
+    "genre": "추리 · 역할 체험",
+    "time": "환자 5명 · 각 45초",
+    "url": "https://claude.ai/artifact/GAxP9nF2cNEAw6SA5k44oF?sk=7WvTRUtvVXDB-iCJmIuJ8A",
+    "desc": "AI의 입장에서 서비스를 이해하는 게임입니다. 병원 예약을 돕는 인바이츠루프 AI가 되어 환자의 말을 듣고 질문하며 정보를 추리해 봅니다. 질문을 아끼고 빨리 맞힐수록 점수가 올라갑니다.",
+    "controls": "질문과 선택지를 마우스·터치로 선택해요. 환자당 제한 시간은 45초입니다.",
+    "external": true,
+    "image": "images/ichms-yjy.jpg"
+  },
+  {
+    "id": "ichms-kbj",
+    "team": "iCHMS팀",
+    "author": "김병주",
+    "title": "루프 합성",
+    "genre": "합성 · 퍼즐",
+    "time": "약 3분",
+    "url": "https://claude.ai/artifact/XRyoioz43gnN1iGV4ZYsdE?sk=q9LNpoIECApl68MvkLv_vQ",
+    "desc": "같은 기록을 합쳐 일상 기록 → 발견 → 루틴 → 의사 확인 → 트윈으로 이어지는 인바이츠루프 한 바퀴를 몸에 익힙니다. 합성될 때마다 AI 건강비서가 IRS+는 확률이며 진단이 아니라는 점, 판정은 의사가 한다는 점 등 V5 핵심 원칙을 한 줄씩 알려줍니다.",
+    "controls": "좌우로 위치를 정해 기록을 떨어뜨려요. 같은 기록끼리 만나면 다음 단계로 합성됩니다.",
+    "external": true,
+    "image": "images/ichms-kbj.jpg"
+  },
+  {
+    "id": "ichms-lsh",
+    "team": "iCHMS팀",
+    "author": "이소현",
+    "title": "오늘의 착장",
+    "genre": "튜토리얼 · 꾸미기",
+    "time": "7가지 미션",
+    "url": "https://claude.ai/artifact/84WNAmmBFrWKszdstUZvCf",
+    "desc": "AI 건강비서를 튜토리얼로 재미있게 알아가는 게임입니다. 아바타를 고르고 비서와 일곱 가지 활동을 해 보며 옷을 하나씩 받아 오늘의 착장을 완성합니다.",
+    "controls": "마우스·터치로 아바타를 고르고 안내에 따라 미션을 수행해요.",
+    "external": true,
+    "image": "images/ichms-lsh.jpg"
+  },
+  {
+    "id": "ichms-kj",
+    "team": "iCHMS팀",
+    "author": "김준",
+    "title": "프롬프트 히어로",
+    "genre": "시나리오 · 프롬프트 실습",
+    "time": "내 속도로",
+    "url": "https://claude.ai/artifact/DSGQNnNRF7YjGmHD2Fc3q9?sk=SfK87A7Mf1MPvc8PKuvmsQ",
+    "desc": "처음 사용하는 분도 프롬프트로 어떤 도움을 받을 수 있는지 쉽게 알아보도록 만들었습니다. 말 한마디로 필요한 화면과 도움을 찾으며, 무엇이든 다 될 것이라는 기대 대신 AI 건강비서가 할 수 있는 일과 의료진 연결이 필요한 일을 체험합니다.",
+    "controls": "표지를 넘긴 뒤 상황에 맞는 문장과 기능을 마우스·터치로 선택해요.",
+    "external": true,
+    "image": "images/ichms-kj.jpg"
+  },
+  {
+    "id": "ichms-ljh",
+    "team": "iCHMS팀",
+    "author": "이준희",
+    "title": "그냥 튜토리얼",
+    "genre": "시나리오 · 튜토리얼",
+    "time": "내 속도로",
+    "url": "https://claude.ai/artifact/GKFuJ1E6K1nkCy5gccrykW?sk=haJR37USGcipR1HHDOzHiw",
+    "desc": "AI 건강비서가 제공하는 기능들을 시나리오로 구성했습니다. 튜토리얼을 따라 진행하고 나면 바로 건강비서를 활용할 수 있도록, 상황별 기능과 사용법을 직접 익히는 체험입니다.",
+    "controls": "마우스·터치로 시나리오 안내를 따라 진행해요.",
+    "external": true,
+    "image": "images/ichms-ljh.jpg"
+  },
+  {
+    "id": "sh-ksh-tutorial",
+    "team": "SH팀",
+    "author": "김승현",
+    "title": "건강비서 튜토리얼",
+    "genre": "튜토리얼 · 보상",
+    "time": "내 속도로",
+    "desc": "AI 건강비서에게 질문하며 보물상자를 열고, 상점·루틴 상자·보너스 룰렛까지 체험하는 게임형 튜토리얼입니다.",
+    "controls": "마우스·터치로 안내를 따라 선택하고 질문하기",
+    "url": "games/sh/assistant-tutorial.html",
+    "external": false,
+    "image": "images/sh-ksh-tutorial.jpg"
+  },
+  {
+    "id": "sh-kyj-loop",
+    "team": "SH팀",
+    "author": "권용준",
+    "title": "인바이츠루프 한 바퀴",
+    "genre": "미션 · 퀴즈",
+    "time": "약 5분",
+    "desc": "일상부터 진료·입원·퇴원 후까지 7개 미션으로 루프를 한 바퀴 돕니다. 정답과 연속 성공으로 점수를 쌓으며 AI 건강비서 사용법을 익힙니다.",
+    "controls": "마우스·터치로 미션 답변 선택",
+    "url": "games/sh/one-loop.html",
+    "external": false,
+    "image": "images/sh-kyj-loop.jpg"
+  },
+  {
+    "id": "sh-khj-rush",
+    "team": "SH팀",
+    "author": "김현지",
+    "title": "말풍선 러시",
+    "genre": "아케이드 · 분류",
+    "time": "약 90초",
+    "desc": "떨어지는 말풍선을 바닥에 닿기 전에 알맞은 칸으로 보냅니다. 점점 빨라지는 3단계를 통해 V5가 직접 답할 말과 의료진에게 전달할 말을 구분해 봅니다.",
+    "controls": "마우스·터치로 말풍선을 알맞은 칸에 보내기",
+    "url": "games/sh/bubble-rush.html",
+    "external": false,
+    "image": "images/sh-khj-rush.jpg"
+  },
+  {
+    "id": "sh-khj-genie",
+    "team": "SH팀",
+    "author": "김현지",
+    "title": "지니의 건강 자아 유형 테스트",
+    "genre": "유형 테스트 · 수집",
+    "time": "약 2분",
+    "desc": "6가지 상황을 직접 선택하며 V5 사용법을 익히고 나의 건강 자아 유형을 만납니다. 유형별 지니와 오늘의 지니를 도감에 모을 수 있습니다.",
+    "controls": "마우스·터치로 질문별 선택·분류하기",
+    "url": "games/sh/genie-personality.html",
+    "external": false,
+    "image": "images/sh-khj-genie.jpg"
+  },
+  {
+    "id": "sh-njs-quest",
+    "team": "SH팀",
+    "author": "노진수",
+    "title": "건강비서 퀘스트",
+    "genre": "모험 · 퀘스트",
+    "time": "약 3분",
+    "desc": "잠든 AI 건강비서를 깨우고 네 개의 땅에서 11개 퀘스트를 수행합니다. 주머니 속 통신기로 말투·루틴·기록부터 진료와 회복까지 건강 여정을 체험합니다.",
+    "controls": "마우스·터치로 인물의 느낌표 선택, 통신기에 입력·선택하기",
+    "url": "games/sh/assistant-quest-njs.html",
+    "external": false,
+    "image": "images/sh-njs-quest.jpg"
+  },
+  {
+    "id": "sh-lkh-quest",
+    "team": "SH팀",
+    "author": "임경훈",
+    "title": "AI 건강비서 퀘스트",
+    "genre": "퀘스트 · 실습",
+    "time": "약 3분",
+    "desc": "길잡이 콜리와 함께 9개 퀘스트를 직접 수행합니다. 초급 말 걸기부터 고급 활용까지 건강비서 화면에서 입력하고 눌러 보며 사용법을 익힙니다.",
+    "controls": "마우스·터치와 텍스트 입력, 필요하면 힌트 사용",
+    "url": "games/sh/assistant-quest-lkh.html",
+    "external": false,
+    "image": "images/sh-lkh-quest.jpg"
+  },
+  {
+    "id": "sh-lkh-doom",
+    "team": "SH팀",
+    "author": "임경훈",
+    "title": "DOOM · AI 건강비서 에디션",
+    "genre": "액션 · FPS",
+    "time": "내 속도로",
+    "desc": "건강검진센터를 무대로 한 DOOM 패러디 액션 게임입니다. 이동·전투·기능 지도를 활용하며 건강비서의 역할을 게임 속에서 만나 봅니다.",
+    "controls": "WASD 이동 · 마우스/←→ 회전 · 클릭/Ctrl 발사 · E/Space 상호작용 · 1–5 무기 · Tab 지도",
+    "url": "games/sh/health-doom.html",
+    "external": false,
+    "image": "images/sh-lkh-doom.jpg"
+  },
+  {
+    "id": "sh-lkh-healthcraft",
+    "team": "SH팀",
+    "author": "임경훈",
+    "title": "HEALTHCRAFT II · AI 건강비서 에디션",
+    "genre": "전략 · 건설",
+    "time": "내 속도로",
+    "desc": "콜리 일꾼들과 건강 데이터를 모아 식단 농장과 루틴 훈련소를 건설합니다. 마을을 지키고 의료진 연결탑으로 안내하며 건강비서의 역할을 배우는 전략 게임입니다.",
+    "controls": "클릭 선택 · 드래그 범위 선택 · 땅/적/자원 클릭 명령 · 방향키·미니맵 화면 이동",
+    "url": "games/sh/healthcraft.html",
+    "external": false,
+    "image": "images/sh-lkh-healthcraft.jpg"
+  },
+  {
+    "id": "sh-jhg-collie",
+    "team": "SH팀",
+    "author": "정한결",
+    "title": "콜리의 여정 · 건강비서 첫걸음",
+    "genre": "돌봄 · 시뮬레이션",
+    "time": "내 속도로",
+    "desc": "콜리를 돌보며 식사·혈압·혈당·체중·수면 기록과 건강비서 사용법을 익히는 픽셀 게임입니다. 작은 돌봄과 기록이 일상부터 병원, 다시 일상으로 이어집니다.",
+    "controls": "마우스·터치로 콜리 돌보기·건강비서 사용, 방향키와 Enter/Space·B 지원",
+    "url": "games/sh/collie-journey.html",
+    "external": false,
+    "image": "images/sh-jhg-collie.jpg"
+  },
+  {
+    "id": "dj-poor-loop",
+    "team": "대전팀",
+    "author": "정다운",
+    "title": "POOR → LOOP",
+    "genre": "비주얼노벨 · 채팅 스토리",
+    "time": "내 속도로",
+    "desc": "숨기다 무너진 사람이 AI LOOP로 다시 태어나 나를 챙기러 오는 이야기. 대화를 따라가며 허락한 정보만 공유하는 흐름을 체험합니다.",
+    "controls": "화면 탭 · 선택지 고르기",
+    "url": "games/daejeon/정다운/정다운_poor-loop-opus.html",
+    "external": false,
+    "image": "images/dj-poor-loop.jpg",
+    "introUrl": "games/daejeon/정다운/정다운_poor-loop-index.html"
+  },
+  {
+    "id": "dj-guardian",
+    "team": "대전팀",
+    "author": "정다운",
+    "title": "신입 수호신 실습",
+    "genre": "생활 시뮬레이션 · 탐험",
+    "time": "내 속도로",
+    "desc": "신입 수호신이 되어 푸어의 21일을 지켜보는 실습. 제한된 신호를 살피며 신뢰와 돌봄의 관계를 체험합니다.",
+    "controls": "화면 탭 · 방향 선택",
+    "url": "games/daejeon/정다운/정다운_poor-loop-sonnet.html",
+    "external": false,
+    "image": "images/dj-guardian.jpg",
+    "introUrl": "games/daejeon/정다운/정다운_poor-loop-index.html"
+  },
+  {
+    "id": "dj-descent",
+    "team": "대전팀",
+    "author": "정다운",
+    "title": "하강",
+    "genre": "세로 스크롤 아케이드",
+    "time": "내 속도로",
+    "desc": "하늘의 학교에서 푸어의 건물까지 내려가며 수호자의 첫 실습을 진행합니다. 2초 타이밍 SEND 미니게임을 통해 신호를 보내는 순간을 선택합니다.",
+    "controls": "화면 위로 쓸어 올리기 · 타이밍 탭",
+    "url": "games/daejeon/정다운/정다운_poor-loop-fable-v2.html",
+    "external": false,
+    "image": "images/dj-descent.jpg",
+    "introUrl": "games/daejeon/정다운/정다운_poor-loop-index.html"
+  },
+  {
+    "id": "dj-village",
+    "team": "대전팀",
+    "author": "조민지",
+    "title": "루프 마을",
+    "genre": "미니홈피 · 마을 꾸미기",
+    "time": "약 2분",
+    "desc": "내 미니미와 함께 방을 꾸미고 운동·진료·회복의 마을을 한 바퀴 돕니다. 코인을 모으며 W→M1→M2→M3의 흐름을 체험합니다.",
+    "controls": "탭 · 버튼 선택",
+    "url": "games/daejeon/조민지/조민지_루프마을_모바일게임.html",
+    "external": false,
+    "image": "images/dj-village.jpg",
+    "introUrl": "games/daejeon/조민지/조민지_loop-village-share.html"
+  },
+  {
+    "id": "dj-aim",
+    "team": "대전팀",
+    "author": "육소연",
+    "title": "AIM",
+    "genre": "벽돌 깨기 아케이드",
+    "time": "약 2분 30초",
+    "desc": "V5 화면을 덮은 벽돌을 물풍선으로 깨면 사용법이 하나씩 드러납니다. 기록·기억·응급 안내·말투를 익히며 AIM을 I AM으로 완성합니다.",
+    "controls": "벽돌·빈 칸·빛나는 버튼 탭",
+    "url": "games/daejeon/육소연/육소연_aim.html",
+    "external": false,
+    "image": "images/dj-aim.jpg",
+    "introUrl": "games/daejeon/육소연/육소연_AIM_보고자료.html"
+  },
+  {
+    "id": "dj-escape",
+    "team": "대전팀",
+    "author": "육소연",
+    "title": "AIM 방탈출",
+    "genre": "방탈출",
+    "time": "내 속도로",
+    "desc": "열쇠는 건강비서 안에 있습니다. 말하는 문, 혈압 금고, 기억 상자 등에서 비서 기능을 사용하며 마지막 문을 엽니다.",
+    "controls": "빛나는 곳 탭 · Enter/A 보조 조작",
+    "url": "games/daejeon/육소연/육소연_escape.html",
+    "external": false,
+    "image": "images/dj-escape.jpg",
+    "introUrl": "games/daejeon/육소연/육소연_AIM_보고자료.html"
+  },
+  {
+    "id": "dj-raise",
+    "team": "대전팀",
+    "author": "육소연",
+    "title": "3분 비서 키우기",
+    "genre": "육성 시뮬레이션",
+    "time": "약 3분",
+    "desc": "나를 모르는 비서를 사흘 동안 키웁니다. 대화 칩과 기록·기억·말투를 고르며 나를 아는 비서로 성장시키고 다른 엔딩을 만납니다.",
+    "controls": "빛나는 칩 탭 · 1·2·3 선택",
+    "url": "games/daejeon/육소연/육소연_raise.html",
+    "external": false,
+    "image": "images/dj-raise.jpg",
+    "introUrl": "games/daejeon/육소연/육소연_AIM_보고자료.html"
+  },
+  {
+    "id": "dj-liam",
+    "team": "대전팀",
+    "author": "민채현",
+    "title": "리암의 거짓말",
+    "genre": "법정 추리 어드벤처",
+    "time": "내 속도로",
+    "desc": "거짓말하는 리암을 앱 속 증거로 잡아내는 추리 게임. 증거를 찾고 제시하며 V5 기능의 위치와 사용법을 익힙니다.",
+    "controls": "화면 탭 · 증거 찾기와 선택",
+    "url": "games/daejeon/민채현/민채현_리암의_거짓말_게임_v2.html",
+    "external": false,
+    "image": "images/dj-liam.jpg",
+    "introUrl": "games/daejeon/민채현/민채현_기획서_사용법_게임_리암의_거짓말_v1_0.html"
+  },
+  {
+    "id": "dj-genie",
+    "team": "대전팀",
+    "author": "김은경",
+    "title": "Loop with Genie",
+    "genre": "선택형 이야기 체험",
+    "time": "약 10분",
+    "desc": "건강비서 지니와 함께 일상·외래·입원·퇴원 후의 환자 여정을 한 바퀴 돌며 인바이츠루프를 설명하는 일곱 문장을 모읍니다.",
+    "controls": "대화 카드 선택 · 빛나는 화면 탭",
+    "url": "games/daejeon/김은경/김은경_loop-with-genie.html",
+    "external": false,
+    "image": "images/dj-genie.jpg",
+    "introUrl": "games/daejeon/김은경/김은경_loop-with-genie-intro.html"
+  },
+  {
+    "id": "dj-beyond-time",
+    "team": "대전팀",
+    "author": "김은경",
+    "title": "Beyond Time",
+    "genre": "3D 라이프 시뮬레이션",
+    "time": "내 속도로",
+    "desc": "가상의 한 사람이 되어 일상과 진료실, 병동, 집을 지나갑니다. 선택에 따른 경로와 기록을 돌아보고, 배운 생활 패턴을 다음 여정으로 이어갑니다.",
+    "controls": "화면 선택 · 건너뛰기·배속 지원",
+    "url": "games/daejeon/김은경/Beyond-Time.html",
+    "external": false,
+    "image": "images/dj-beyond-time.jpg",
+    "introUrl": "games/daejeon/김은경/Beyond-Time-소개.html"
+  },
+  {
+    "id": "dj-my-day",
+    "team": "대전팀",
+    "author": "박정언",
+    "title": "내 하루, 잘 부탁해!",
+    "genre": "플레이 스토리 · 미니게임",
+    "time": "내 속도로",
+    "desc": "일상에서 남긴 이야기가 진료로, 다시 일상으로 이어지는 모험. 기억 카드, 진료 가방, 하루 길 따라가기로 기록과 실천을 연결합니다.",
+    "controls": "카드 뒤집기 · 탭·끌어 넣기 · 길 따라 끌기",
+    "url": "games/daejeon/박정언/박정언_인바이츠루프_내하루잘부탁해_시연.html",
+    "external": false,
+    "image": "images/dj-my-day.jpg",
+    "introUrl": "games/daejeon/박정언/박정언_내하루잘부탁해_소개.html"
+  },
+  {
+    "id": "dj-tomorrow",
+    "team": "대전팀",
+    "author": "정택준",
+    "title": "내일의 나를 부탁해",
+    "genre": "생활 어드벤처",
+    "time": "내 속도로",
+    "desc": "방 안의 익숙한 물건을 통해 질문·기록·활용을 익힙니다. 진료 가방에 담은 이야기를 집에서 병원으로, 다시 생활과 계획으로 이어갑니다.",
+    "controls": "물건 탭 · 문장 선택 · 오토·배속 지원",
+    "url": "games/daejeon/정택준/정택준_내일의나.html",
+    "external": false,
+    "image": "images/dj-tomorrow.jpg",
+    "introUrl": "games/daejeon/정택준/정택준_내일의나_소개.html"
+  },
+  {
+    "id": "dj-loop-play",
+    "team": "대전팀",
+    "author": "대전팀 공동 제작",
+    "title": "LOOP 플레이",
+    "genre": "통합 온보딩 · 미니게임",
+    "time": "내 속도로",
+    "desc": "V5 첫 화면에서 상황에 맞는 온보딩·도움말·주간 정리를 체험합니다. 비서 방탈출, 기억 카드, 목표 달리기, 방 꾸미기를 포인트 보상으로 연결한 대전팀 통합작입니다.",
+    "controls": "탭 · 고르기 · 카드 뒤집기",
+    "url": "games/daejeon/대전팀_LOOP플레이_v1.html",
+    "external": false,
+    "image": "images/dj-loop-play.jpg",
+    "introUrl": "games/daejeon/대전팀.html"
   }
 ];

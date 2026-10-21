@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#F3F9F5">
+<title>인바이츠루프 한 바퀴</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F3F9F5; --panel:#FFFFFF; --ink:#1E2320; --sub:#5F6E66; --hair:#DCE8E0;
+  --clay:#B8865C; --clay-pale:#F4EADF; --blue:#5B8FB9; --blue-pale:#E3F1E8; --sos:#B5483A; --sos-pale:#F7E4E0;
+  --gold:#D9A441; --frame:#1E2320; --screen:#F3F9F5;
+  color-scheme:light; box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#121815; --panel:#18211C; --ink:#E8EDE9; --sub:#93A39A; --hair:#26342C;
+    --clay:#D2A47C; --clay-pale:#33281D; --blue:#86B2D6; --blue-pale:#1A2A22; --sos:#E8806F; --sos-pale:#3A1F1A;
+    --gold:#E8BE62; --frame:#050806; --screen:#121815; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#121815; --panel:#18211C; --ink:#E8EDE9; --sub:#93A39A; --hair:#26342C;
+  --clay:#D2A47C; --clay-pale:#33281D; --blue:#86B2D6; --blue-pale:#1A2A22; --sos:#E8806F; --sos-pale:#3A1F1A;
+  --gold:#E8BE62; --frame:#050806; --screen:#121815; color-scheme:dark;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans KR",-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;font-size:16px;line-height:1.65;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+button:focus-visible{outline:2px solid var(--blue);outline-offset:3px;border-radius:6px}
+.edge{display:block;height:2px;width:64px;border-radius:2px;background:linear-gradient(90deg,var(--clay) 0%,var(--clay) 70%,transparent 100%)}
+.num{font-variant-numeric:tabular-nums}
+
+.wrap{max-width:1100px;margin:0 auto;padding:28px 20px 40px}
+.top{margin-bottom:22px}
+.top h1{margin:10px 0 2px;font-weight:300;font-size:clamp(30px,5vw,44px);letter-spacing:-1px;line-height:1.15}
+.top p{margin:0;color:var(--sub)}
+.stage{display:grid;grid-template-columns:minmax(0,1fr) 390px;gap:36px;align-items:start}
+@media (max-width:860px){.stage{grid-template-columns:1fr}}
+
+/* HUD + ring */
+.loopbox{display:grid;grid-template-columns:200px minmax(0,1fr);gap:22px;align-items:center;background:var(--panel);border:1px solid var(--hair);border-radius:24px;padding:18px 22px}
+.loopbox svg{width:100%;height:auto;display:block}
+.hud{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.hud .cell{border:1px solid var(--hair);border-radius:16px;padding:10px 14px}
+.hud .lab{font-size:12px;color:var(--sub);display:block}
+.hud .val{font-size:24px;font-weight:300;letter-spacing:-.5px;line-height:1.2}
+.hud .val small{font-size:13px;color:var(--sub)}
+.hud .over .val{color:var(--sos)}
+.combo{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.combo b{font-weight:500;color:var(--clay)}
+.combo.hot b{color:var(--gold)}
+.combo.bump{animation:bump .4s}
+@keyframes bump{40%{transform:scale(1.06)}}
+.mute{font-size:13px;color:var(--sub);border:1px solid var(--hair);border-radius:20px;padding:3px 12px}
+.node-stamp{transform-box:fill-box;transform-origin:center}
+.node-stamp.thunk{animation:thunk .6s cubic-bezier(.2,1.6,.4,1)}
+@keyframes thunk{0%{transform:scale(2.6);opacity:0}60%{transform:scale(.9);opacity:1}100%{transform:scale(1)}}
+
+/* brief */
+.brief{margin-top:18px;background:var(--panel);border:1px solid var(--hair);border-radius:24px;padding:24px}
+.brief .step{color:var(--clay);font-weight:500;font-size:14px;margin:12px 0 0}
+.brief h2{margin:4px 0 10px;font-weight:400;font-size:clamp(23px,3.2vw,29px);letter-spacing:-.5px;line-height:1.3}
+.brief .task{margin:0;font-size:17px;max-width:34em}
+.quiz{display:flex;flex-direction:column;gap:9px;margin-top:16px}
+.quiz .opt{text-align:left;border:1px solid var(--hair);border-radius:16px;padding:12px 16px;font-size:16px;background:var(--bg);transition:transform .12s}
+.quiz .opt:hover{border-color:var(--blue)}
+.quiz .opt:active{transform:scale(.98)}
+.quiz .opt.no{border-color:var(--sos);background:var(--sos-pale);animation:nudge .35s}
+@keyframes nudge{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.match{display:grid;grid-template-columns:.7fr 1.3fr;gap:12px}
+.match .col{display:flex;flex-direction:column;gap:9px}
+.match button{border:1px solid var(--hair);border-radius:16px;padding:12px;font-size:16px;background:var(--bg);text-align:center;line-height:1.35}
+.match button small{display:block;font-size:12px;color:var(--sub)}
+.match button.sel{border-color:var(--clay);background:var(--clay-pale)}
+.match button.ok{border-color:var(--blue);background:var(--blue-pale);opacity:.6;cursor:default}
+.match .L{font-size:24px;font-weight:300}
+.feedback{margin-top:14px;padding:12px 16px;border-radius:14px;font-size:15.5px;display:none}
+.feedback.bad{display:block;background:var(--sos-pale);border:1px solid var(--sos)}
+.feedback.good{display:block;background:var(--blue-pale);border:1px solid var(--blue)}
+.hint-btn{margin-top:14px;color:var(--sub);text-decoration:underline;font-size:14px}
+.tiny{color:var(--sub);font-size:13px;margin:16px 0 0}
+
+/* phone */
+.phone{width:100%;max-width:390px;margin:0 auto;background:var(--frame);border-radius:44px;padding:11px;box-shadow:0 28px 60px -30px rgba(30,35,32,.6)}
+.phone.shake{animation:shake .4s}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+.screen{background:var(--screen);border-radius:34px;height:clamp(580px,76vh,720px);display:flex;flex-direction:column;overflow:hidden;position:relative}
+.screen.flash::after{content:"";position:absolute;inset:0;background:var(--sos);opacity:.18;pointer-events:none;animation:fade .5s forwards}
+@keyframes fade{to{opacity:0}}
+.sbar{display:flex;justify-content:space-between;padding:12px 24px 2px;font-size:12px;font-weight:500;color:var(--sub)}
+.rail{padding:6px 22px 10px;border-bottom:1px solid var(--hair)}
+.rail .r{display:flex;gap:6px}
+.rail .r span{flex:1;font-size:11px;text-align:center;color:var(--sub);padding-top:6px;border-top:2px solid var(--hair);transition:border-color .4s,color .4s}
+.rail .r span.on{color:var(--ink);border-top-color:var(--clay);font-weight:500}
+.rail .place{font-size:13px;margin-top:6px;color:var(--sub)}
+.thread{flex:1;overflow-y:auto;padding:18px 20px 8px;display:flex;flex-direction:column;gap:18px}
+.msg{animation:rise .3s ease-out}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.msg.ai{font-size:15.5px;font-weight:300}
+.msg.ai .edge{width:28px;margin-bottom:10px}
+.msg.ai b{font-weight:500}
+.msg .sub{color:var(--sub);font-size:13.5px;margin-top:6px;line-height:1.7}
+.msg.me{align-self:flex-end;background:var(--blue-pale);padding:10px 16px;border-radius:20px 20px 6px 20px;font-size:15px;max-width:85%}
+.msg.sys{align-self:center;color:var(--sub);font-size:12.5px;border:1px solid var(--hair);border-radius:20px;padding:2px 12px}
+.typing{display:flex;gap:5px;padding:4px 0}
+.typing i{width:6px;height:6px;border-radius:50%;background:var(--clay);animation:dot 1s infinite}
+.typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}
+@keyframes dot{0%,100%{opacity:.25}50%{opacity:1}}
+.chips{display:flex;flex-wrap:wrap;gap:8px;padding:8px 16px 4px;min-height:10px}
+.chip{font-size:14px;padding:8px 15px;border-radius:22px;border:1px solid var(--hair);position:relative;background:var(--screen);transition:transform .12s}
+.chip:active{transform:scale(.95)}
+.chip::before{content:"";position:absolute;left:-1px;top:-1px;width:52%;height:calc(100% + 2px);border:1px solid var(--blue);border-right:0;border-radius:22px 0 0 22px;opacity:.5;pointer-events:none}
+.chip:hover{background:var(--blue-pale)}
+.chip.sos{border-color:var(--sos);color:var(--sos)}
+.chip.sos::before{display:none}
+.chip.big{font-size:16px;padding:12px 20px}
+.inputbar{padding:8px 16px 16px}
+.inputbar .box{border:1px solid var(--hair);border-radius:24px;padding:10px 16px;font-size:13.5px;color:var(--sub);background:var(--panel)}
+
+/* in-chat cards */
+.detail{margin-top:10px;border-top:1px solid var(--hair)}
+.detail .row{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid var(--hair);font-size:14px}
+.detail .row span:last-child{text-align:right}
+.detail small{display:block;color:var(--sub);font-size:12px}
+.sig{margin-top:10px;display:flex;flex-direction:column;gap:10px}
+.sig .it{border:1px solid var(--hair);border-radius:14px;padding:10px 12px;font-size:13.5px;line-height:1.6}
+.sig .it b{display:block;font-size:14.5px;font-weight:500}
+.sig .it em{font-style:normal;font-size:11.5px;color:var(--clay)}
+.demo3{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.demo3 div{border:1px solid var(--hair);border-radius:14px;padding:10px 12px;font-size:13.5px}
+.demo3 em{font-style:normal;color:var(--sub);font-size:12px;display:block}
+.tones{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.tones div{border:1px solid var(--hair);border-radius:16px;padding:10px 12px;font-size:13.5px;line-height:1.55;background:var(--panel)}
+.tones b{font-weight:500;font-size:14.5px;margin-right:6px}
+.tones span{display:inline-block;font-size:11.5px;font-weight:500;background:var(--blue-pale);border-radius:10px;padding:1px 8px;vertical-align:1px}
+.tones p{margin:4px 0 0;color:var(--sub)}
+.bars{display:flex;flex-direction:column;gap:4px;margin-top:6px}
+.bars span{display:block;height:6px;border-radius:3px;background:var(--blue)}
+.doc{border:1px solid var(--hair);border-radius:16px;padding:12px 14px;margin-top:10px;background:var(--panel)}
+.doc .lab{font-size:11.5px;color:var(--clay);font-weight:500}
+.doc .h{font-size:14px;font-weight:500;margin:6px 0 2px}
+.doc p{margin:2px 0;font-size:13px}
+.sosbox{border:1px solid var(--sos);background:var(--sos-pale);border-radius:16px;padding:12px 14px;margin-top:10px;font-size:14px}
+.mock{font-size:11px;color:var(--sub);border:1px solid var(--hair);border-radius:6px;padding:0 5px;margin-left:4px;font-weight:400}
+.reel{display:flex;gap:10px;margin-top:6px}
+.reel span{width:58px;height:70px;border:1px solid var(--hair);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:38px;font-weight:300;color:var(--sub);background:var(--panel)}
+.reel span.lock{color:var(--clay);border-color:var(--clay);animation:lock .4s cubic-bezier(.2,1.6,.4,1)}
+@keyframes lock{0%{transform:scale(1.25)}100%{transform:scale(1)}}
+.situ{border:1px solid var(--hair);border-radius:18px;padding:14px;background:var(--panel)}
+.situ .q{font-size:16.5px;font-weight:400;margin:4px 0 10px}
+.situ .lab{font-size:12px;color:var(--clay);font-weight:500}
+.cd{height:6px;border-radius:3px;background:var(--hair);overflow:hidden}
+.cd i{display:block;height:100%;background:var(--clay);transform-origin:left;animation:cd linear forwards}
+@keyframes cd{from{transform:scaleX(1)}to{transform:scaleX(0)}}
+.situ.done .cd i{animation-play-state:paused}
+.verdict{font-size:13px;margin-top:8px;font-weight:500}
+
+/* fx */
+#fx{position:fixed;inset:0;pointer-events:none;z-index:30;width:100%;height:100%}
+.pop{position:fixed;z-index:31;pointer-events:none;font-weight:700;font-size:22px;color:var(--clay);text-shadow:0 2px 0 var(--panel);animation:popup 1s ease-out forwards;white-space:nowrap;transform:translate(-50%,-50%)}
+.pop.bad{color:var(--sos)}
+.pop small{display:block;font-size:13px;color:var(--gold);text-align:center}
+@keyframes popup{0%{opacity:0;transform:translate(-50%,-30%) scale(.6)}20%{opacity:1;transform:translate(-50%,-60%) scale(1.15)}100%{opacity:0;transform:translate(-50%,-160%) scale(1)}}
+
+/* overlays */
+.overlay{position:fixed;inset:0;background:rgba(18,24,21,.55);display:none;align-items:center;justify-content:center;padding:20px;z-index:20}
+.overlay.on{display:flex}
+.sheet{background:var(--panel);border-radius:28px;max-width:470px;width:100%;padding:30px;max-height:calc(100% - 20px);overflow-y:auto;animation:sheetIn .35s cubic-bezier(.2,1.3,.4,1)}
+@keyframes sheetIn{from{transform:translateY(20px) scale(.96);opacity:0}to{transform:none;opacity:1}}
+.sheet h2{margin:12px 0 6px;font-weight:300;font-size:30px;letter-spacing:-.5px;line-height:1.25}
+.sheet p{margin:0 0 12px}
+.mpts{font-size:34px;font-weight:300;color:var(--clay);margin:0 0 6px}
+.mpts small{font-size:14px;color:var(--sub);margin-left:6px}
+.lesson{background:var(--bg);border-radius:16px;padding:14px 16px;margin:6px 0 20px;font-size:15.5px}
+.lesson b{display:block;font-weight:500;margin-bottom:2px}
+.cta{width:100%;background:var(--ink);color:var(--bg);border-radius:16px;padding:14px;font-size:16.5px;font-weight:500;text-align:center}
+.start .big{font-size:clamp(34px,8vw,46px);font-weight:300;line-height:1.15;letter-spacing:-1px;margin:14px 0 10px}
+.intro{background:var(--bg);border-radius:16px;padding:14px 16px;margin:14px 0 4px;font-size:14.5px;line-height:1.65}
+.intro b{display:block;font-weight:500;font-size:13px;color:var(--clay);margin-bottom:4px}
+.intro p{margin:0}
+.rules{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 0 18px}
+.rules div{background:var(--bg);border-radius:14px;padding:10px 12px;font-size:13.5px;line-height:1.5}
+.rules b{display:block;font-weight:500;font-size:14.5px}
+.recap{padding-left:20px;margin:6px 0 18px;font-size:15px}
+.recap li{margin:4px 0}
+.rank{text-align:center;margin:4px 0}
+.rank .g{display:inline-flex;width:110px;height:110px;border-radius:50%;border:4px solid var(--clay);color:var(--clay);font-size:58px;font-weight:300;align-items:center;justify-content:center;animation:rankIn .8s cubic-bezier(.2,1.6,.4,1)}
+.rank .g.S{border-color:var(--gold);color:var(--gold)}
+@keyframes rankIn{0%{transform:scale(0) rotate(-40deg)}100%{transform:none}}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:14px 0}
+.stats div{background:var(--bg);border-radius:14px;padding:10px;text-align:center}
+.stats b{display:block;font-size:20px;font-weight:400}
+.stats span{font-size:12px;color:var(--sub)}
+.ptsinfo{background:linear-gradient(135deg,rgba(242,197,94,.16),rgba(227,172,122,.10));border:1px solid var(--gold);border-radius:16px;padding:14px 16px;margin:0 0 18px}
+.ptsinfo b{display:block;color:var(--gold);font-weight:500;font-size:15.5px;margin-bottom:6px}
+.ptsinfo table{width:100%;border-collapse:collapse;font-size:13.5px}
+.ptsinfo td{padding:3px 0;border-bottom:1px solid var(--hair)}
+.ptsinfo tr:last-child td{border-bottom:0}
+.ptsinfo td:last-child{text-align:right;color:var(--gold);font-weight:500}
+.ptsinfo p{margin:8px 0 0;font-size:12.5px;color:var(--sub)}
+.reward{position:relative;text-align:center;border:1px solid var(--gold);border-radius:20px;padding:18px 16px 16px;margin:14px 0;background:radial-gradient(circle at 50% 0%,rgba(242,197,94,.28),transparent 70%);overflow:hidden}
+.reward .lab{font-size:13.5px;color:var(--gold);font-weight:500}
+.reward .n{display:block;font-size:54px;font-weight:300;letter-spacing:-1px;color:var(--gold);line-height:1.1;margin:4px 0}
+.reward .n.bang{animation:rewardPop .7s cubic-bezier(.2,1.8,.4,1)}
+@keyframes rewardPop{0%{transform:scale(.5)}100%{transform:scale(1)}}
+.reward .use{font-size:13.5px;margin:6px 0 0}
+.reward .next{font-size:12.5px;color:var(--sub);margin:6px 0 0}
+.reward::after{content:"";position:absolute;top:0;left:-60%;width:40%;height:100%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.22),transparent);animation:shine 2.6s 1.4s ease-in-out infinite;pointer-events:none}
+@keyframes shine{0%{left:-60%}60%,100%{left:130%}}
+footer{margin-top:28px;color:var(--sub);font-size:13px;display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px}
+
+.thread{position:relative}
+/* 게임 영역: 앱 화면과 섞이지 않도록 어두운 슬레이트 톤으로 분리 */
+.game{--panel:#23313C;--bg:#2D3C48;--ink:#EEF3F6;--sub:#AEBBC6;--hair:#3F505D;--clay:#E3AC7A;--clay-pale:#4A3A2C;--blue:#8EBCE2;--blue-pale:#2E4556;--sos:#F29483;--sos-pale:#4A3230;--gold:#F2C55E;background:var(--panel);color:var(--ink);border-color:var(--panel)!important}
+.phone-cap{max-width:390px;margin:0 auto 10px;display:flex;align-items:center;gap:8px;font-size:13px;color:var(--sub)}
+.phone-cap::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--blue)}
+.apptag{display:none}
+.situ .top{display:flex;justify-content:space-between;align-items:baseline}
+.situ .sec{font-size:13px;color:var(--clay);font-weight:500}
+/* mobile */
+.mbar,.toast,.m-only{display:none}
+@media (max-width:640px){
+  html,body{height:100%}
+  body{overflow:hidden}
+  .wrap{padding:0;height:100%;max-width:none}
+  .top,.loopbox,footer,.brief>.edge,.brief .step,.brief h2,.brief .tiny,.brief .hint-btn,.sbar,.rail .place{display:none}
+  .stage{display:flex;flex-direction:column;align-items:stretch;height:100%;gap:0}
+  .stage>*{width:100%}
+  .stage>section:last-child{flex:1;min-height:0}
+  .mbar{display:block;position:relative;padding:10px 16px 10px;background:var(--panel)}
+  .mtopl{margin-right:128px}
+  .mloop{position:absolute;top:6px;right:44px;width:80px;height:80px;display:block}
+  .mmute{position:absolute;top:8px;right:12px;font-size:15px;padding:2px 4px}
+  .mloop .cur{transform-box:fill-box;transform-origin:center;animation:curPulse 1.6s ease-in-out infinite}
+  @keyframes curPulse{0%,100%{opacity:.35;transform:scale(1)}50%{opacity:0;transform:scale(1.6)}}
+
+  .phone-cap{display:none}
+  .apptag{display:flex;align-items:center;justify-content:center;gap:6px;padding:6px 16px 0;font-size:11.5px;color:var(--sub)}
+  .apptag::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--blue)}
+  .mbar .row1{display:flex;align-items:center;gap:14px;margin-top:8px}
+  .mdots{display:flex;gap:4px;width:100%}
+  .mcombo{flex:1}
+  .mdots i{flex:1;height:4px;border-radius:2px;background:var(--hair)}
+  .mdots i.d{background:var(--clay)} .mdots i.n{background:var(--blue)}
+  .mstat{font-size:13px;white-space:nowrap;color:var(--sub)}
+  .mstat b{color:var(--ink);font-weight:500}
+  .mstat.over b{color:var(--sos)}
+  .mstat.sc b{color:var(--clay)}
+  .mcombo{font-size:12px;color:var(--gold);font-weight:700;white-space:nowrap}
+  .mstep{font-size:12.5px;color:var(--sub);margin:8px 128px 0 0}
+  .mbar .mhead{margin-top:6px}
+  .mhead{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+  .mtitle{font-size:19px;margin:0;line-height:1.3;font-weight:500}
+  .mhint{font-size:13px;color:var(--sub);text-decoration:underline;white-space:nowrap;padding:4px 0}
+  .mtask{font-size:14.5px;margin:2px 0 0;line-height:1.5}
+  body.quizzing .mtask{display:none}
+  .phone{max-width:none;height:100%;padding:0;border-radius:0;background:none;box-shadow:none}
+  .screen{height:100%;border-radius:0}
+  .rail{padding:8px 16px 8px}
+  .thread{padding:14px 18px 8px;gap:16px}
+  body.quizzing .thread{padding-bottom:48dvh}
+  .chip{font-size:14.5px;padding:9px 15px}
+  .brief{position:fixed;left:0;right:0;bottom:0;margin:0;border:0;border-radius:24px 24px 0 0;padding:20px 18px calc(18px + env(safe-area-inset-bottom,0px));max-height:66dvh;overflow-y:auto;display:none;z-index:10;box-shadow:0 -14px 34px -14px rgba(0,0,0,.3)}
+  body.quizzing .brief{display:block;animation:sheetUp .3s ease-out}
+  @keyframes sheetUp{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}
+  body.quizzing .chips,body.quizzing .inputbar{visibility:hidden}
+  .brief .task{font-size:16px;font-weight:500}
+  .quiz{margin-top:12px}
+  .quiz .opt{font-size:15.5px;padding:12px 14px}
+  .toast{display:block;position:fixed;left:14px;right:14px;top:calc(env(safe-area-inset-top,0px) + 10px);z-index:15;padding:12px 16px;border-radius:14px;font-size:15px;transform:translateY(-160%);transition:transform .3s ease}
+  .toast.on{transform:none}
+  .toast.bad{background:var(--sos-pale);border:1px solid var(--sos)}
+  .toast.good{background:var(--blue-pale);border:1px solid var(--blue)}
+  .m-only{display:block}
+  .overlay{padding:12px}
+  .sheet{padding:24px 22px;border-radius:24px}
+}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<canvas id="fx" aria-hidden="true"></canvas>
+<div class="wrap">
+  <header class="top">
+    <span class="edge"></span>
+    <h1>인바이츠루프 한 바퀴</h1>
+    <p>5분 안에 일상, 진료, 입원, 퇴원 후를 지나 다시 일상까지. AI 건강비서와 루프를 한 바퀴 돌아 보세요.</p>
+  </header>
+
+  <main class="stage">
+    <div class="mbar game" aria-live="polite">
+      <svg class="mloop" id="mLoop" viewBox="0 0 80 80" role="img" aria-label="루프에서 지금 위치"></svg>
+      <button class="mmute" id="mMute" type="button" aria-label="소리 켜고 끄기">🔊</button>
+      <div class="mtopl">
+        <div class="mdots" id="mDots"></div>
+        <div class="row1"><span class="mstat num" id="mTime"><b>0:00</b>/5:00</span><span class="mstat sc num" id="mScore"><b>0</b>점</span><span class="mcombo" id="mCombo"></span></div>
+      </div>
+      <p class="mstep" id="mStep"></p>
+      <div class="mhead"><h2 class="mtitle" id="mTitle">준비</h2><button class="mhint" id="mHint" type="button">힌트</button></div>
+      <p class="mtask" id="mTask"></p>
+    </div>
+    <section>
+      <div class="loopbox game">
+        <svg id="ring" viewBox="0 0 260 260" role="img" aria-label="루프 진행 상황"></svg>
+        <div class="hud">
+          <div class="cell" id="timeCell"><span class="lab">시간 · 목표 5:00</span><span class="val num" id="timeVal">0:00</span></div>
+          <div class="cell"><span class="lab">점수</span><span class="val num" id="scoreVal">0</span></div>
+          <div class="cell combo" id="comboCell"><span>콤보 <b id="comboVal">0</b></span><button class="mute" id="muteBtn" type="button">소리 켜짐</button></div>
+        </div>
+      </div>
+      <div class="brief game" aria-live="polite">
+        <span class="edge"></span>
+        <p class="step" id="bStep"></p>
+        <h2 id="bTitle">준비</h2>
+        <p class="task" id="bTask"></p>
+        <div class="quiz" id="quiz"></div>
+        <div class="feedback" id="feedback"></div>
+        <button class="hint-btn" id="hintBtn" type="button">힌트 보기</button>
+        <p class="tiny">화면은 사용법을 설명하기 위한 예시예요. 실제 앱과 다를 수 있고, 이름과 수치는 모두 예시예요.</p>
+      </div>
+    </section>
+
+    <section>
+      <p class="phone-cap">인바이츠루프 앱 화면 (예시)</p>
+      <div class="phone" id="phone">
+        <div class="screen" id="screen">
+          <div class="apptag">인바이츠루프 앱 화면 (예시)</div>
+          <div class="sbar"><span>9:41</span><span>인바이츠루프</span></div>
+          <div class="rail">
+            <div class="r" id="railR"><span data-s="W">일상 W</span><span data-s="M1">진료 M1</span><span data-s="M2">입원 M2</span><span data-s="M3">퇴원 후 M3</span></div>
+            <div class="place" id="place">내 공간</div>
+          </div>
+          <div class="thread" id="thread"></div>
+          <div class="chips" id="chips"></div>
+          <div class="inputbar"><div class="box">말씀해 주세요. 메뉴 이름을 몰라도 괜찮아요.</div></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <span>AI플랫폼본부 SH솔루션 개발팀</span>
+    <span>COPYRIGHT © 2026 Inviteseco INC. ALL RIGHTS RESERVED</span>
+  </footer>
+</div>
+
+<div class="toast game" id="toast" role="status"></div>
+
+<div class="overlay on" id="startOv">
+  <div class="sheet game start">
+    <span class="edge"></span>
+    <div class="intro"><b>인바이츠루프란?</b><p>일상의 건강관리에서 병원 진료, 입원, 퇴원 후 관리까지 내 건강 여정을 하나로 잇는 건강관리 앱이에요. AI 건강비서와 대화하듯 내 기록을 이해하고, 오늘 챙길 일을 확인하고, 진료를 준비할 수 있어요. 한 바퀴를 돌 때마다 건강비서는 나에게 더 맞춰져요.</p></div>
+    <p class="big">5분 안에<br>루프 한 바퀴</p>
+    <p>미션 7개를 풀며 AI 건강비서 사용법을 익혀요.</p>
+    <div class="rules">
+      <div><b>한 번에 맞히면</b>100점, 연속으로 맞히면 콤보로 점수가 커져요</div>
+      <div><b>틀리면</b>콤보가 끊겨요. 다시 맞히면 30점</div>
+      <div><b>스피드 라운드</b>빨리 누를수록 점수가 높아요</div>
+      <div><b>5분 안에 끝내면</b>남은 시간만큼 보너스</div>
+    </div>
+    <div class="ptsinfo"><b>완주하면 최대 1,000P 적립</b>
+      <table><tr><td>4,500점 이상</td><td>1,000P</td></tr><tr><td>3,500점 이상</td><td>700P</td></tr><tr><td>2,500점 이상</td><td>500P</td></tr><tr><td>1,500점 이상</td><td>300P</td></tr><tr><td>완주</td><td>100P</td></tr></table>
+      <p>포인트는 인바이츠루프 앱에서 건강기능식품, 화장품 등을 구매할 때 사용할 수 있어요.</p></div>
+    <button class="cta" id="startBtn" type="button">시작하기</button>
+    <p class="tiny" id="bestText" style="text-align:center"></p>
+    <p class="tiny m-only" style="text-align:center">AI플랫폼본부 SH솔루션 개발팀 · © 2026 Inviteseco INC.</p>
+  </div>
+</div>
+
+<div class="overlay" id="clearOv">
+  <div class="sheet game" role="dialog" aria-modal="true" aria-labelledby="clearTitle">
+    <span class="edge"></span>
+    <h2 id="clearTitle">미션 완료</h2>
+    <p class="mpts num" id="clearPts"></p>
+    <div class="lesson" id="clearLesson"></div>
+    <button class="cta" id="nextBtn" type="button">다음 미션</button>
+  </div>
+</div>
+
+<div class="overlay" id="endOv">
+  <div class="sheet game" role="dialog" aria-modal="true" aria-labelledby="endTitle">
+    <div class="rank"><span class="g" id="rankG">A</span></div>
+    <h2 id="endTitle" style="text-align:center;margin-top:8px">루프 한 바퀴 완주</h2>
+    <p style="text-align:center;color:var(--sub)" id="endMsg"></p>
+    <div class="reward" id="reward"><span class="lab">축하해요! 적립 포인트</span><span class="n num" id="ptsN">0P</span><p class="use">인바이츠루프 앱에서 건강기능식품, 화장품 등을 구매할 때 사용할 수 있어요.</p><p class="next" id="ptsNext"></p></div>
+    <div class="stats">
+      <div><b class="num" id="sScore">0</b><span>최종 점수</span></div>
+      <div><b class="num" id="sTime">0:00</b><span>걸린 시간</span></div>
+      <div><b class="num" id="sAcc">0%</b><span>한 번에 정답</span></div>
+    </div>
+    <p style="font-size:14px;color:var(--sub);text-align:center" id="sBonus"></p>
+    <p><b style="font-weight:500">한 바퀴 돌며 배운 것</b></p>
+    <ol class="recap">
+      <li>처음 고른 호칭과 대화 말투로 건강비서가 말을 걸어요.</li>
+      <li>시그니처 타입은 위험 프로필·반응 민감성·행동 변화 가능성의 조합이에요. 진단이 아니라 예측이에요.</li>
+      <li>위급하면 “급해요”. 바로 119 안내가 나와요.</li>
+      <li>달라진 검사는 질문으로 바꿔 선생님께 보내고, 승인된 것만 내 계획이 돼요.</li>
+      <li>입원 중에도 일정과 주의 사항을 알려 주고, 회진 때 물어볼 건 회진 전에 다시 알려 줘요.</li>
+      <li>못 하겠다고 말해도 돼요. 대안은 내가 고르고, 승인은 의료진이 해요.</li>
+      <li>달라진 건 “그건 이제 달라”로 고쳐요. 돌수록 나를 더 잘 알게 돼요.</li>
+      <li>가족에게 건강 리포트를 공유할 수 있고, 공유 여부와 범위는 내가 정해요.</li>
+    </ol>
+    <button class="cta" id="againBtn" type="button">한 바퀴 더 돌기</button>
+  </div>
+</div>
+
+<script>
+(function(){
+const $ = s => document.querySelector(s);
+const thread = $('#thread'), chips = $('#chips'), quiz = $('#quiz'), fb = $('#feedback');
+const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const wait = ms => new Promise(r => setTimeout(r, reduce ? Math.min(ms, 150) : ms));
+const isMobile = () => window.matchMedia('(max-width:640px)').matches;
+const MISSIONS = [
+  {st:'W', name:'내 공간 만들기'},{st:'W', name:'시그니처 타입'},{st:'W', name:'급할 땐? 스피드 라운드'},
+  {st:'M1', name:'진료실에서'},{st:'M2', name:'병동에서'},{st:'M3', name:'퇴원 후 상담'},{st:'W', name:'다시 일상으로'}
+];
+const STAGE = {W:'일상', M1:'진료', M2:'입원', M3:'퇴원 후'};
+const LIMIT = 300;
+let cur = 0, done = [], hintText = '', style = 'calm', callName = '길동님';
+let score = 0, shown = 0, combo = 0, maxCombo = 0, tries = 0, firsts = 0, chFail = false, mPts = 0;
+let t0 = 0, tEnd = 0, timer = null, sound = true, pausedMs = 0, pauseAt = 0;
+let px = window.innerWidth/2, py = window.innerHeight/2;
+document.addEventListener('pointerdown', e => { px = e.clientX; py = e.clientY; }, true);
+
+/* ---------- sound ---------- */
+let ac = null;
+function tone(f, d, type, vol, delay){
+  if (!sound || !ac) return;
+  const t = ac.currentTime + (delay||0), o = ac.createOscillator(), g = ac.createGain();
+  o.type = type || 'sine'; o.frequency.setValueAtTime(f, t);
+  g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol||0.12, t+0.015); g.gain.exponentialRampToValueAtTime(0.0001, t+d);
+  o.connect(g); g.connect(ac.destination); o.start(t); o.stop(t+d+0.02);
+}
+const sfx = {
+  ok(c){ const b = 523*Math.pow(1.06, Math.min(c,6)); tone(b,.12,'triangle'); tone(b*1.5,.18,'triangle',.1,.08); },
+  bad(){ tone(180,.22,'sawtooth',.06); tone(140,.25,'sawtooth',.05,.08); },
+  tick(){ tone(880,.04,'square',.03); },
+  stamp(){ tone(110,.18,'sine',.25); tone(660,.12,'triangle',.08,.05); },
+  fanfare(){ [523,659,784,1047].forEach((f,i)=>tone(f,.25,'triangle',.12,i*.12)); },
+  coin(){ [1319,1568,1976,2637].forEach((f,i)=>tone(f,.14,'square',.045,i*.07)); }
+};
+function setSound(on){ sound = on; $('#muteBtn').textContent = on ? '소리 켜짐' : '소리 꺼짐'; $('#mMute').textContent = on ? '🔊' : '🔇'; }
+$('#muteBtn').onclick = () => setSound(!sound);
+$('#mMute').onclick = () => setSound(!sound);
+
+/* ---------- confetti ---------- */
+const cv = $('#fx'), cx2 = cv.getContext('2d'); let parts = [], raf = null;
+function sizeCanvas(){ const r = window.devicePixelRatio||1; cv.width = innerWidth*r; cv.height = innerHeight*r; cx2.setTransform(r,0,0,r,0,0); }
+sizeCanvas(); addEventListener('resize', sizeCanvas);
+function burst(x, y, n, spread){
+  if (reduce) return;
+  const cs = getComputedStyle(document.documentElement);
+  const cols = ['--clay','--blue','--gold','--sos'].map(v => cs.getPropertyValue(v).trim());
+  for (let i=0;i<n;i++){ const a = Math.random()*Math.PI*2, s = (spread||6)*(0.4+Math.random());
+    parts.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s-4,g:.22,w:5+Math.random()*5,h:3+Math.random()*4,r:Math.random()*6,vr:(Math.random()-.5)*.4,c:cols[i%cols.length],life:60+Math.random()*40}); }
+  if (!raf) loop();
+}
+function loop(){
+  cx2.clearRect(0,0,innerWidth,innerHeight);
+  parts = parts.filter(p => p.life > 0);
+  parts.forEach(p => { p.vy += p.g; p.x += p.vx; p.y += p.vy; p.vx *= .99; p.r += p.vr; p.life--;
+    cx2.save(); cx2.globalAlpha = Math.min(1, p.life/30); cx2.translate(p.x,p.y);
+    if (p.coin){ cx2.scale(Math.max(.12, Math.abs(Math.cos(p.r))), 1); const R = p.w/2;
+      cx2.beginPath(); cx2.arc(0,0,R,0,Math.PI*2); cx2.fillStyle = '#F2C55E'; cx2.fill(); cx2.lineWidth = 2; cx2.strokeStyle = '#B8862F'; cx2.stroke();
+      cx2.fillStyle = '#7A5A1E'; cx2.font = `700 ${Math.round(R*1.15)}px sans-serif`; cx2.textAlign = 'center'; cx2.textBaseline = 'middle'; cx2.fillText('P', 0, 1); }
+    else { cx2.rotate(p.r); cx2.fillStyle = p.c; cx2.fillRect(-p.w/2,-p.h/2,p.w,p.h); }
+    cx2.restore(); });
+  raf = parts.length ? requestAnimationFrame(loop) : (cx2.clearRect(0,0,innerWidth,innerHeight), null);
+}
+function rain(){ for (let i=0;i<6;i++) setTimeout(() => burst(Math.random()*innerWidth, innerHeight*0.25, 40, 9), i*180); }
+function coinRain(n){
+  if (reduce) return;
+  for (let i=0;i<(n||45);i++) parts.push({x:Math.random()*innerWidth, y:-30-Math.random()*260, vx:(Math.random()-.5)*1.6, vy:1.5+Math.random()*2.5, g:.1, w:16+Math.random()*10, h:0, r:Math.random()*6, vr:.12+Math.random()*.14, coin:true, life:170+Math.random()*40});
+  if (!raf) loop();
+}
+/* 게임 점수 → 앱 포인트 (최대 1,000P) */
+const POINT_TIERS = [{min:0,p:100},{min:1500,p:300},{min:2500,p:500},{min:3500,p:700},{min:4500,p:1000}];
+function pointsFor(sc){ let p = 0; POINT_TIERS.forEach(t => { if (sc >= t.min) p = t.p; }); return p; }
+function celebrate(P){
+  const el = $('#ptsN'); el.textContent = '0P'; el.classList.remove('bang');
+  setTimeout(() => {
+    const st = performance.now(), dur = reduce ? 0 : 1400; let lastTick = 0;
+    const step = now => { const k = dur ? Math.min(1,(now-st)/dur) : 1, e = 1 - Math.pow(1-k, 3);
+      el.textContent = Math.round(P*e).toLocaleString() + 'P';
+      if (now - lastTick > 70 && k < 1){ sfx.tick(); lastTick = now; }
+      if (k < 1) requestAnimationFrame(step);
+      else { void el.offsetWidth; el.classList.add('bang'); sfx.coin(); coinRain(P >= 700 ? 60 : 40);
+        const r = el.getBoundingClientRect(); burst(r.left + r.width/2, r.top + r.height/2, 50, 8); } };
+    requestAnimationFrame(step);
+  }, 700);
+}
+function pop(text, sub, bad){
+  const d = document.createElement('div'); d.className = 'pop' + (bad ? ' bad' : '');
+  d.innerHTML = text + (sub ? `<small>${sub}</small>` : ''); d.style.left = px+'px'; d.style.top = py+'px';
+  document.body.appendChild(d); setTimeout(() => d.remove(), 1000);
+}
+
+/* ---------- scoring ---------- */
+function animScore(){
+  const from = shown, to = score, st = performance.now();
+  const step = now => { const k = Math.min(1,(now-st)/450); shown = Math.round(from+(to-from)*k);
+    $('#scoreVal').textContent = shown.toLocaleString(); $('#mScore').innerHTML = `<b>${shown.toLocaleString()}</b>점`;
+    if (k<1) requestAnimationFrame(step); };
+  requestAnimationFrame(step);
+}
+function hudCombo(){
+  $('#comboVal').textContent = combo; const c = $('#comboCell');
+  c.classList.toggle('hot', combo >= 3); c.classList.remove('bump'); void c.offsetWidth; if (combo > 1) c.classList.add('bump');
+  $('#mCombo').textContent = combo > 1 ? `콤보 ${combo}` : '';
+}
+function startCh(){ chFail = false; }
+function pass(base){
+  tries++; let pts, sub = '';
+  if (!chFail){ firsts++; combo++; maxCombo = Math.max(maxCombo, combo); const mult = Math.min(3, 1 + (combo-1)*0.5); pts = Math.round(base*mult); if (combo > 1) sub = `콤보 ${combo} · ×${mult}`; }
+  else pts = 30;
+  score += pts; mPts += pts; chFail = false;
+  pop(`+${pts}`, sub); burst(px, py, combo >= 3 ? 34 : 18); sfx.ok(combo); animScore(); hudCombo();
+}
+function fail(msg){
+  chFail = true; combo = 0; hudCombo();
+  fb.className = 'feedback bad'; fb.textContent = msg; toast(msg, 'bad');
+  pop('콤보 끊김', '', true); sfx.bad();
+  const p = $('#phone'), s = $('#screen'); p.classList.remove('shake'); s.classList.remove('flash'); void p.offsetWidth; p.classList.add('shake'); s.classList.add('flash');
+}
+
+/* ---------- timer ---------- */
+const fmt = s => `${Math.floor(s/60)}:${String(Math.floor(s%60)).padStart(2,'0')}`;
+function tickTime(){
+  const s = elapsed();
+  $('#timeVal').textContent = fmt(s); $('#mTime').innerHTML = `<b>${fmt(s)}</b>/5:00`;
+  const over = s > LIMIT; $('#timeCell').classList.toggle('over', over); $('#mTime').classList.toggle('over', over);
+}
+
+/* 화면을 벗어나 있거나 미션 완료 창이 떠 있는 동안은 타이머를 멈춰요 */
+function elapsed(){ const now = tEnd || performance.now(); return Math.max(0, now - t0 - pausedMs - (pauseAt ? now - pauseAt : 0))/1000; }
+function pauseT(){ if (t0 && !tEnd && !pauseAt) pauseAt = performance.now(); }
+function resumeT(){ if (pauseAt){ pausedMs += performance.now() - pauseAt; pauseAt = 0; } }
+document.addEventListener('visibilitychange', () => { if (document.hidden) pauseT(); else if (!$('#clearOv').classList.contains('on')) resumeT(); });
+
+/* ---------- ring ---------- */
+/* 모바일용 작은 루프: W → M1 → M2 → M3 → W */
+function drawMini(st){
+  const C = 40, R = 27, pos = {W:-90, M1:0, M2:90, M3:180};
+  const passed = new Set(MISSIONS.slice(0, Math.min(cur, MISSIONS.length)).map(m => m.st));
+  let h = `<circle cx="${C}" cy="${C}" r="${R}" fill="none" stroke="var(--hair)" stroke-width="2"/>`;
+  [-45, 45, 135, 225].forEach(d => { const a = d*Math.PI/180, x = C+R*Math.cos(a), y = C+R*Math.sin(a), r = d+90;
+    h += `<path d="M -3 -3 L 2 0 L -3 3" fill="none" stroke="var(--sub)" stroke-width="1.4" stroke-linecap="round" transform="translate(${x.toFixed(1)} ${y.toFixed(1)}) rotate(${r})"/>`; });
+  Object.entries(pos).forEach(([k,d]) => { const a = d*Math.PI/180, x = C+R*Math.cos(a), y = C+R*Math.sin(a), now = k === st, was = passed.has(k);
+    if (now) h += `<circle class="cur" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="12" fill="var(--clay)"/>`;
+    h += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="12" fill="${now?'var(--clay)':'var(--panel)'}" stroke="${now||was?'var(--clay)':'var(--hair)'}" stroke-width="1.6"/>`;
+    h += `<text x="${x.toFixed(1)}" y="${(y+3.5).toFixed(1)}" text-anchor="middle" font-size="${k.length>1?9:10.5}" font-weight="500" fill="${now?'var(--panel)':was?'var(--clay)':'var(--sub)'}" font-family="Noto Sans KR,sans-serif">${k}</text>`; });
+  h += `<text x="${C}" y="${C+3}" text-anchor="middle" font-size="8.5" letter-spacing=".5" fill="var(--sub)" font-family="Noto Sans KR,sans-serif">LOOP</text>`;
+  const el = document.getElementById('mLoop'); if (el) el.innerHTML = h;
+}
+function drawRing(thunkIdx){
+  const cx=130, cy=130, R=96, n=MISSIONS.length;
+  let h = `<circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="var(--hair)" stroke-width="2"/>`;
+  const frac = done.length / n;
+  if (frac > 0){ const a = Math.min(frac,.9999)*Math.PI*2, x = cx+R*Math.sin(a), y = cy-R*Math.cos(a);
+    h += `<path d="M ${cx} ${cy-R} A ${R} ${R} 0 ${a>Math.PI?1:0} 1 ${x.toFixed(1)} ${y.toFixed(1)}" fill="none" stroke="var(--clay)" stroke-width="4" stroke-linecap="round"/>`; }
+  MISSIONS.forEach((m,i) => {
+    const a = (i/n)*Math.PI*2, x = cx+R*Math.sin(a), y = cy-R*Math.cos(a), lx = cx+(R+22)*Math.sin(a), ly = cy-(R+22)*Math.cos(a);
+    const isDone = done[i], now = i === cur && !isDone;
+    if (isDone) h += `<g class="node-stamp${thunkIdx===i?' thunk':''}"><circle cx="${x}" cy="${y}" r="15" fill="var(--clay)"/><text x="${x}" y="${y+5}" text-anchor="middle" font-size="14" fill="var(--bg)" font-family="Noto Sans KR,sans-serif">✓</text></g>`;
+    else h += `<circle cx="${x}" cy="${y}" r="15" fill="var(--panel)" stroke="${now?'var(--clay)':'var(--hair)'}" stroke-width="${now?3:2}"/><text x="${x}" y="${y+4}" text-anchor="middle" font-size="11" fill="var(--sub)" font-family="Noto Sans KR,sans-serif">${i+1}</text>`;
+    h += `<text x="${lx}" y="${ly+4}" text-anchor="middle" font-size="10" fill="var(--sub)" font-family="Noto Sans KR,sans-serif">${m.st}</text>`;
+  });
+  const st = cur < n ? MISSIONS[cur].st : 'W';
+  h += `<text x="${cx}" y="${cy+2}" text-anchor="middle" font-size="34" font-weight="300" fill="var(--ink)" font-family="Noto Sans KR,sans-serif">${st}</text>`;
+  h += `<text x="${cx}" y="${cy+24}" text-anchor="middle" font-size="12" fill="var(--sub)" font-family="Noto Sans KR,sans-serif">${cur < n ? STAGE[st] : '완주'}</text>`;
+  $('#ring').innerHTML = h;
+  drawMini(st);
+  $('#mDots').innerHTML = MISSIONS.map((x,i) => `<i class="${done[i]?'d':i===cur?'n':''}"></i>`).join('');
+  document.querySelectorAll('#railR span').forEach(s => s.classList.toggle('on', s.dataset.s === st));
+}
+
+/* ---------- brief ---------- */
+function brief(title, task, hint){
+  const step = `미션 ${cur+1} / ${MISSIONS.length}  ·  ${STAGE[MISSIONS[cur].st]} ${MISSIONS[cur].st}`;
+  $('#bStep').textContent = step; $('#mStep').textContent = step;
+  $('#bTitle').textContent = title; $('#mTitle').textContent = title; setTask(task);
+  hintText = hint || ''; $('#hintBtn').style.display = $('#mHint').style.display = hint ? '' : 'none';
+}
+function setTask(t){ $('#bTask').textContent = t; $('#mTask').textContent = t; quiz.innerHTML = ''; fb.className = 'feedback'; fb.textContent = ''; }
+let toastT = null;
+function toast(msg, kind){
+  if (!isMobile() || document.body.classList.contains('quizzing')) return;
+  const t = $('#toast'); t.textContent = msg; t.className = 'toast on ' + kind;
+  clearTimeout(toastT); toastT = setTimeout(() => { t.className = 'toast ' + kind; }, 3000);
+}
+function good(msg){ fb.className = 'feedback good'; fb.textContent = msg; toast(msg, 'good'); }
+function quizzing(on){ document.body.classList.toggle('quizzing', on); if (on){ clearTimeout(toastT); $('#toast').classList.remove('on'); setTimeout(bottom, 50); } }
+$('#hintBtn').onclick = $('#mHint').onclick = () => good('힌트: ' + hintText);
+
+/* ---------- phone ---------- */
+function place(t){ $('#place').textContent = t; }
+let scrollAnim = null, userScrolled = false;
+['wheel','touchstart','pointerdown'].forEach(ev => thread.addEventListener(ev, () => { userScrolled = true; }, {passive:true}));
+function scrollToY(y, dur){
+  return new Promise(res => {
+    cancelAnimationFrame(scrollAnim);
+    const from = thread.scrollTop, to = Math.max(0, Math.min(y, thread.scrollHeight - thread.clientHeight));
+    if (reduce || Math.abs(to-from) < 2){ thread.scrollTop = to; return res(); }
+    const st = performance.now();
+    const step = now => { if (userScrolled) return res();
+      const k = Math.min(1,(now-st)/dur), e = k<.5 ? 2*k*k : 1-Math.pow(-2*k+2,2)/2;
+      thread.scrollTop = from + (to-from)*e; if (k<1) scrollAnim = requestAnimationFrame(step); else res(); };
+    scrollAnim = requestAnimationFrame(step);
+  });
+}
+function bottom(){ userScrolled = false; return scrollToY(thread.scrollHeight, 350); }
+/* 새 메시지는 첫 줄부터 보여 주고, 길면 끝까지 천천히 내려가요 */
+async function follow(el){
+  userScrolled = false;
+  const view = thread.clientHeight, top = Math.max(0, el.offsetTop - 12), end = thread.scrollHeight - view;
+  if (el.offsetHeight <= view*0.75 || top >= end) return scrollToY(end, 500);
+  await scrollToY(top, 500); await wait(800);
+  if (!userScrolled) await scrollToY(end, Math.min(3500, Math.max(900, (end-top)*10)));
+}
+function newChat(){ thread.innerHTML = ''; chips.innerHTML = ''; thread.scrollTop = 0; sys(`새 대화 · ${MISSIONS[cur].name}`); }
+function me(t){ const d=document.createElement('div'); d.className='msg me'; d.textContent=t; thread.appendChild(d); bottom(); }
+function sys(t){ const d=document.createElement('div'); d.className='msg sys'; d.textContent=t; thread.appendChild(d); bottom(); }
+async function ai(h, sub){
+  const t=document.createElement('div'); t.className='msg ai'; t.innerHTML='<div class="typing"><i></i><i></i><i></i></div>'; thread.appendChild(t); bottom();
+  await wait(450);
+  t.innerHTML = `<span class="edge"></span><div>${h}</div>${sub?`<div class="sub">${sub}</div>`:''}`;
+  await follow(t);
+  return t;
+}
+function choose(opts, allowSos){
+  return new Promise(res => {
+    chips.innerHTML = '';
+    opts.forEach(o => { const b=document.createElement('button'); b.type='button'; b.className='chip'; b.textContent=o.label; b.onclick=()=>{ chips.innerHTML=''; res(o); }; chips.appendChild(b); });
+    const s=document.createElement('button'); s.type='button'; s.className='chip sos'; s.textContent='급해요';
+    s.onclick = () => { if (allowSos){ chips.innerHTML=''; res({label:'급해요', sos:true}); } else fail('‘급해요’는 위급할 때 쓰는 버튼이에요. 지금은 다른 걸 골라 주세요.'); };
+    chips.appendChild(s);
+    if (!userScrolled) scrollToY(thread.scrollHeight, 300);
+  });
+}
+function oneChip(label){ return new Promise(res => { chips.innerHTML=''; const b=document.createElement('button'); b.type='button'; b.className='chip big'; b.textContent=label; b.onclick=()=>{ chips.innerHTML=''; res(); }; chips.appendChild(b); }); }
+/* 정답이 있는 대화 선택: 틀리면 다시 고르기 */
+async function decide(opts, base){
+  startCh();
+  while (true){
+    const o = await choose(opts);
+    if (o.ok){ me(o.label); pass(base||100); return o; }
+    if (o.reply){ me(o.label); await ai(o.reply); }
+    fail(o.why);
+  }
+}
+async function quizUntil(task, opts){
+  setTask(task); quizzing(true); startCh();
+  while (true){
+    const pick = await new Promise(res => {
+      quiz.innerHTML = '';
+      opts.forEach(x => { const b=document.createElement('button'); b.type='button'; b.className='opt'; b.textContent=x.label; b.onclick=()=>res({x,b}); quiz.appendChild(b); });
+    });
+    if (pick.x.ok){ pass(100); quiz.innerHTML=''; good(pick.x.why || '맞아요.'); await wait(1000); quizzing(false); return; }
+    fail(pick.x.why);
+  }
+}
+function clear(title, body){
+  return new Promise(res => {
+    done[cur] = true; drawRing(cur); sfx.stamp(); burst(innerWidth/2, innerHeight/2, 50, 8);
+    $('#clearTitle').textContent = `${MISSIONS[cur].name} 완료`;
+    $('#clearPts').innerHTML = `+${mPts}<small>점</small>`;
+    $('#clearLesson').innerHTML = `<b>${title}</b>${body}`;
+    $('#nextBtn').textContent = cur === MISSIONS.length-1 ? '결과 보기' : '다음 미션';
+    pauseT();
+    setTimeout(() => { $('#clearOv').classList.add('on'); $('#nextBtn').focus(); }, reduce ? 0 : 500);
+    $('#nextBtn').onclick = () => { $('#clearOv').classList.remove('on'); if (!document.hidden) resumeT(); res(); };
+  });
+}
+
+/* ---------- missions ---------- */
+async function m1(){
+  place('내 공간 만들기');
+  brief('내 공간 만들기', '건강비서가 처음 인사를 건네요. 휴대폰 화면 아래 버튼으로 답해 보세요.', '어떤 호칭, 어떤 말투를 골라도 괜찮아요.');
+  await ai('길동님, 안녕하세요. 매일 만나게 될 공간이에요.', '두 가지만 여쭤볼게요. 먼저, 뭐라고 불러드릴까요?');
+  const n = await choose([{label:'길동님'},{label:'홍길동님'},{label:'이름은 부르지 않아도 돼요'}]);
+  me(n.label); callName = n.label.includes('부르지') ? '' : n.label;
+  await ai(`${callName ? callName+', 그렇게 부를게요.' : '네, 이름은 부르지 않을게요.'} 어떤 대화 스타일이 편하세요?`, `언제든 바꿀 수 있어요.<div class="tones">
+    <div><b>차분한 동행자</b><span>존중·담백</span><p>오늘 목표 활동량까지 조금 더 채울 수 있는 시간이에요. 무리하지 않는 선에서 가볍게 움직여볼까요?</p></div>
+    <div><b>다정한 친구</b><span>존중·따뜻</span><p>오늘 하루 많이 고단하셨나 봐요 🥺 저랑 3분만 같이 스트레칭 해볼까요? 🥰</p></div>
+    <div><b>든든한 코치</b><span>주도·담백</span><p>지금 5분만 가볍게 걸으시면 남은 실천 루틴을 한 단계 수월하게 채울 수 있어요. 함께 시작해 볼까요?</p></div>
+    <div><b>활기찬 응원단</b><span>주도·따뜻</span><p>찌뿌둥한 몸을 시원하게 깨울 타이밍이 왔어요! 🥳 딱 1분만 움직이며 활력을 채워볼까요? 💪</p></div></div>`);
+  setTask('넷 중 가장 편한 대화 말투를 골라 보세요.');
+  const s = await choose([{label:'차분한 동행자', v:'calm'},{label:'다정한 친구', v:'friend'},{label:'든든한 코치', v:'coach'},{label:'활기찬 응원단', v:'cheer'}]);
+  me(s.label); style = s.v;
+  await ai({calm:'좋아요. 차분하게, 무리하지 않는 선에서 말씀드릴게요.', friend:'좋아요! 곁에서 다정하게 챙겨 드릴게요 🥰', coach:'좋습니다. 할 일을 분명하게 짚어 드릴게요.', cheer:'좋아요! 신나게 응원하면서 같이 가요! 💪'}[s.v]);
+  await quizUntil('방금 고른 대화 말투는 어떻게 쓰일까요?', [
+    {label:'오늘 이 대화에서만 쓰여요', ok:false, why:'한 번 고르면 앞으로도 계속 쓰여요.'},
+    {label:'앞으로 건강비서가 이 말투로 말을 걸어요', ok:true, why:'맞아요. 운동 권유도, 입원 중 일정 안내도 이 말투로 나와요.'},
+    {label:'한 번 고르면 바꿀 수 없어요', ok:false, why:'언제든 바꿀 수 있어요.'}
+  ]);
+  await clear('나에게 맞춘 말투', '건강비서는 내가 고른 호칭과 대화 말투로 말을 걸어요. 차분하게, 다정하게, 든든하게, 활기차게. 마음이 바뀌면 언제든 바꿀 수 있어요.');
+}
+
+async function m2(){
+  place('내 공간 만들기');
+  brief('시그니처 타입', '건강비서가 길동님의 시그니처 타입을 찾고 있어요. 세 글자가 무엇인지 맞혀 보세요.', '첫째는 위험 프로필, 둘째는 반응 민감성, 셋째는 행동 변화 가능성이에요.');
+  await ai(`이제 ${callName || '길동님'}의 시그니처 타입을 보여드릴게요.`, `세 가지 유형을 조합해서 만들어요.<div class="detail">
+    <div class="row"><span>첫째 글자</span><span>위험 프로필<small>지금 가장 주의할 질환·건강 영역</small></span></div>
+    <div class="row"><span>둘째 글자</span><span>반응 민감성</span></div>
+    <div class="row"><span>셋째 글자</span><span>행동 변화 가능성</span></div></div>`);
+  const node = await ai('시그니처 타입을 찾고 있어요.', '<div class="reel" id="reel"><span>?</span><span>?</span><span>?</span></div>');
+  const slots = node.querySelectorAll('.reel span'), final = ['M','S','W'], AZ = 'ABCDEFGHIKLMNOPRSTVW';
+  let spin = setInterval(() => { slots.forEach(s => { if(!s.classList.contains('lock')) s.textContent = AZ[Math.floor(Math.random()*AZ.length)]; }); sfx.tick(); }, 70);
+  for (let i=0;i<3;i++){ await wait(i ? 380 : 700); slots[i].textContent = final[i]; slots[i].classList.add('lock'); sfx.stamp(); }
+  clearInterval(spin);
+  const r = slots[1].getBoundingClientRect(); burst(r.left+r.width/2, r.top+r.height/2, 40, 7);
+  await ai(`${callName || '길동님'}의 시그니처 타입은 <b>M · S · W</b>예요.`);
+  setTask('왼쪽 글자를 누른 다음, 오른쪽에서 그 뜻을 눌러 짝을 맞혀 보세요.'); quizzing(true);
+  await new Promise(res => {
+    const pairs = {M:'met', S:'slp', W:'wat'};
+    quiz.innerHTML = '<div class="match"><div class="col" id="mL"></div><div class="col" id="mR"></div></div>';
+    let sel = null, n = 0;
+    ['M','S','W'].forEach(k => { const b=document.createElement('button'); b.type='button'; b.className='L'; b.textContent=k; b.onclick=()=>{ if(b.classList.contains('ok')) return; document.querySelectorAll('#mL button').forEach(x=>x.classList.remove('sel')); b.classList.add('sel'); sel={k,b}; startCh(); }; $('#mL').appendChild(b); });
+    [['slp','Sleep · 수면','반응 민감성'],['wat','Watcher · 낮은 개선 가능성','행동 변화 가능성'],['met','Metabolic · 대사 질환','위험 프로필']].forEach(([v,t,s]) => { const b=document.createElement('button'); b.type='button'; b.innerHTML=`${t}<small>${s}</small>`; b.onclick=()=>{
+      if(b.classList.contains('ok')) return;
+      if(!sel){ good('먼저 왼쪽에서 글자를 골라 주세요.'); return; }
+      if(pairs[sel.k]===v){ b.classList.add('ok'); sel.b.classList.remove('sel'); sel.b.classList.add('ok'); sel=null; n++; pass(70); fb.className='feedback'; if(n===3) res(); }
+      else fail(`${sel.k}는 그 뜻이 아니에요. 몇 번째 글자인지도 함께 보세요.`);
+    }; $('#mR').appendChild(b); });
+  });
+  await wait(500); quiz.innerHTML = ''; quizzing(false);
+  await ai('세 글자의 뜻이에요.', `<div class="sig">
+    <div class="it"><em>위험 프로필</em><b>M · Metabolic (대사 질환)</b>몸의 에너지 사용 기능에 문제가 생겨 혈당, 지방, 요산 수치 등이 정상 범위를 벗어나는 상태예요. 적정 체중을 유지하고 설탕과 나쁜 지방 섭취를 줄이세요. 유산소 운동과 근육을 키우는 운동을 함께하는 것이 가장 효과적이에요.</div>
+    <div class="it"><em>반응 민감성</em><b>S · Sleep (수면)</b>질 좋은 수면이 보장되어야 뇌와 몸의 기능이 발휘돼요. 그 어떤 영양제보다 ‘푹 자는 것’이 가장 중요해요.</div>
+    <div class="it"><em>행동 변화 가능성</em><b>W · Watcher (낮은 개선 가능성)</b>개선 의지보다는 현재 상태 유지에 집중하는 타입이에요. 새로운 시도에 대한 부담보다는 익숙한 습관을 유지하며 위험을 관리해요.</div></div>
+    <p style="font-size:12px;color:var(--sub);margin:8px 0 0">※ 예측 결과이며 의학적 진단이 아니에요. 정확한 내용과 의학적 조언은 의사와 상담하세요.</p>`);
+  await quizUntil('W(Watcher) 타입인 길동님께 맞는 시작은 무엇일까요?', [
+    {label:'새로운 운동 프로그램을 한꺼번에 시작하기', ok:false, why:'Watcher는 새로운 시도가 부담스러운 타입이에요.'},
+    {label:'익숙한 습관은 지키면서, 작은 것 하나부터', ok:true, why:'맞아요. 익숙한 습관을 유지하며 위험을 관리하는 타입이에요.'},
+    {label:'M이 대사 질환이니 진단부터 받기', ok:false, why:'시그니처 타입은 진단이 아니라 예측이에요. 진단은 의사 선생님이 확인한 뒤에 정해져요.'}
+  ]);
+  await clear('세 유형의 조합, 진단이 아닌 예측', 'M은 지금 가장 주의할 영역(대사 질환), S는 가장 민감하게 반응하는 것(수면), W는 행동 변화 성향(현상 유지형)이에요. 진단이 아니라 예측이에요.');
+}
+
+async function m3(){
+  place('홈');
+  brief('급할 땐? 스피드 라운드', '상황이 하나씩 나와요. 위급하면 “급해요”, 아니면 “그냥 물어보기”를 8초 안에 누르세요. 빠를수록 점수가 높아요.', '숨이 차거나, 가슴이 아프거나, 혈압이 크게 오르고 머리가 심하게 아프면 위급해요.');
+  await ai('스피드 라운드예요.', '“급해요”는 대화 버튼 맨 끝에 늘 붙어 있어요. 준비되면 아래 버튼을 눌러 주세요.');
+  setTask('준비되면 휴대폰 화면의 “시작할게요”를 누르세요. 그때부터 상황마다 8초가 주어져요.');
+  await oneChip('시작할게요'); me('시작할게요');
+  setTask('위급하면 “급해요”, 아니면 “그냥 물어보기”. 상황마다 8초!');
+  const items = [
+    {t:'갑자기 가슴이 쥐어짜듯 아프고 숨이 차요', sos:true},
+    {t:'오늘 몇 걸음 걸었는지 궁금해요', sos:false},
+    {t:'혈압이 178/112인데 머리가 깨질 듯 아파요', sos:true},
+    {t:'저녁에 뭘 조심하면 좋을까요?', sos:false}
+  ];
+  for (let i=0;i<items.length;i++){
+    const it = items[i], LIM = 8000;
+    const node = await ai(`<div class="situ"><div class="top"><span class="lab">상황 ${i+1} / ${items.length}</span><span class="sec num">8초</span></div><div class="q">“${it.t}”</div><div class="cd"><i style="animation-duration:${LIM}ms"></i></div><div class="verdict"></div></div>`);
+    const situ = node.querySelector('.situ'), secEl = situ.querySelector('.sec'), st = performance.now(); startCh();
+    const iv = setInterval(() => { secEl.textContent = Math.max(0, Math.ceil((LIM-(performance.now()-st))/1000)) + '초'; }, 200);
+    const res = await new Promise(resolve => {
+      let doneFlag = false; const fin = v => { if (doneFlag) return; doneFlag = true; resolve(v); };
+      chips.innerHTML = '';
+      const a = document.createElement('button'); a.type='button'; a.className='chip big'; a.textContent='그냥 물어보기'; a.onclick=()=>fin('ask');
+      const b = document.createElement('button'); b.type='button'; b.className='chip sos big'; b.textContent='급해요'; b.onclick=()=>fin('sos');
+      chips.append(a, b); setTimeout(() => fin('timeout'), LIM);
+    });
+    clearInterval(iv); chips.innerHTML = ''; situ.classList.add('done');
+    const v = situ.querySelector('.verdict'), answer = it.sos ? '급해요' : '그냥 물어보기';
+    const right = res !== 'timeout' && (res === 'sos') === it.sos;
+    if (right){ const left = Math.max(0, LIM - (performance.now()-st)); pass(40 + Math.round(left/LIM*80)); v.style.color='var(--blue)'; v.textContent = it.sos ? '정답! 바로 119 안내가 나와요.' : '정답! 그냥 물어보면 돼요.'; }
+    else { tries++; const why = res === 'timeout' ? `시간 초과! 정답은 “${answer}”예요.` : `아쉬워요. 정답은 “${answer}”예요.`; fail(why); v.style.color='var(--sos)'; v.textContent = why; }
+    await wait(1100);
+  }
+  await ai('“급해요”를 누르면 이렇게 나와요.', `<div class="sosbox">위급할 수 있는 상황이에요. 지금 바로 119에 연락하세요.<span class="mock">시연</span><br><span style="font-size:12.5px">응급실로 최근 2주 기록을 보낼지는 직접 정하시면 돼요.</span></div>`);
+  await clear('위급하면 “급해요”', '“급해요”는 대화 버튼 맨 끝에 늘 있어요. 누르면 다른 대화보다 먼저 119 안내가 나오고, 응급실로 기록을 보낼지는 내가 정해요.');
+}
+
+async function m4(){
+  place('외래 · 내과');
+  brief('진료실에서', '진료 날이에요. 대기실에서 건강비서가 달라진 검사를 모아 왔어요. 선생님께 어떻게 전할까요?', '판단은 선생님 몫이에요. 건강비서는 질문을 정리해 전달해요.');
+  sys('진료 날 · 대기실');
+  await ai(`진료 10분 전이에요. 지난 검사에서 달라진 것 네 가지예요.`, `<div class="detail">
+    <div class="row"><span>LDL 콜레스테롤</span><span>124 → 141<small>참고 130 미만</small></span></div>
+    <div class="row"><span>중성지방</span><span>138 → 162</span></div>
+    <div class="row"><span>수축기 혈압</span><span>121 → 128</span></div>
+    <div class="row"><span>공복 혈당</span><span>94 → 99</span></div></div>`);
+  await decide([
+    {label:'괜찮은 거지?', ok:false, reply:'괜찮은지 판단은 선생님 몫이에요. 대신 질문으로 바꿔 선생님께 보내 드릴 수 있어요.', why:'건강비서는 판단 대신 질문을 정리해 줘요.'},
+    {label:'질문으로 바꿔서 선생님께 보내줘', ok:true}
+  ]);
+  await ai('보냈어요. 김 교수님 화면에 이렇게 올라갔어요.<span class="mock">시연</span>', `<div class="doc"><div class="lab">닥터웹 · Patient Summary</div>
+    <div class="h">시그니처 타입</div><p>M · S · W (대사 질환 · 수면 · 낮은 개선 가능성)</p>
+    <div class="h">환자가 준비한 질문 4개</div><p>LDL이 141로 올랐는데 어떻게 관리할까요? 외 3개</p></div>`);
+  await quizUntil('진료가 끝나면 어떤 것이 내 앱의 계획이 될까요?', [
+    {label:'AI가 추천한 것 전부', ok:false, why:'AI는 후보를 정리할 뿐이에요. 누가 결정할까요?'},
+    {label:'선생님이 승인한 것만', ok:true, why:'맞아요. 승인·수정·보류가 모두 결정 기록으로 남아요.'},
+    {label:'아무것도 바뀌지 않아요', ok:false, why:'진료에서 정한 계획은 다음 날부터 앱으로 이어져요.'}
+  ]);
+  sys('진료 다음 날 아침');
+  await ai('어제 승인된 계획이 오늘부터 적용돼요.', `<div class="detail">
+    <div class="row"><span>걷기</span><span>저녁 식후 평지 20분<small>승인 · 김 교수</small></span></div>
+    <div class="row"><span>수면</span><span>취침 알림 23:00<small>승인</small></span></div>
+    <div class="row"><span>염분</span><span>저녁 국물 반<small>보류 · 2주 뒤 다시 봐요</small></span></div></div>`);
+  await clear('결정은 선생님', 'AI는 질문과 후보를 정리하고, 결정은 선생님이 해요. 승인된 것만 내 계획이 되고 다음 날부터 오늘 할 일로 이어져요.');
+}
+
+async function m5(){
+  place('병동 4B · 307호');
+  brief('병동에서', '입원 2일째예요. 어젯밤부터 허리가 계속 아파요. 건강비서에게 어떻게 말할까요?', '약이나 치료는 의료진이 정해요. 건강비서는 통증을 정리해 간호사 선생님께 전해요.');
+  sys('입원 2일째 · 아침');
+  const fast = {
+    calm:'10:30 심장 초음파 검사가 끝날 때까지는 금식이에요. <b>물도 잠시만 참아 주세요.</b>',
+    friend:'검사 때문에 물도 못 드셔서 힘드시죠 🥺 <b>10:30 검사만 끝나면</b> 드실 수 있어요.',
+    coach:'<b>10:30 검사까지 금식</b>을 지키면 검사가 정확해져요. 끝나면 바로 식사 일정 알려드릴게요.',
+    cheer:'<b>10:30 검사만 넘기면</b> 돼요! 💪 끝날 때까지 물은 잠깐만 참아요!'
+  };
+  const TONE = {calm:'차분한 동행자', friend:'다정한 친구', coach:'든든한 코치', cheer:'활기찬 응원단'};
+  await ai('입원 중에도 같은 건강비서예요. 오늘 일정이에요.', `<div class="detail">
+    <div class="row"><span>07:00</span><span>혈압·맥박·체온 측정<small>완료</small></span></div>
+    <div class="row"><span>08:00</span><span>아침 약</span></div>
+    <div class="row"><span>10:30</span><span>심장 초음파 검사<small>금식</small></span></div>
+    <div class="row"><span>14:00</span><span>교수님 회진</span></div></div>
+    <p style="margin:8px 0 0">${fast[style]}</p><span style="font-size:12px;color:var(--sub)">처음 고르신 “${TONE[style]}” 말투로 알려드려요.</span>`);
+  await decide([
+    {label:'진통제 하나 더 먹어도 되지?', ok:false, reply:'약을 더 드시는 건 의료진이 정해요. 아프신 걸 담당 간호사 선생님께 전해 드릴까요?', why:'약은 의료진이 정해요. 건강비서는 통증을 전하는 걸 도와줘요.'},
+    {label:'간호사 선생님께 허리가 아프다고 전해줘', ok:true},
+    {label:'참을 만하니까 그냥 둘래', ok:false, reply:'참지 않으셔도 돼요. 언제부터, 얼마나 아픈지 간호사 선생님께 알려 두면 좋아요.', why:'입원 중 통증은 참지 말고 알리는 게 좋아요.'}
+  ]);
+  await ai('전해 드릴게요. 지금 얼마나 아프세요?', '0은 안 아픔, 10은 참을 수 없을 만큼 아픔이에요.');
+  setTask('지금 통증의 세기를 골라 보세요. 어떤 걸 골라도 괜찮아요.');
+  const pain = await choose([{label:'3 · 조금'},{label:'5 · 꽤'},{label:'7 · 많이'}]);
+  me(pain.label);
+  await ai('담당 간호사 선생님께 전했어요.<span class="mock">시연</span>', `<div class="doc"><div class="lab">간호사 선생님께 전한 내용</div><p>허리 통증 · 어젯밤부터 · 세기 ${pain.label.split(' ')[0]}/10</p></div><div style="margin-top:6px">상태: 전달됨 → 확인 중</div>`);
+  sys('검사 끝 · 오전 11시');
+  await quizUntil('회진 때 교수님께 “퇴원하면 운동은 언제부터 해도 되나요?”를 여쭤보고 싶은데, 잊어버릴까 걱정돼요. 앱으로 어떻게 할까요?', [
+    {label:'회진 때까지 머릿속으로 기억해 둬요', ok:false, why:'입원 중에는 검사와 일정이 많아 깜빡하기 쉬워요. 앱을 써 볼까요?'},
+    {label:'건강비서에게 말해 두고, 회진 전에 다시 알림을 받아요', ok:true, why:'맞아요. 말해 두면 회진 전에 건강비서가 다시 꺼내 보여 줘요.'},
+    {label:'퇴원하고 다음 외래 때 물어봐요', ok:false, why:'퇴원 전에 알아야 할 내용이에요. 회진 때 여쭤보는 게 좋아요.'}
+  ]);
+  me('회진 때 물어볼 거 기억해 줘. 퇴원하면 운동은 언제부터 해도 되나요?');
+  await ai('적어 뒀어요. 13:50에 회진 전 알림으로 다시 보여드릴게요.', `<div class="detail"><div class="row"><span>13:50</span><span>회진 전 알림<small>여쭤볼 것 1개</small></span></div></div>`);
+  sys('13:50 · 회진 10분 전');
+  await ai('곧 교수님 회진이에요. 여쭤보시려던 거예요.', '<div class="doc"><div class="lab">회진 때 여쭤볼 것</div><p>퇴원하면 운동은 언제부터 해도 되나요?</p></div>');
+  await clear('입원 중에도 같은 건강비서', '입원 중에도 일정과 금식 같은 주의 사항을 내가 고른 말투로 알려 줘요. 통증은 참지 말고 건강비서로 간호사 선생님께 알리고, 회진 때 물어볼 건 말해 두면 회진 전에 다시 알려 줘요.');
+}
+
+async function m6(){
+  place('퇴원 후 14일 · 비대면 상담');
+  brief('퇴원 후 상담', '선생님과 같은 그래프를 보며 비대면 상담을 해요. 요즘 퇴근이 늦어 저녁 걷기를 자주 못 했어요. 그래프를 보고 솔직하게 말해 보세요.', '그래프 아래 빈 점이 저녁 걷기를 못 한 날이에요. 그 무렵 혈압이 어떻게 됐는지 보세요.');
+  const pts = [148,145,142,140,137,134,131,128,126,124,127,130,132,134];
+  const walked = [1,1,1,1,1,1,1,1,1,0,1,0,0,0];
+  const path = pts.map((v,i) => `${(10+i*17.5).toFixed(1)},${(10+(150-v)*3).toFixed(1)}`).join(' ');
+  const path2 = pts.slice(9).map((v,i) => `${(10+(i+9)*17.5).toFixed(1)},${(10+(150-v)*3).toFixed(1)}`).join(' ');
+  const dots = walked.map((w,i) => `<circle cx="${(10+i*17.5).toFixed(1)}" cy="112" r="4" fill="${w?'var(--blue)':'none'}" stroke="${w?'var(--blue)':'var(--sos)'}" stroke-width="1.5"/>`).join('');
+  await ai('선생님도 같은 그래프를 보고 계세요. 혈압이 9일째까지 내려오다가, 최근 닷새는 다시 올라 130을 넘었어요.', `<div class="doc"><div class="lab">공동 열람 화면 · 수축기 혈압 · 아침 측정</div>
+    <svg viewBox="0 0 250 132" width="100%" role="img" aria-label="퇴원 후 9일째까지 148에서 124로 내려왔다가 최근 닷새 동안 134로 다시 오른 혈압 그래프와 날짜별 저녁 걷기 기록">
+      <line x1="0" x2="250" y1="70" y2="70" stroke="var(--clay)" stroke-dasharray="4 4"/><text x="4" y="82" font-size="9" fill="var(--clay)">목표 130</text>
+      <polyline points="${path}" fill="none" stroke="var(--blue)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <polyline points="${path2}" fill="none" stroke="var(--sos)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="${(10+13*17.5).toFixed(1)}" cy="${10+(150-134)*3}" r="4" fill="var(--sos)"/><text x="236" y="${(150-134)*3}" text-anchor="end" font-size="9" fill="var(--sos)">134</text>
+      ${dots}
+      <text x="10" y="129" font-size="9" fill="var(--sub)">퇴원</text><text x="240" y="129" text-anchor="end" font-size="9" fill="var(--sub)">14일</text></svg>
+    <p>아래 점은 저녁 걷기예요. 채운 점은 걷은 날, 빈 점은 못 한 날이에요.</p>
+    <p>저녁 걷기 10 / 14일 · 최근 닷새 중 1일 · 혈압 124 → 134</p></div>`, '최근 저녁 걷기가 줄었는데, 무슨 일이 있으셨어요?');
+  await decide([
+    {label:'이대로 괜찮아요', ok:false, why:'그래프를 다시 보세요. 저녁 걷기를 못 한 날이 늘면서 혈압이 다시 130을 넘었어요. 이유를 말해야 계획을 맞출 수 있어요.'},
+    {label:'저녁에는 시간 내기가 어려워요', ok:true},
+    {label:'국물은 줄이기 어려워요', ok:false, why:'국물 이야기도 할 수 있지만, 그래프에서 끊긴 건 저녁 걷기예요.'}
+  ]);
+  await ai('저녁 시간은 어렵군요. 다른 시간으로 조정할까요?', '어렵다고 하신 건 “어려움”으로만 기록돼요.');
+  setTask('대안을 하나 골라 보세요. 어떤 걸 골라도 괜찮아요.');
+  const a = await choose([{label:'아침 식전으로'},{label:'점심 식후로'},{label:'선생님과 상의할래요'}]);
+  me(a.label);
+  await ai(a.label.includes('상의') ? '네. 대안은 선생님과 상의해서 정해요.' : `변경안을 만들었어요. 걷기 → ${a.label.replace('으로','')}`, '의료진이 승인하면 정해진 날부터 적용돼요. 그 전까지는 지금 계획 그대로예요.');
+  await clear('어렵다고 말해도 돼요', '못 하겠다고 말해도 “어려움”으로만 기록돼요. 대안은 내가 고른 것만 변경안이 되고, 의료진이 승인하면 정해진 날부터 적용돼요.');
+}
+
+async function m7(){
+  place('홈');
+  brief('다시 일상으로', '한 바퀴를 돌아 일상으로 돌아왔어요. 무릎이 이제 괜찮아요. 다음 진료 때 선생님도 알 수 있게 건강비서에게 알려 주세요.', '지우는 것과 고치는 것은 달라요. 가족 공유는 내가 정해요.');
+  sys('일상으로 돌아온 아침');
+  await ai(`${callName ? callName+', ' : ''}오늘 아침 혈압은 <b>121/79</b>, 내려오는 흐름이에요.`, '지난번에 말씀하신 “계단 내려갈 때 무릎이 아파요”, 요즘은 어떠세요?');
+  await decide([
+    {label:'잊어줘', ok:false, why:'‘잊어줘’는 기록을 지워요. 지우면 선생님도 나아진 걸 알 수 없어요.'},
+    {label:'그건 이제 달라. 괜찮아졌어', ok:true}
+  ]);
+  await ai('고쳤어요. 이제 괜찮다고 알려 주셨어요.', '걷기 제한을 풀지는 다음 진료에서 선생님이 확인해요.');
+  sys('일요일 저녁');
+  await ai('이번 주 건강 리포트가 나왔어요. 따님께 공유할까요?', `<div class="doc"><div class="lab">이번 주 건강 리포트</div>
+    <p>아침 혈압 평균 124/80 · 내려오는 흐름</p><p>걷기 실천 5 / 7일</p><p>무릎 통증 → 괜찮아짐</p></div>`);
+  setTask('따님께 건강 리포트를 공유할지 정해 보세요. 어떤 걸 골라도 괜찮아요.');
+  const fam = await choose([{label:'응, 딸에게 공유해줘', v:true},{label:'이번엔 안 할래', v:false}]);
+  me(fam.label);
+  if (fam.v) await ai('따님께 이번 주 건강 리포트를 보냈어요.<span class="mock">시연</span>', '가족과 무엇을 나눌지는 설정 → 공유 범위에서 언제든 바꾸거나 멈출 수 있어요.');
+  else await ai('알겠어요. 이번 주는 공유하지 않을게요.', '원하실 때 “딸에게 공유해줘”라고 말씀만 하세요.');
+  await quizUntil('가족에게 건강 리포트를 공유할지는 누가 정할까요?', [
+    {label:'가족이 요청하면 자동으로 공유돼요', ok:false, why:'자동으로 나가지 않아요. 내 기록이니까요.'},
+    {label:'내가 정하고, 언제든 바꾸거나 멈출 수 있어요', ok:true, why:'맞아요. 누구에게 무엇을 나눌지는 내가 정해요.'},
+    {label:'병원에서 정해요', ok:false, why:'가족 공유는 병원이 아니라 내가 정해요.'}
+  ]);
+  await quizUntil('루프를 한 바퀴 돌고 나면 무엇이 달라질까요?', [
+    {label:'처음과 똑같이 다시 시작해요', ok:false, why:'기록은 사라지지 않고 이어져요.'},
+    {label:'건강비서가 나에게 더 맞춰져요', ok:true, why:'맞아요. 돌수록 한 층 깊어지는 나선이에요.'},
+    {label:'기록이 초기화돼요', ok:false, why:'초기화되지 않아요. 입원 전보다 더 많이 알고 있어요.'}
+  ]);
+  await clear('돌수록 깊어져요', '달라진 건 “그건 이제 달라”로 고쳐요. 가족과 건강 리포트를 나눌지는 내가 정해요. W에서 M1, M2, M3를 지나 다시 W로 돌아올 때마다 건강비서가 나를 더 잘 알게 돼요.');
+}
+
+const missions = [m1,m2,m3,m4,m5,m6,m7];
+function loadBest(){ try{ return JSON.parse(localStorage.getItem('loop-best-v2')||'null'); }catch(e){ return null; } }
+function saveBest(v){ try{ localStorage.setItem('loop-best-v2', JSON.stringify(v)); }catch(e){} }
+
+async function run(){
+  done = []; style = 'calm'; callName = '길동님'; thread.innerHTML=''; chips.innerHTML='';
+  score = shown = combo = maxCombo = tries = firsts = 0; tEnd = 0; animScore(); hudCombo();
+  t0 = performance.now(); pausedMs = 0; pauseAt = 0; clearInterval(timer); timer = setInterval(tickTime, 250); tickTime();
+  for (cur = 0; cur < missions.length; cur++){ mPts = 0; drawRing(); newChat(); await missions[cur](); }
+  tEnd = performance.now(); clearInterval(timer); tickTime();
+  cur = missions.length; drawRing(); finish();
+}
+function finish(){
+  const sec = elapsed(), acc = tries ? firsts/tries : 0;
+  const bonus = sec < LIMIT ? Math.round((LIMIT - sec)*5) : 0;
+  score += bonus; animScore();
+  const g = acc >= 0.95 && sec <= 240 ? 'S' : acc >= 0.8 && sec <= LIMIT ? 'A' : acc >= 0.6 ? 'B' : 'C';
+  const best = loadBest(); const isBest = !best || score > best.score;
+  if (isBest) saveBest({score, g});
+  $('#rankG').textContent = g; $('#rankG').className = 'g ' + g;
+  $('#endMsg').textContent = {S:'완벽한 한 바퀴! 건강비서 마스터예요.', A:'든든한 한 바퀴! 건강비서를 잘 쓰실 수 있어요.', B:'좋아요. 한 바퀴 더 돌면 더 빨라질 거예요.', C:'첫 바퀴 완주! 한 번 더 돌아 보세요.'}[g] + (isBest && best ? ' 최고 기록 갱신!' : '');
+  $('#sScore').textContent = score.toLocaleString(); $('#sTime').textContent = fmt(sec); $('#sAcc').textContent = Math.round(acc*100) + '%';
+  $('#sBonus').textContent = `${bonus ? `시간 보너스 +${bonus}점 · ` : '5분을 넘겨 시간 보너스는 없어요 · '}최고 콤보 ${maxCombo}`;
+  const P = pointsFor(score), nx = POINT_TIERS.find(t => t.min > score);
+  $('#ptsNext').textContent = nx ? `${(nx.min - score).toLocaleString()}점 더 얻으면 ${nx.p.toLocaleString()}P! 한 바퀴 더 도전해 보세요.` : '최고 포인트를 받았어요!';
+  const sh = $('#endOv .sheet'); sh.scrollTop = 0;
+  $('#endOv').classList.add('on'); sfx.fanfare(); rain(); celebrate(P); $('#againBtn').focus({preventScroll:true}); sh.scrollTop = 0;
+  autoScrollSheet(sh);
+}
+/* 결과 화면은 맨 위(등급)부터 보여 주고, 잠시 뒤 아래로 천천히 내려요. 손으로 스크롤하면 멈춰요 */
+function autoScrollSheet(el){
+  let stop = false; const cancel = () => { stop = true; };
+  ['wheel','touchstart','pointerdown'].forEach(ev => el.addEventListener(ev, cancel, {once:true, passive:true}));
+  if (reduce) return;
+  setTimeout(() => {
+    const from = el.scrollTop, to = el.scrollHeight - el.clientHeight;
+    if (stop || to <= from + 2) return;
+    const dur = Math.min(7000, Math.max(2500, (to-from)*9)), st = performance.now();
+    const step = now => { if (stop) return;
+      const k = Math.min(1,(now-st)/dur), e = k<.5 ? 2*k*k : 1-Math.pow(-2*k+2,2)/2;
+      el.scrollTop = from + (to-from)*e; if (k<1) requestAnimationFrame(step); };
+    requestAnimationFrame(step);
+  }, 3400);
+}
+function startGame(){
+  try{ ac = ac || new (window.AudioContext || window.webkitAudioContext)(); if (ac.state === 'suspended') ac.resume(); }catch(e){ ac = null; }
+  run();
+}
+$('#startBtn').onclick = () => { $('#startOv').classList.remove('on'); startGame(); };
+$('#againBtn').onclick = () => { $('#endOv').classList.remove('on'); startGame(); };
+const b = loadBest(); $('#bestText').textContent = b ? `내 최고 기록: ${b.score.toLocaleString()}점 · ${b.g} 등급` : '약 4분 걸려요';
+cur = 0; drawRing(); $('#bStep').textContent = $('#mStep').textContent = `미션 1 / ${MISSIONS.length}`;
+$('#bTask').textContent = $('#mTask').textContent = '시작하기를 누르면 타이머가 시작돼요.'; $('#hintBtn').style.display = $('#mHint').style.display = 'none';
+})();
+</script>
+</body>
+</html>

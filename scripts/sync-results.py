@@ -1,6 +1,7 @@
 """Mirror the live public CSV to GitHub; leave the last valid file intact on error."""
 import csv
 import io
+import json
 import os
 import tempfile
 import urllib.request
@@ -8,7 +9,7 @@ from pathlib import Path
 
 URL = 'https://loop-play-results.devyks-com.chatgpt.site/results.csv'
 HEADERS = ['submission_id', 'nickname', 'winner_game_id', 'winner_game_title', 'game_author', 'submitted_at_kst']
-GAME_IDS = {'yks', 'kgt', 'ksi', 'ojh', 'psj', 'ksw', 'ldy', 'lsl'}
+GAME_IDS = {g['id'] for g in json.loads((Path(__file__).resolve().parents[1] / 'game-registry.json').read_text())}
 
 def validate_csv(data):
     rows = list(csv.reader(io.StringIO(data.decode('utf-8-sig'))))

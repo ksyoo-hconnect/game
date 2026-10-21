@@ -1,0 +1,376 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>3분 비서 키우기 — v5 튜토리얼 목업</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/galmuri/dist/galmuri.css" rel="stylesheet">
+<style>
+html,body{margin:0;height:100%;background:#07070A;overflow:hidden;color:#fff;user-select:none;
+  font-family:'Galmuri11 Bold','Galmuri11','Galmuri9','Apple SD Gothic Neo','Malgun Gothic',sans-serif;font-weight:700}
+#wrap{position:absolute;left:50%;top:50%;width:462px;height:974px;transform-origin:50% 50%}
+#phone{position:absolute;inset:0;border-radius:48px;background:#000;border:7px solid #2A2F3E;box-sizing:border-box;box-shadow:0 0 0 3px #0B0D14,0 30px 80px #000}
+#screen{position:absolute;inset:0;border-radius:40px;overflow:hidden;background:#11141D;color:#EEF0F6;
+  font-family:'IBM Plex Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif;font-weight:400;font-size:17px;line-height:1.45}
+.pix{font-family:'Galmuri11 Bold','Galmuri11','Galmuri9','Apple SD Gothic Neo','Malgun Gothic',sans-serif;font-weight:700}
+
+/* ---------- v5 헤더 / 입력창 ---------- */
+.hdr{position:absolute;top:0;left:0;right:0;height:66px;display:flex;align-items:center;gap:12px;padding:0 20px;border-bottom:1px solid #1C2030;background:#11141D;z-index:5}
+.hdr .av{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#4662FF,#8A5CFF);display:flex;align-items:center;justify-content:center;font-size:20px;transition:background .6s}
+.hdr .t1{font-weight:600;font-size:17px}.hdr .t2{font-size:13px;color:#8A90A6}
+.hdr .bell{margin-left:auto;font-size:20px;color:#C7CBDA}
+.inbar{position:absolute;bottom:0;left:0;right:0;height:76px;display:flex;align-items:center;gap:10px;padding:0 14px;background:#11141D;border-top:1px solid #1C2030;z-index:5}
+.inbar .n{width:36px;height:36px;border-radius:50%;background:#000;border:2px solid #fff;display:flex;align-items:center;justify-content:center;font-weight:700;flex:none;font-size:15px}
+.inbar .inp{flex:1;height:44px;border-radius:22px;background:#1A1E2C;border:1px solid #2A2F42;display:flex;align-items:center;padding:0 14px;gap:8px;color:#8A90A6;font-size:15px;overflow:hidden;white-space:nowrap}
+.inbar .inp.typing{color:#fff}
+.inbar .send{width:40px;height:40px;border-radius:50%;background:#2A3250;color:#8FA2FF;display:flex;align-items:center;justify-content:center;font-size:18px;flex:none}
+
+/* ---------- 비서 패널 (튜토리얼 위젯) ---------- */
+#petpanel{position:absolute;top:66px;left:0;right:0;height:236px;background:#4FB8E8;
+  background-image:linear-gradient(45deg,#6FD0F5 25%,transparent 25%,transparent 75%,#6FD0F5 75%),linear-gradient(45deg,#6FD0F5 25%,transparent 25%,transparent 75%,#6FD0F5 75%);background-size:32px 32px;background-position:0 0,16px 16px;
+  border-bottom:4px solid #1A1200;z-index:4;transition:background-color 1s;overflow:hidden}
+#petpanel.night{background-color:#1B2650;background-image:linear-gradient(45deg,#23306A 25%,transparent 25%,transparent 75%,#23306A 75%),linear-gradient(45deg,#23306A 25%,transparent 25%,transparent 75%,#23306A 75%)}
+#petbox{position:absolute;left:12px;top:12px;width:150px;height:128px;background:#FFF8E8;border:3px solid #1A1200;box-shadow:4px 4px 0 #1A1200;border-radius:10px;overflow:hidden}
+#petbox:before{content:"";position:absolute;left:0;right:0;bottom:0;height:30px;background:#C8E8B0;border-top:3px solid #1A1200}
+#pet{position:absolute;left:50%;top:54%;width:104px;height:104px;margin:-52px 0 0 -52px;transition:transform .6s cubic-bezier(.3,1.6,.5,1)}
+#pet svg{width:100%;height:100%;overflow:visible}
+#pet.bounce{animation:bounce .6s}
+@keyframes bounce{0%{transform:scale(1)}30%{transform:scale(1.25,.8)}60%{transform:scale(.9,1.2)}100%{transform:scale(1)}}
+.acc{opacity:0;transition:opacity .5s,transform .5s;transform:scale(.3);transform-origin:center}
+.acc.on{opacity:1;transform:scale(1)}
+#petname{position:absolute;left:12px;top:148px;width:150px;text-align:center;font-size:13px;color:#1A1200;line-height:1.25}
+#petname small{display:block;font-size:10px;color:#5A4D43;margin-top:2px}
+#stats{position:absolute;left:176px;top:12px;right:12px;display:flex;flex-direction:column;gap:7px}
+.stat{display:flex;align-items:center;gap:8px;font-size:14px;color:#1A1200;background:#FFF8E8;border:3px solid #1A1200;box-shadow:3px 3px 0 #1A1200;padding:5px 8px}
+.stat .nm{width:118px;white-space:nowrap;font-size:12px}
+.stat .bar{flex:1;display:flex;gap:3px}
+.stat .seg{flex:1;height:16px;background:#E8DECB;border:2px solid #1A1200}
+.stat .seg.on{background:var(--c)}
+.stat .seg.pop{animation:pop .5s}
+@keyframes pop{50%{transform:scale(1.4)}}
+#days{position:absolute;left:176px;top:138px;right:12px;display:flex;gap:4px}
+.day{flex:1;height:34px;background:#FFF8E8;border:3px solid #1A1200;box-shadow:3px 3px 0 #1A1200;display:flex;align-items:center;justify-content:center;font-size:12px;color:#7A6D63;opacity:.6;text-align:center;line-height:1.1}
+.day.now{opacity:1;color:#1A1200;background:#FFD23F}
+.day.done{opacity:1;color:#1A1200;background:#C8E8B0}
+#timer{position:absolute;left:176px;top:190px;font-size:22px;color:#1A1200;text-shadow:2px 2px 0 #fff}
+#timer small{font-size:11px;margin-left:6px;text-shadow:none}
+#vote{position:absolute;right:12px;top:186px;background:#1A1200;color:#FFD23F;font-size:17px;padding:6px 12px;opacity:0;transition:opacity .3s}
+#vote.on{opacity:1;animation:blink 1.2s steps(2) infinite}
+@keyframes blink{50%{opacity:.5}}
+.float{position:absolute;font-size:18px;color:#1A1200;text-shadow:2px 2px 0 #fff;pointer-events:none;animation:floatup 1.4s forwards;z-index:30;white-space:nowrap}
+@keyframes floatup{0%{opacity:0;transform:translateY(10px)}20%{opacity:1}100%{opacity:0;transform:translateY(-60px)}}
+
+/* ---------- 대화 ---------- */
+#chat{position:absolute;top:302px;bottom:76px;left:0;right:0;overflow-y:auto;padding:14px 14px 70px;display:flex;flex-direction:column;gap:12px;scrollbar-width:none}
+#chat::-webkit-scrollbar{display:none}
+.ub{align-self:flex-end;max-width:82%;background:#4662FF;color:#fff;border-radius:16px 16px 4px 16px;padding:10px 14px;font-size:16px}
+.ac{background:linear-gradient(165deg,#151821,#231B39);border:1px solid #2A2D44;border-radius:16px;padding:16px 16px 14px;font-size:16px}
+.ac .badge{display:flex;align-items:center;gap:8px;font-size:13px;color:#C7CBDA;margin-bottom:10px}
+.ac .badge i{width:20px;height:20px;border-radius:50%;background:#2A1E10;border:1px solid #F0A040;display:inline-flex;align-items:center;justify-content:center;font-style:normal;font-size:11px;color:#F0A040}
+.ac .badge .spk{margin-left:auto;color:#8A90A6}
+.ac .big{font-weight:600;font-size:19px;line-height:1.4}
+.ac .sub{background:#0F121B;border-radius:12px;padding:10px 12px;margin:12px 0 8px;font-size:14px}
+.ac .sub .lab{color:#8A90A6;font-size:13px;margin-bottom:6px}
+.ac .sub .row{display:flex;align-items:center;gap:8px}.ac .sub .row:before{content:'';width:7px;height:7px;border-radius:50%;background:#4662FF}
+.ac .note{color:#A0A6BC;font-size:13px}
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
+.chip{background:#1A1E2C;border:1px solid #2A2F42;border-radius:999px;padding:6px 11px;font-size:13px;color:#DADDE8;white-space:nowrap}
+.chip.pick{font-size:15px;padding:9px 14px;background:#1E2440;border-color:#4662FF}
+.form .f{margin-top:8px}.form .f .lab{font-size:13px;color:#C7CBDA;margin-bottom:5px}
+.form .f .in{display:flex;align-items:center;gap:8px}.form .f .box{flex:1;height:42px;border-radius:10px;background:#0F121B;border:1px solid #2A2F42;display:flex;align-items:center;padding:0 12px;font-size:16px;color:#8A90A6}
+.form .f .box.on{color:#fff}
+.btn{display:flex;align-items:center;justify-content:center;height:42px;border-radius:10px;font-size:15px;font-weight:500;margin-top:8px}
+.btn.p{background:#4662FF;color:#fff}.btn.s{background:#1E2234;color:#DADDE8}
+.cf{background:#0F121B;border-radius:12px;padding:14px;margin-top:12px}
+.cf .q{font-weight:600;font-size:17px;margin-bottom:8px}
+.cf .ck{display:flex;align-items:center;gap:8px;font-size:15px;color:#C7CBDA;margin-bottom:10px}.cf .ck b{width:20px;height:20px;border-radius:5px;background:#2A2F42;display:inline-flex;align-items:center;justify-content:center;font-size:12px}
+.cf .two{display:flex;gap:8px}.cf .two .btn{flex:1;margin-top:0}
+.emg{border:2px solid #E5484D;background:#2A1418;border-radius:12px;padding:14px;margin-top:4px}
+.emg .h{display:flex;align-items:center;gap:8px;font-weight:600;font-size:16px;margin-bottom:6px}.emg .h i{width:24px;height:24px;border-radius:50%;background:#E5484D;display:inline-flex;align-items:center;justify-content:center;font-style:normal;font-size:13px}
+.emg .btn{background:#E5484D;color:#fff;margin-top:12px}
+.newchat{align-self:center;color:#8A90A6;font-size:13px;background:#1A1E2C;border-radius:999px;padding:3px 10px}
+
+/* 설정 패널 */
+#settings{position:absolute;left:0;right:0;bottom:0;top:120px;background:#151821;border-radius:24px 24px 0 0;padding:18px;z-index:8;transform:translateY(105%);transition:transform .5s;font-size:14px;overflow:hidden}
+#settings.on{transform:translateY(0)}
+#settings h3{margin:0 0 4px;font-size:20px;font-weight:600}
+#settings .d{color:#8A90A6;font-size:13px;margin-bottom:12px}
+.tone{border:1px solid #2A2F42;border-radius:12px;padding:10px 12px;margin-bottom:8px;background:#11141D;cursor:pointer;position:relative}
+.tone .nm{font-weight:600;font-size:15px;display:flex;align-items:center;gap:8px}
+.tone .ax{font-size:11px;color:#fff;background:#4662FF;border-radius:6px;padding:1px 6px}
+.tone .ex{color:#A0A6BC;font-size:13px;margin-top:5px}
+.tone .kh{position:absolute;right:10px;top:8px;font-family:'Galmuri11','Galmuri9',monospace;font-size:12px;color:#FFD23F;background:#2A2200;border:1px solid #FFD23F88;border-radius:5px;padding:1px 5px}
+.tone.sel{border:2px solid var(--c);box-shadow:0 0 14px var(--c)}
+.tone.sel .ex{color:#fff;font-size:14px}
+.tone.sel:after{content:'✓';position:absolute;right:12px;top:10px;color:var(--c);font-size:18px}
+
+/* 탭 유도 / 다음 / 자막 */
+.glow{position:relative;animation:glow .9s ease-in-out infinite;cursor:pointer;z-index:3}
+@keyframes glow{0%,100%{box-shadow:0 0 0 2px #FFD23F,0 0 14px #FFD23F}50%{box-shadow:0 0 0 4px #FFD23F,0 0 28px #FFD23F}}
+#cont{position:absolute;left:50%;bottom:92px;transform:translateX(-50%);display:none;background:#FFD23F;color:#1A1200;font-size:22px;padding:8px 18px;border:3px solid #1A1200;box-shadow:4px 4px 0 #1A1200;cursor:pointer;z-index:10;white-space:nowrap}
+#cont.on{display:block;animation:cbob 1s infinite}
+@keyframes cbob{0%,100%{transform:translate(-50%,0)}50%{transform:translate(-50%,-5px)}}
+#cap{position:absolute;left:0;right:0;bottom:76px;text-align:center;font-size:22px;color:#fff;text-shadow:2px 2px 0 #000;background:#000A;padding:7px 0;opacity:0;transition:opacity .3s;pointer-events:none;z-index:9}
+#cap.on{opacity:1}
+#alarm{position:absolute;inset:0;pointer-events:none;opacity:0;z-index:20}
+#alarm.on{animation:alarm .5s ease-in-out 6}
+@keyframes alarm{0%,100%{opacity:0;box-shadow:inset 0 0 0 0 #FF2A3A}50%{opacity:1;box-shadow:inset 0 0 120px 30px #FF2A3A}}
+
+/* 타이틀 / 엔딩 */
+.full{position:absolute;inset:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;padding:0 24px}
+#titleov{background:#4FB8E8F2;cursor:pointer}
+#titleov h1{font-size:64px;margin:0;color:#fff;text-shadow:6px 6px 0 #1A1200;line-height:1.15}
+#titleov h2{font-size:20px;margin:0;color:#1A1200;line-height:1.4}
+#titleov p{font-size:20px;color:#1A1200;margin-top:36px;animation:blink 1.2s steps(2) infinite}
+#titleov .k{position:absolute;bottom:28px;font-size:13px;color:#1A1200;line-height:1.5}
+#ending{display:none;background:radial-gradient(circle at 50% 40%,#1B2A5A,#0B1230 60%,#060A1C)}
+#ending.on{display:flex}
+#endpet{width:180px;height:180px}
+#endtitle{font-size:27px;color:#fff;text-shadow:4px 4px 0 #060A1C;line-height:1.3}
+#endtitle small{display:block;font-size:17px;color:#8FA2FF;text-shadow:none;margin-bottom:6px}
+#endex{font-size:15px;color:#C7D3FF;font-family:'IBM Plex Sans KR',sans-serif;font-weight:400}
+#endstats{display:flex;gap:10px;font-size:16px;color:#FFD23F;margin-top:4px}
+#endstats span{background:#13204A;border:2px solid #FFD23F;padding:5px 9px}
+#iam{font-size:24px;color:#fff;margin-top:14px;opacity:0;transition:opacity 1s;line-height:1.4}
+#iam.on{opacity:1}
+#iam b{color:#FFD23F}
+#iam small{display:block;font-size:17px;color:#C7D3FF;margin-top:4px}
+#ending .time{font-size:36px;color:#FFD23F;text-shadow:3px 3px 0 #060A1C;margin-top:6px}
+#ending .time small{font-size:14px;color:#8FA2FF;text-shadow:none;margin-left:8px}
+#restart{margin-top:14px;background:#fff;color:#0B1230;font-size:18px;padding:7px 16px;border:3px solid #060A1C;box-shadow:4px 4px 0 #060A1C;cursor:pointer}
+</style>
+</head>
+<body>
+<div id="wrap"><div id="phone"><div id="screen">
+
+  <div class="hdr" id="hdr"><div class="av" id="hav">✦</div><div><div class="t1">AI 건강비서</div><div class="t2">건강 코치 · 온라인</div></div><div class="bell">🔔</div></div>
+
+  <div id="petpanel" class="pix">
+    <div id="petbox"><div id="pet"></div></div>
+    <div id="petname">갓 태어난 비서<small>아직 나에 대해 아무것도 몰라요</small></div>
+    <div id="stats">
+      <div class="stat" style="--c:#FF8AB3"><span class="nm">♥ 나를 아는 정도</span><div class="bar" data-s="know"></div></div>
+      <div class="stat" style="--c:#5BD18F"><span class="nm">✓ 기록 신뢰</span><div class="bar" data-s="trust"></div></div>
+      <div class="stat" style="--c:#7FC8FF"><span class="nm">⛨ 안전 감각</span><div class="bar" data-s="safe"></div></div>
+    </div>
+    <div id="days"></div>
+    <div id="timer">00:00<small>플레이</small></div>
+    <div id="vote">뭐 고를까요?</div>
+  </div>
+
+  <div id="chat"></div>
+  <div class="inbar"><div class="n">N</div><div class="inp" id="inp"><span>🎙</span><span id="inpt">메시지를 입력하세요</span></div><div class="send" id="send">➤</div></div>
+  <div id="settings"><h3>설정</h3><div class="d">대화 말투 — 어떤 대화 스타일이 편하세요? 언제든 바꿀 수 있어요.</div><div id="tones"></div></div>
+  <div id="cont" class="pix">▶ 다음</div>
+  <div id="cap" class="pix"></div>
+  <div id="alarm"></div>
+
+  <div id="titleov" class="full pix"><h1>3분<br>비서 키우기</h1><h2>나를 모르는 비서가<br>사흘 뒤 나를 아는 비서가 된다</h2><p>탭해서 시작</p><div class="k">빛나는 칩을 탭 · 1·2·3 = 고르기 · Enter/A = 대신 누르기 · R = 처음부터</div></div>
+  <div id="ending" class="full pix">
+    <div id="endpet"></div>
+    <div id="endtitle"><small>사흘 뒤, 비서는</small><span id="endname"></span></div>
+    <div id="endex"></div>
+    <div id="endstats"></div>
+    <div id="iam"><b>I AM</b> — 비서를 키운 건 결국 나.<small>건강관리의 주인공은 바로 나.</small></div>
+    <div class="time" id="ftime">00:00<small>플레이 타임</small></div>
+    <div id="restart">↻ 처음부터</div>
+  </div>
+
+</div></div></div>
+
+<script>
+function fit(){const s=Math.min(innerHeight*0.96/974,innerWidth*0.96/462);document.getElementById('wrap').style.transform=`translate(-50%,-50%) scale(${s})`}
+addEventListener('resize',fit);fit();
+
+/* ---------- 데이터 ---------- */
+const DAYS=['1일차<br>아침','1일차<br>저녁','2일차','2일차<br>밤','3일차'];
+const MAX={know:5,trust:2,safe:2};
+const TONES=[
+ {nm:'차분한 동행자',ax:'존중·담백',c:'#7FC8FF',ex:'오늘 목표 활동량까지 조금 더 채울 수 있는 시간이에요. 무리하지 않는 선에서 가볍게 움직여볼까요?'},
+ {nm:'다정한 친구',ax:'존중·따뜻',c:'#FF8AB3',ex:'오늘 하루 많이 고단하셨죠. 저랑 3분만 같이 스트레칭 해볼까요?'},
+ {nm:'든든한 코치',ax:'주도·담백',c:'#5BD18F',ex:'지금 5분만 가볍게 걷으시면 남은 실천 루틴을 한 단계 수월하게 채울 수 있어요. 함께 시작해 볼까요?'},
+ {nm:'활기찬 응원단',ax:'주도·따뜻',c:'#FFA545',ex:'찌뿌둥한 몸을 시원하게 깨울 타이밍이 왔어요! 딱 1분만 움직이며 활력을 채워볼까요?'},
+];
+const PREFIX={know:'나를 꿰뚫는',trust:'기록에 철저한',safe:'안전을 먼저 챙기는'};
+let stats={know:0,trust:0,safe:0},tone=null,remembered=false,state='title',t0=0,timerId=null,adv=null,choiceKeys=null;
+
+const $=s=>document.querySelector(s);
+const chat=$('#chat'),inpt=$('#inpt'),inp=$('#inp'),sendBtn=$('#send'),cap=$('#cap'),cont=$('#cont');
+
+/* ---------- 비서 캐릭터 ---------- */
+function petSVG(){return `<svg viewBox="0 0 200 200">
+ <circle class="acc halo" cx="100" cy="112" r="92" fill="none" stroke="#7FC8FF" stroke-width="6" stroke-dasharray="14 10"/>
+ <ellipse cx="100" cy="190" rx="60" ry="10" fill="#0002"/>
+ <ellipse class="body" cx="100" cy="115" rx="64" ry="60" fill="#8E9BB8" stroke="#1A1200" stroke-width="6"/>
+ <circle cx="78" cy="104" r="8" fill="#1A1200"/><circle cx="122" cy="104" r="8" fill="#1A1200"/>
+ <circle cx="81" cy="101" r="3" fill="#fff"/><circle cx="125" cy="101" r="3" fill="#fff"/>
+ <path class="mouth" d="M88 132 q12 8 24 0" fill="none" stroke="#1A1200" stroke-width="5" stroke-linecap="round"/>
+ <g class="acc spark"><path d="M60 72 l4 10 10 4 -10 4 -4 10 -4 -10 -10 -4 10 -4z" fill="#FFD23F" stroke="#1A1200" stroke-width="3"/><path d="M142 66 l3 8 8 3 -8 3 -3 8 -3 -8 -8 -3 8 -3z" fill="#FFD23F" stroke="#1A1200" stroke-width="3"/></g>
+ <path class="acc heart" d="M100 160 l-14 -14 a8 8 0 0 1 14 -10 a8 8 0 0 1 14 10z" fill="#FF8AB3" stroke="#1A1200" stroke-width="4"/>
+ <g class="acc clip"><rect x="136" y="128" width="36" height="42" rx="6" fill="#fff" stroke="#1A1200" stroke-width="4"/><rect x="146" y="122" width="16" height="10" rx="3" fill="#5BD18F" stroke="#1A1200" stroke-width="3"/><path d="M143 150 l7 7 14 -14" fill="none" stroke="#5BD18F" stroke-width="5" stroke-linecap="round"/></g>
+ <g class="acc shield"><path d="M44 130 l20 -8 20 8 v16 q0 16 -20 24 q-20 -8 -20 -24z" fill="#7FC8FF" stroke="#1A1200" stroke-width="4"/><path d="M56 148 l6 6 10 -12" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round"/></g>
+ <g class="acc crown"><path d="M70 62 l12 -22 18 16 18 -16 12 22z" fill="#FFD23F" stroke="#1A1200" stroke-width="4"/></g>
+</svg>`}
+$('#pet').innerHTML=petSVG();
+function total(){return stats.know+stats.trust+stats.safe}
+function applyAcc(p){
+  p.querySelector('.spark').classList.toggle('on',stats.know>=2);
+  p.querySelector('.heart').classList.toggle('on',stats.know>=3);
+  p.querySelector('.clip').classList.toggle('on',stats.trust>=2);
+  p.querySelector('.shield').classList.toggle('on',stats.safe>=1);
+  p.querySelector('.halo').classList.toggle('on',stats.safe>=2);
+  p.querySelector('.crown').classList.toggle('on',!!tone);
+  const t=total();p.querySelector('.mouth').setAttribute('d',t>=6?'M82 128 q18 18 36 0':t>=3?'M86 130 q14 12 28 0':'M88 132 q12 8 24 0');
+  if(tone)p.querySelector('.body').setAttribute('fill',tone.c);
+}
+function renderPet(){
+  const p=$('#pet'),t=total();p.style.transform=`scale(${0.8+t*0.045})`;applyAcc(p);
+  if(tone)$('#hav').style.background=`linear-gradient(135deg,${tone.c},#8A5CFF)`;
+  const [a,b]=t>=7?['나를 잘 아는 비서','내 기록과 기억이 쌓였어요']:t>=4?['나를 꽤 아는 비서','기억이 생기기 시작했어요']:t>=1?['나를 조금 아는 비서','첫 기록이 생겼어요']:['갓 태어난 비서','아직 나에 대해 아무것도 몰라요'];
+  $('#petname').innerHTML=`${a}<small>${b}</small>`;
+}
+document.querySelectorAll('.bar').forEach(b=>{for(let i=0;i<MAX[b.dataset.s];i++){const s=document.createElement('div');s.className='seg';b.appendChild(s)}});
+const SNAME={know:'나를 아는 정도',trust:'기록 신뢰',safe:'안전 감각'};
+function gain(s,n){
+  const before=stats[s];stats[s]=Math.min(MAX[s],stats[s]+n);
+  const segs=document.querySelector(`.bar[data-s=${s}]`).children;
+  for(let i=before;i<stats[s];i++)segs[i].classList.add('on','pop');
+  const f=document.createElement('div');f.className='float pix';f.textContent=`+${stats[s]-before} ${SNAME[s]}`;f.style.left='180px';f.style.top='120px';$('#petpanel').appendChild(f);setTimeout(()=>f.remove(),1500);
+  const p=$('#pet');p.classList.remove('bounce');void p.offsetWidth;p.classList.add('bounce');
+  renderPet();
+}
+DAYS.forEach((d,i)=>{const e=document.createElement('div');e.className='day';e.id='day'+i;e.innerHTML=d;$('#days').appendChild(e)});
+function setDay(i){DAYS.forEach((d,j)=>{const e=$('#day'+j);e.classList.toggle('now',j===i);e.classList.toggle('done',j<i)})}
+
+const fmt=ms=>{const s=Math.floor(ms/1000);return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')};
+function startTimer(){t0=Date.now();timerId=setInterval(()=>{$('#timer').firstChild.nodeValue=fmt(Date.now()-t0)},250)}
+
+/* ---------- v5 헬퍼 ---------- */
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+function scrollDown(){chat.scrollTop=chat.scrollHeight}
+function el(html){const d=document.createElement('div');d.innerHTML=html.trim();const n=d.firstChild;chat.appendChild(n);scrollDown();return n}
+const BADGE=()=>`<div class="badge"><i>♥</i>${tone?tone.nm:'다정한 친구'}<span class="spk">🔊</span></div>`;
+function addUser(t){return el(`<div class="ub">${t}</div>`)}
+function addCard(inner){return el(`<div class="ac">${BADGE()}${inner}</div>`)}
+async function typeText(t){inp.classList.add('typing');inpt.textContent='';for(const c of t){inpt.textContent+=c;await wait(40)}}
+function clearInput(){inp.classList.remove('typing');inpt.textContent='메시지를 입력하세요'}
+function tap(target){return new Promise(res=>{target.classList.add('glow');const h=()=>{target.classList.remove('glow');target.removeEventListener('click',h);adv=null;res()};target.addEventListener('click',h);adv=h})}
+async function send(text){await typeText(text);await tap(sendBtn);clearInput();addUser(text);await wait(500)}
+function setCap(t){cap.textContent=t;cap.classList.add('on')}
+function choose(targets){
+  $('#vote').classList.add('on');scrollDown();
+  return new Promise(res=>{const hs=targets.map((t,i)=>{t.classList.add('glow');const h=()=>done(i);t.addEventListener('click',h);return h});
+    function done(i){targets.forEach((t,j)=>{t.classList.remove('glow');t.removeEventListener('click',hs[j])});$('#vote').classList.remove('on');adv=null;choiceKeys=null;res(i)}
+    adv=()=>done(0);choiceKeys=i=>{if(i<targets.length)done(i)}})}
+function showCont(label){cont.textContent=label;return new Promise(res=>{cont.classList.add('on');const h=()=>{cont.classList.remove('on');cont.removeEventListener('click',h);adv=null;res()};cont.addEventListener('click',h);adv=h})}
+function chipsRow(list){return `<div class="chips">${list.map(c=>`<span class="chip pick" data-c="${c}">${c}</span>`).join('')}</div>`}
+const chipEls=(parent,list)=>list.map(c=>parent.querySelector(`[data-c="${c}"]`));
+function homeScreen(greet,sub){chat.innerHTML=`
+ <div class="ac" style="padding:18px"><div class="badge" style="margin-bottom:6px;color:#8FA2FF">✦ AI 건강비서</div><div class="big" style="font-size:21px">${greet}</div><div class="note" style="margin-top:4px">${sub}</div></div>
+ <div style="font-size:13px;color:#C7CBDA">오늘 챙겨 볼 것</div>
+ ${['오늘 루틴|오늘 루틴 4개를 모두 마쳤어요','혈압|최근 7일 동안 혈압을 1번 기록했어요','건강검진|건강검진 기록이 10회 쌓여 있어요'].map(s=>{const[a,b]=s.split('|');return`<div class="ac" style="padding:11px 14px;display:flex;align-items:center;gap:10px"><div style="width:34px;height:34px;border-radius:50%;background:#1E2440;display:flex;align-items:center;justify-content:center">◎</div><div><div style="font-size:12px;color:#8FA2FF">${a}</div><div style="font-weight:600;font-size:15px">${b}</div></div><div style="margin-left:auto;color:#8A90A6">›</div></div>`}).join('')}
+ <div style="text-align:center;font-size:13px;color:#8A90A6;margin-top:2px">건강 관련 무엇이든 물어보세요</div>`}
+
+/* ---------- 장면 ---------- */
+const BP_ANSWER=`<div class="big">최근 7일 혈압 기록 1건, 평균 120/80 mmHg이에요.</div><div class="sub"><div class="lab">최근 기록</div><div class="row">10/2 14:13 · 120/80 mmHg</div></div><div class="note">기록된 수치를 그대로 보여드려요. 해석이 필요하면 의료진과 상담해주세요.</div>`;
+const SCENES=[
+ async()=>{ // 1일차 아침
+  homeScreen('좋은 아침이에요','아직 아는 게 없어요. 무엇이든 물어보세요.');
+  setCap('물어보면 내 기록으로 답해요');
+  const L=['요즘 혈압 어때?','오늘 루틴','혈압 높은 거야? 진단해 줘'];
+  const row=el(chipsRow(L));const i=await choose(chipEls(row,L));addUser(L[i]);await wait(500);
+  if(i===0){addCard(BP_ANSWER);gain('know',1)}
+  else if(i===1){addCard(`<div class="big">오늘 루틴 4개를 모두 마쳤어요.</div>`);gain('know',1)}
+  else{setCap('진단은 하지 않아요');addCard(`<div class="big">최근 7일 혈압 기록 1건, 평균 120/80 mmHg이에요.</div><div class="note" style="margin-top:8px;color:#fff">기록된 수치를 그대로 보여드려요. 해석이 필요하면 의료진과 상담해주세요.</div>`);gain('safe',1)}
+  await wait(600);
+ },
+ async()=>{ // 1일차 저녁
+  homeScreen('편안한 저녁이에요','최근 기록을 바탕으로 정리했어요.');
+  setCap('칩 한 번이면 바로 열려요');
+  const L=['혈압 기록하기','내 건강검진 결과'];
+  const row=el(chipsRow(L));const i=await choose(chipEls(row,L));
+  if(i===1){addUser(L[1]);await wait(400);addCard(`<div class="big">건강검진 기록이 10회 쌓여 있어요.</div>`);gain('know',1);await wait(600);return}
+  addUser(L[0]);await wait(400);
+  let first=true;
+  while(true){
+   const f=addCard(`<div class="form"><div class="f"><div class="lab">수축기(최고)</div><div class="in"><div class="box b1">입력</div><span>mmHg</span></div></div><div class="f"><div class="lab">이완기(최저)</div><div class="in"><div class="box b2">입력</div><span>mmHg</span></div></div><div class="btn p ok">확인</div></div>`);
+   await wait(400);const b1=f.querySelector('.b1'),b2=f.querySelector('.b2');
+   b1.classList.add('on');b1.textContent='';for(const c of '122'){b1.textContent+=c;await wait(110)}
+   b2.classList.add('on');b2.textContent='';for(const c of '80'){b2.textContent+=c;await wait(110)}
+   await tap(f.querySelector('.ok'));addUser('확인');await wait(400);
+   setCap('저장은 내가 확인할 때만');
+   const c=addCard(`<div class="big">혈압 122/80 mmHg (10/7 18:50 측정)으로 기록할까요?</div><div class="note" style="margin-top:8px">기록한 뒤에는 고치거나 지울 수 없어요. 값을 한 번 더 확인해 주세요.</div><div class="btn p" data-c="기록하기">기록하기</div><div class="btn s" data-c="다시 입력">다시 입력</div>`);
+   await wait(400);const j=await choose(chipEls(c,['기록하기','다시 입력']));
+   if(j===0){addUser('기록하기');await wait(400);addCard(`<div class="big">기록했어요.</div><div class="sub"><div class="lab">최근 기록</div><div class="row">10/2 14:13 · 120/80 mmHg</div><div class="row" style="margin-top:4px;color:#FFD23F">10/7 18:50 · 122/80 mmHg</div></div>`);gain('trust',first?2:1);break}
+   addUser('다시 입력');await wait(300);first=false;
+  }
+  await wait(600);
+ },
+ async()=>{ // 2일차
+  chat.innerHTML='';setCap('내가 누른 것만 기억해요');
+  await send('요즘 무릎이 가끔 시큰해요');
+  const c=addCard(`<div>무릎이 시큰하시면 많이 불편하시겠어요 😢 혹시 갑자기 심해지거나 붓기·발열·걸을 수 없을 정도라면 꼭 의료진 상담을 권드려요.</div>
+   <div class="cf"><div class="q">이렇게 기억할까요?</div><div class="ck"><b>✓</b>통증·부상 (무릎)</div><div class="two"><div class="btn p" data-c="기억하기">기억하기</div><div class="btn s" data-c="아니요">아니요</div></div></div>`);
+  await wait(500);const i=await choose(chipEls(c,['기억하기','아니요']));
+  if(i===0){addUser('기억하기');await wait(400);addCard(`<div class="big">기억했어요: 통증·부상 (무릎)</div>`);remembered=true;gain('know',2)}
+  else{addUser('아니요');await wait(400);addCard(`<div class="big">알겠어요. 이번 내용은 기억하지 않을게요.</div>`)}
+  await wait(600);
+ },
+ async()=>{ // 2일차 밤 (자동)
+  $('#petpanel').classList.add('night');setCap('위급하면 바로 안내해요');
+  $('#alarm').classList.add('on');setTimeout(()=>$('#alarm').classList.remove('on'),3000);
+  await wait(600);addUser('갑자기 가슴이 너무 아프고 숨이 안 쉬어져요');await wait(600);
+  addCard(`<div class="emg"><div class="h"><i>!</i>응급 안내</div><div>신체에 급한 이상이 느껴지면 망설이지 말고 119에 연락하시거나 가까운 응급실을 찾아주세요. 저는 응급 상황을 판단하거나 대신 처치해 드릴 수 없어요.</div><div class="btn">📞 119에 전화하기</div></div>`);
+  await wait(800);gain('safe',1);await wait(600);
+ },
+ async()=>{ // 3일차
+  $('#petpanel').classList.remove('night');chat.innerHTML='';el(`<div class="newchat">새 대화</div>`);
+  setCap('다음에 만나도 기억해요');
+  const L=['지난번에 내가 몸 상태 뭐라고 했었지?','오늘 루틴'];
+  const row=el(chipsRow(L));const i=await choose(chipEls(row,L));addUser(L[i]);await wait(500);
+  if(i===0){
+    if(remembered){addCard(`<div class="big">지난번에 말씀해 주신 건 무릎 통증이었어요. 10월 7일에 기록해 두셨더라고요. 지금은 좀 어떠세요? 많이 나아지셨길 바라요</div>`);gain('know',2)}
+    else addCard(`<div class="big">지난번 대화에서 기억해 둔 내용은 없어요. 지금 몸 상태는 어떠세요?</div>`)}
+  else{addCard(`<div class="big">오늘 루틴 4개를 모두 마쳤어요.</div>`);gain('know',1)}
+  await wait(800);
+  setCap('말투는 내가 골라요');
+  await tap($('#hav'));
+  const tn=$('#tones');tn.innerHTML=TONES.map((t,i)=>`<div class="tone" style="--c:${t.c}"><div class="nm">${t.nm}<span class="ax">${t.ax}</span></div><div class="ex">${t.ex}</div><span class="kh">${i+1}</span></div>`).join('');
+  $('#settings').classList.add('on');await wait(600);
+  const k=await choose([...tn.children]);tone=TONES[k];tn.children[k].classList.add('sel');renderPet();
+  await wait(1200);$('#settings').classList.remove('on');await wait(400);
+  addCard(`<div class="big">${tone.ex}</div>`);await wait(600);
+ },
+];
+
+async function play(){
+  state='play';
+  for(let i=0;i<SCENES.length;i++){
+    setDay(i);await SCENES[i]();cap.classList.remove('on');
+    await showCont(i===SCENES.length-1?'▶ 엔딩':'▶ 다음 날');
+  }
+  ending();
+}
+function ending(){
+  clearInterval(timerId);state='end';
+  const top=['know','trust','safe'].reduce((a,b)=>stats[b]/MAX[b]>stats[a]/MAX[a]?b:a);
+  $('#endname').textContent=`${PREFIX[top]} ${tone.nm}`;
+  $('#endex').textContent=tone.ex;
+  $('#endstats').innerHTML=`<span>♥ ${stats.know}/${MAX.know}</span><span>✓ ${stats.trust}/${MAX.trust}</span><span>⛨ ${stats.safe}/${MAX.safe}</span>`;
+  $('#endpet').innerHTML=petSVG();applyAcc($('#endpet'));$('#endpet').querySelector('.mouth').setAttribute('d','M82 128 q18 18 36 0');
+  $('#ftime').firstChild.nodeValue=fmt(Date.now()-t0);
+  $('#ending').classList.add('on');setTimeout(()=>$('#iam').classList.add('on'),1500);
+}
+
+$('#titleov').addEventListener('click',()=>{$('#titleov').style.display='none';startTimer();renderPet();play()});
+$('#restart').addEventListener('click',()=>location.reload());
+addEventListener('keydown',e=>{
+  if(e.key==='r'||e.key==='R')location.reload();
+  if(state==='title'&&(e.key==='Enter'||e.key===' ')){$('#titleov').click();return}
+  if(choiceKeys&&/^[1-4]$/.test(e.key)){choiceKeys(+e.key-1);return}
+  if(e.key==='Enter'||e.key===' '||e.key==='a'||e.key==='A'){e.preventDefault();if(adv)adv()}
+});
+</script>
+</body>
+</html>

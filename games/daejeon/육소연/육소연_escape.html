@@ -1,0 +1,344 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>AIM: 방탈출 — v5 튜토리얼 목업</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/galmuri/dist/galmuri.css" rel="stylesheet">
+<style>
+html,body{margin:0;height:100%;background:#07070A;overflow:hidden;color:#fff;user-select:none;
+  font-family:'Galmuri11 Bold','Galmuri11','Galmuri9','Apple SD Gothic Neo','Malgun Gothic',sans-serif;font-weight:700}
+#wrap{position:absolute;left:50%;top:50%;width:462px;height:974px;transform-origin:50% 50%}
+#phone{position:absolute;inset:0;border-radius:48px;background:#000;border:7px solid #2A2F3E;box-sizing:border-box;box-shadow:0 0 0 3px #0B0D14,0 30px 80px #000}
+#screen{position:absolute;inset:0;border-radius:40px;overflow:hidden;background:#11141D;color:#EEF0F6}
+.v5{font-family:'IBM Plex Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif;font-weight:400}
+
+/* ---------- 상단 HUD ---------- */
+#hud{position:absolute;top:0;left:0;right:0;height:64px;background:#1A120B;border-bottom:4px solid #3B2314;display:flex;align-items:center;padding:0 16px;gap:10px;z-index:30}
+#hud .ttl{font-size:22px;color:#FFD23F;text-shadow:2px 2px 0 #000}
+#ring{display:flex;gap:4px;margin-left:auto}
+#ring .s{width:26px;height:26px;border:2px dashed #6B5B4C;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:15px;color:#6B5B4C}
+#ring .s.got{border:2px solid #FFD23F;background:#2A2200;color:#FFD23F}
+#timer{font-size:22px;color:#fff;text-shadow:2px 2px 0 #000;min-width:66px;text-align:right}
+
+/* ---------- 방 / 문 ---------- */
+#room{position:absolute;top:64px;left:0;right:0;bottom:0;background:radial-gradient(ellipse at 50% 20%,#2A2520,#141210 70%)}
+#room:before{content:'';position:absolute;inset:0;pointer-events:none;opacity:.5;
+  background:repeating-linear-gradient(0deg,transparent 0 44px,#00000066 44px 48px),repeating-linear-gradient(90deg,transparent 0 90px,#00000044 90px 94px)}
+#door{position:absolute;left:34px;top:36px;width:380px;height:760px;perspective:1000px}
+#frame{position:absolute;left:-14px;top:-14px;width:408px;height:788px;border:14px solid #2A1A0E;border-bottom:0;border-radius:204px 204px 0 0;box-sizing:border-box;box-shadow:0 0 0 5px #1A0F08,0 20px 50px #000}
+#light{position:absolute;inset:0;border-radius:190px 190px 0 0;background:radial-gradient(circle,#FFF6D0 0%,#FFD23F 35%,#FF9E2C00 75%);opacity:0;transition:opacity 1.2s}
+.panel{position:absolute;top:0;width:50%;height:100%;background:linear-gradient(90deg,#6B4426,#8A5A33 40%,#6B4426);border:5px solid #3B2314;box-sizing:border-box;box-shadow:inset 0 0 40px #0008;transition:transform 1.4s cubic-bezier(.6,0,.4,1)}
+.panel.left{left:0;border-radius:190px 0 0 0;transform-origin:left}
+.panel.right{right:0;border-radius:0 190px 0 0;transform-origin:right}
+.panel:after{content:'';position:absolute;inset:30px 18px;border:4px solid #3B231488;border-radius:110px 110px 8px 8px}
+#door.open .panel.left{transform:rotateY(-110deg)}
+#door.open .panel.right{transform:rotateY(110deg)}
+#door.open #light{opacity:1}
+
+#locks{position:absolute;left:0;top:110px;width:100%}
+.lock{position:absolute;left:0;width:100%;height:96px;display:flex;align-items:center;gap:10px;transition:opacity .5s}
+.lock .pad{position:relative;width:72px;height:72px;flex:none;margin-left:26px;filter:grayscale(.6) brightness(.6);transition:filter .3s}
+.lock .pad svg{width:72px;height:72px;overflow:visible}
+.lock .shackle{transform-origin:50% 100%;transition:transform .4s}
+.lock .num{position:absolute;left:4px;top:-8px;font-size:15px;color:#FFD23F;background:#1A1200;border:2px solid #FFD23F;border-radius:999px;width:24px;height:24px;display:flex;align-items:center;justify-content:center;z-index:2}
+.lock .plaque{background:#2B2420;border:3px solid #6B5B4C;color:#EBDCC4;padding:7px 10px;font-size:19px;line-height:1.1;box-shadow:3px 3px 0 #0008;transform:rotate(-1.5deg);white-space:nowrap;transition:opacity .4s}
+.lock.active{cursor:pointer}
+.lock.active .pad{filter:none;animation:bob 1s ease-in-out infinite}
+.lock.active .pad:before{content:'';position:absolute;left:50%;top:50%;width:90px;height:90px;margin:-45px 0 0 -45px;border-radius:50%;border:3px solid #FFD23F;animation:ring 1.4s ease-out infinite}
+.lock.active .plaque{border-color:#FFD23F;color:#fff}
+.lock.open .pad{filter:none}
+.lock.open .shackle{transform:translateY(-12px) rotate(-25deg)}
+.lock.open .body{fill:#3B7B55}
+.lock.open .plaque{opacity:.35;text-decoration:line-through}
+.lock.open .num{background:#1C4A2E;border-color:#5BD18F;color:#5BD18F}
+.lock.alarm .plaque{background:#4A0F14;border-color:#FF4D55;color:#FFB3B8;animation:blink .5s steps(2) infinite}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@keyframes ring{0%{transform:scale(.6);opacity:1}100%{transform:scale(1.5);opacity:0}}
+@keyframes blink{50%{opacity:.4}}
+
+#final{position:absolute;left:50%;bottom:40px;transform:translateX(-50%);display:flex;gap:8px;padding:12px;background:#1A120B;border:4px solid #3B2314;border-radius:12px;box-shadow:0 6px 0 #0A0604;opacity:.35;transition:opacity .5s}
+#final.active{opacity:1;border-color:#FFD23F;box-shadow:0 6px 0 #0A0604,0 0 24px #FFD23F88}
+#final .tile{width:58px;height:68px;background:#F3E6C8;color:#1A1200;font-size:42px;display:flex;align-items:center;justify-content:center;border:3px solid #8A6B3B;border-radius:7px;box-shadow:inset 0 -6px 0 #C9B48C;cursor:pointer;transition:transform .25s,margin .4s}
+#final .tile.sel{transform:translateY(-8px);border-color:#FFD23F;box-shadow:inset 0 -6px 0 #C9B48C,0 0 14px #FFD23F}
+#final.solved .tile{background:#FFD23F;border-color:#1A1200;cursor:default}
+#final.solved .tile:first-child{margin-right:20px;color:#4662FF}
+#final .hint{position:absolute;left:50%;top:-40px;transform:translateX(-50%);white-space:nowrap;font-size:19px;color:#FFD23F;opacity:0;transition:opacity .4s}
+#final.active .hint{opacity:1}
+
+#alarm{position:absolute;inset:0;pointer-events:none;opacity:0;z-index:25}
+#alarm.on{animation:alarm .5s ease-in-out 6}
+@keyframes alarm{0%,100%{opacity:0;box-shadow:inset 0 0 0 0 #FF2A3A}50%{opacity:1;box-shadow:inset 0 0 120px 30px #FF2A3A}}
+
+/* ---------- v5 화면 (자물쇠를 탭하면 올라옴) ---------- */
+#v5{position:absolute;top:64px;left:0;right:0;bottom:0;background:#11141D;z-index:20;transform:translateY(102%);transition:transform .45s cubic-bezier(.3,.9,.3,1);font-size:17px;line-height:1.45}
+#v5.on{transform:translateY(0)}
+.hdr{position:absolute;top:0;left:0;right:0;height:66px;display:flex;align-items:center;gap:12px;padding:0 20px;border-bottom:1px solid #1C2030;background:#11141D;z-index:5}
+.hdr .av{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#4662FF,#8A5CFF);display:flex;align-items:center;justify-content:center;font-size:20px}
+.hdr .t1{font-weight:600;font-size:17px}.hdr .t2{font-size:13px;color:#8A90A6}
+.hdr .bell{margin-left:auto;font-size:20px;color:#C7CBDA}
+#chat{position:absolute;top:66px;bottom:76px;left:0;right:0;overflow-y:auto;padding:16px 14px 60px;display:flex;flex-direction:column;gap:12px;scrollbar-width:none}
+#chat::-webkit-scrollbar{display:none}
+.inbar{position:absolute;bottom:0;left:0;right:0;height:76px;display:flex;align-items:center;gap:10px;padding:0 14px;background:#11141D;border-top:1px solid #1C2030;z-index:5}
+.inbar .n{width:36px;height:36px;border-radius:50%;background:#000;border:2px solid #fff;display:flex;align-items:center;justify-content:center;font-weight:700;flex:none;font-size:15px}
+.inbar .inp{flex:1;height:44px;border-radius:22px;background:#1A1E2C;border:1px solid #2A2F42;display:flex;align-items:center;padding:0 14px;gap:8px;color:#8A90A6;font-size:15px;overflow:hidden;white-space:nowrap}
+.inbar .inp.typing{color:#fff}
+.inbar .send{width:40px;height:40px;border-radius:50%;background:#2A3250;color:#8FA2FF;display:flex;align-items:center;justify-content:center;font-size:18px;flex:none}
+.ub{align-self:flex-end;max-width:82%;background:#4662FF;color:#fff;border-radius:16px 16px 4px 16px;padding:10px 14px;font-size:16px}
+.ac{background:linear-gradient(165deg,#151821,#231B39);border:1px solid #2A2D44;border-radius:16px;padding:16px 16px 14px;font-size:16px}
+.ac .badge{display:flex;align-items:center;gap:8px;font-size:13px;color:#C7CBDA;margin-bottom:10px}
+.ac .badge i{width:20px;height:20px;border-radius:50%;background:#2A1E10;border:1px solid #F0A040;display:inline-flex;align-items:center;justify-content:center;font-style:normal;font-size:11px;color:#F0A040}
+.ac .badge .spk{margin-left:auto;color:#8A90A6}
+.ac .big{font-weight:600;font-size:19px;line-height:1.4}
+.ac .sub{background:#0F121B;border-radius:12px;padding:10px 12px;margin:12px 0 8px;font-size:14px}
+.ac .sub .lab{color:#8A90A6;font-size:13px;margin-bottom:6px}
+.ac .sub .row{display:flex;align-items:center;gap:8px}.ac .sub .row:before{content:'';width:7px;height:7px;border-radius:50%;background:#4662FF}
+.ac .note{color:#A0A6BC;font-size:13px}
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
+.chip{background:#1A1E2C;border:1px solid #2A2F42;border-radius:999px;padding:6px 11px;font-size:13px;color:#DADDE8;white-space:nowrap}
+.form .f{margin-top:8px}.form .f .lab{font-size:13px;color:#C7CBDA;margin-bottom:5px}
+.form .f .in{display:flex;align-items:center;gap:8px}.form .f .box{flex:1;height:42px;border-radius:10px;background:#0F121B;border:1px solid #2A2F42;display:flex;align-items:center;padding:0 12px;font-size:16px;color:#8A90A6}
+.form .f .box.on{color:#fff}
+.btn{display:flex;align-items:center;justify-content:center;height:42px;border-radius:10px;font-size:15px;font-weight:500;margin-top:8px}
+.btn.p{background:#4662FF;color:#fff}.btn.s{background:#1E2234;color:#DADDE8}
+.cf{background:#0F121B;border-radius:12px;padding:14px;margin-top:12px}
+.cf .q{font-weight:600;font-size:17px;margin-bottom:8px}
+.cf .ck{display:flex;align-items:center;gap:8px;font-size:15px;color:#C7CBDA;margin-bottom:10px}.cf .ck b{width:20px;height:20px;border-radius:5px;background:#2A2F42;display:inline-flex;align-items:center;justify-content:center;font-size:12px}
+.cf .two{display:flex;gap:8px}.cf .two .btn{flex:1;margin-top:0}
+.emg{border:2px solid #E5484D;background:#2A1418;border-radius:12px;padding:14px;margin-top:4px}
+.emg .h{display:flex;align-items:center;gap:8px;font-weight:600;font-size:16px;margin-bottom:6px}.emg .h i{width:24px;height:24px;border-radius:50%;background:#E5484D;display:inline-flex;align-items:center;justify-content:center;font-style:normal;font-size:13px}
+.emg .btn{background:#E5484D;color:#fff;margin-top:12px}
+.newchat{align-self:center;color:#8A90A6;font-size:13px;background:#1A1E2C;border-radius:999px;padding:3px 10px}
+
+.glow{position:relative;animation:glow .9s ease-in-out infinite;cursor:pointer;z-index:3}
+@keyframes glow{0%,100%{box-shadow:0 0 0 2px #FFD23F,0 0 14px #FFD23F}50%{box-shadow:0 0 0 4px #FFD23F,0 0 28px #FFD23F}}
+#cont{position:absolute;left:50%;bottom:92px;transform:translateX(-50%);display:none;background:#FFD23F;color:#1A1200;font-size:22px;padding:8px 18px;border:3px solid #1A1200;box-shadow:4px 4px 0 #1A1200;cursor:pointer;z-index:10;white-space:nowrap;
+  font-family:'Galmuri11 Bold','Galmuri11','Galmuri9',sans-serif;font-weight:700}
+#cont.on{display:block;animation:cbob 1s infinite}
+@keyframes cbob{0%,100%{transform:translate(-50%,0)}50%{transform:translate(-50%,-5px)}}
+
+/* 자막 (폰 안, 하단) */
+#cap{position:absolute;left:0;right:0;bottom:14px;text-align:center;font-size:24px;color:#fff;text-shadow:2px 2px 0 #000;background:#000A;padding:8px 0;opacity:0;transition:opacity .3s;pointer-events:none;z-index:28}
+#cap.on{opacity:1}
+
+/* 날아가는 열쇠 */
+.flykey{position:absolute;font-size:44px;z-index:60;pointer-events:none;filter:drop-shadow(0 0 10px #FFD23F)}
+
+/* 타이틀 / 엔딩 */
+.full{position:absolute;inset:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;padding:0 24px}
+#titleov{background:#0A0908F2;cursor:pointer}
+#titleov h1{font-size:128px;margin:0;color:#FFD23F;text-shadow:8px 8px 0 #1A1200;letter-spacing:8px}
+#titleov h2{font-size:26px;margin:0;color:#EBDCC4;line-height:1.4}
+#titleov p{font-size:20px;color:#8A7D73;margin-top:40px;animation:blink 1.2s steps(2) infinite}
+#titleov .k{position:absolute;bottom:28px;font-size:14px;color:#5A4D43;line-height:1.5}
+#ending{display:none;background:radial-gradient(circle at 50% 40%,#1B2A5A,#0B1230 60%,#060A1C)}
+#ending.on{display:flex}
+#iam{font-size:120px;letter-spacing:8px;color:#fff;text-shadow:6px 6px 0 #060A1C;display:flex;gap:12px}
+#iam span{display:inline-block;transition:transform .9s cubic-bezier(.5,-.4,.5,1.4),color .6s}
+#iam.swap span.i{transform:translateX(-120%);color:#FFD23F}#iam.swap span.a{transform:translateX(120%)}
+#iam.done span.i{margin-right:36px}
+#ending .l1{font-size:22px;color:#C7D3FF}#ending .l2{font-size:19px;color:#fff}#ending .l3{font-size:17px;color:#8FA2FF}
+#ending .time{font-size:64px;color:#FFD23F;text-shadow:4px 4px 0 #060A1C;margin-top:10px}
+#ending .time small{display:block;font-size:16px;color:#8FA2FF;text-shadow:none}
+#ending .krow{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;font-size:15px;color:#FFD23F;margin-top:4px}
+#ending .krow span{background:#13204A;border:2px solid #FFD23F;padding:5px 9px}
+#restart{margin-top:22px;background:#fff;color:#0B1230;font-size:20px;padding:8px 18px;border:3px solid #060A1C;box-shadow:4px 4px 0 #060A1C;cursor:pointer}
+</style>
+</head>
+<body>
+<div id="wrap"><div id="phone"><div id="screen">
+
+  <div id="hud"><span class="ttl">AIM</span><span style="font-size:15px;color:#C9B48C">방탈출</span><div id="ring"></div><span id="timer">00:00</span></div>
+
+  <div id="room">
+    <div id="door">
+      <div id="frame"></div><div id="light"></div>
+      <div class="panel left"></div><div class="panel right"></div>
+      <div id="locks"></div>
+      <div id="final"><div class="hint">글자를 바꿔 끼워라</div></div>
+    </div>
+    <div id="alarm"></div>
+  </div>
+
+  <div id="v5" class="v5">
+    <div class="hdr"><div class="av">✦</div><div><div class="t1">AI 건강비서</div><div class="t2">건강 코치 · 온라인</div></div><div class="bell">🔔</div></div>
+    <div id="chat"></div>
+    <div class="inbar"><div class="n">N</div><div class="inp" id="inp"><span>🎙</span><span id="inpt">메시지를 입력하세요</span></div><div class="send" id="send">➤</div></div>
+    <div id="cont">▶ 계속</div>
+  </div>
+
+  <div id="cap"></div>
+
+  <div id="titleov" class="full"><h1>AIM</h1><h2>방탈출<br>열쇠는 비서 안에 있다</h2><p>탭해서 시작</p><div class="k">빛나는 곳을 탭 · Enter/A = 대신 누르기 · R = 처음부터</div></div>
+  <div id="ending" class="full">
+    <div id="iam"><span class="a">A</span><span class="i">I</span><span class="m">M</span></div>
+    <div class="l1">Now, it's about I AM.</div>
+    <div class="l2">이제, 나를 위한 건강비서를 만나보세요.</div>
+    <div class="l3">건강관리의 주인공은 바로 나.</div>
+    <div class="time" id="ftime">00:00<small>클리어 타임</small></div>
+    <div class="krow" id="fkeys"></div>
+    <div id="restart">↻ 처음부터</div>
+  </div>
+
+</div></div></div>
+
+<script>
+/* ---------- 화면 맞춤 (폰을 화면 높이에 맞춤) ---------- */
+let SCALE=1;
+function fit(){SCALE=Math.min(innerHeight*0.96/974,innerWidth*0.96/462);document.getElementById('wrap').style.transform=`translate(-50%,-50%) scale(${SCALE})`}
+addEventListener('resize',fit);fit();
+
+/* ---------- 데이터 ---------- */
+const LOCKS=[
+ {riddle:'내 평균 혈압은?',   key:'120/80',        cap:'물어보면 내 기록으로 답해요'},
+ {riddle:'오늘 혈압을 남겨라', key:'122/80',        cap:'칩 한 번이면 바로 열려요'},
+ {riddle:'아픈 곳을 맡겨라',   key:'무릎',           cap:'내가 누른 것만 기억해요'},
+ {riddle:'위험 신호!',         key:'119',            cap:'위급하면 바로 안내해요', auto:true},
+ {riddle:'비서가 날 기억하나?', key:'무릎 통증·10/7',  cap:'다음에 만나도 기억해요'},
+];
+const PAD=`<svg viewBox="0 0 96 96"><path class="shackle" d="M28 48 V32 a20 20 0 0 1 40 0 V48" fill="none" stroke="#C9CCD6" stroke-width="10" stroke-linecap="round"/><rect class="body" x="16" y="44" width="64" height="46" rx="10" fill="#B08A3E" stroke="#5A4215" stroke-width="4"/><circle cx="48" cy="64" r="7" fill="#3B2A0A"/><rect x="45" y="66" width="6" height="12" fill="#3B2A0A"/></svg>`;
+
+const $=s=>document.querySelector(s);
+const screen=$('#screen'),chat=$('#chat'),inpt=$('#inpt'),inp=$('#inp'),sendBtn=$('#send'),cap=$('#cap'),cont=$('#cont'),v5=$('#v5');
+let cur=0,state='title',t0=0,timerId=null,adv=null;
+
+const locksEl=$('#locks');
+LOCKS.forEach((L,i)=>{const d=document.createElement('div');d.className='lock';d.style.top=(i*96)+'px';
+  d.innerHTML=`<div class="pad"><div class="num">${i+1}</div>${PAD}</div><div class="plaque">${L.riddle}</div>`;
+  d.addEventListener('click',()=>onLock(i));locksEl.appendChild(d)});
+const ringEl=$('#ring');
+LOCKS.forEach((L,i)=>{const s=document.createElement('div');s.className='s';s.id='slot'+i;s.textContent=i+1;ringEl.appendChild(s)});
+const lockEl=i=>locksEl.children[i];
+
+const fmt=ms=>{const s=Math.floor(ms/1000);return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')};
+function startTimer(){t0=Date.now();timerId=setInterval(()=>{$('#timer').textContent=fmt(Date.now()-t0)},250)}
+
+/* ---------- v5 헬퍼 ---------- */
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+function scrollDown(){chat.scrollTop=chat.scrollHeight}
+function el(html){const d=document.createElement('div');d.innerHTML=html.trim();const n=d.firstChild;chat.appendChild(n);scrollDown();return n}
+const BADGE=`<div class="badge"><i>♥</i>다정한 친구<span class="spk">🔊</span></div>`;
+function addUser(t){return el(`<div class="ub">${t}</div>`)}
+function addCard(inner){return el(`<div class="ac">${BADGE}${inner}</div>`)}
+async function typeText(t){inp.classList.add('typing');inpt.textContent='';for(const c of t){inpt.textContent+=c;await wait(40)}}
+function clearInput(){inp.classList.remove('typing');inpt.textContent='메시지를 입력하세요'}
+function tap(target){return new Promise(res=>{target.classList.add('glow');const h=()=>{target.classList.remove('glow');target.removeEventListener('click',h);adv=null;res()};target.addEventListener('click',h);adv=h})}
+async function send(text){await typeText(text);await tap(sendBtn);clearInput();addUser(text);await wait(500)}
+function setCap(t){cap.textContent=t;cap.classList.add('on')}
+function showCont(){return new Promise(res=>{cont.classList.add('on');const h=()=>{cont.classList.remove('on');cont.removeEventListener('click',h);adv=null;res()};cont.addEventListener('click',h);adv=h})}
+function homeScreen(){chat.innerHTML=`
+ <div class="ac" style="padding:20px"><div class="badge" style="margin-bottom:6px;color:#8FA2FF">✦ AI 건강비서</div><div class="big" style="font-size:22px">편안한 저녁이에요</div><div class="note" style="margin-top:4px">최근 기록을 바탕으로 정리했어요.</div></div>
+ <div style="font-size:13px;color:#C7CBDA">오늘 챙겨 볼 것</div>
+ ${['오늘 루틴|오늘 루틴 4개를 모두 마쳤어요','혈압|최근 7일 동안 혈압을 1번 기록했어요','건강검진|건강검진 기록이 10회 쌓여 있어요'].map(s=>{const[a,b]=s.split('|');return`<div class="ac" style="padding:12px 14px;display:flex;align-items:center;gap:10px"><div style="width:36px;height:36px;border-radius:50%;background:#1E2440;display:flex;align-items:center;justify-content:center">◎</div><div><div style="font-size:12px;color:#8FA2FF">${a}</div><div style="font-weight:600;font-size:15px">${b}</div></div><div style="margin-left:auto;color:#8A90A6">›</div></div>`}).join('')}
+ <div style="text-align:center;font-size:13px;color:#8A90A6;margin-top:4px">건강 관련 무엇이든 물어보세요</div>
+ <div class="chips" style="justify-content:center;margin-top:0">${['건강 취약도 요약','건강 비서 메시지','시그니처 타입','오늘의 콘텐츠 추천','무엇을 할 수 있어?'].map(c=>`<span class="chip">${c}</span>`).join('')}</div>`}
+
+/* ---------- 장면 ---------- */
+const CHIPS1=['혈압 기록하기','내 건강검진 결과','건강 분석에 필요한 기록','오늘 루틴','목표 칼로리','건강 취약도 요약'];
+const SCENES=[
+ async()=>{ setCap(LOCKS[0].cap);
+  await send('요즘 혈압 어때?');
+  addCard(`<div class="big">최근 7일 혈압 기록 1건, 평균 120/80 mmHg이에요.</div>
+   <div class="sub"><div class="lab">최근 기록</div><div class="row">10/2 14:13 · 120/80 mmHg</div></div>
+   <div class="note">기록된 수치를 그대로 보여드려요. 해석이 필요하면 의료진과 상담해주세요.</div>
+   <div class="chips">${CHIPS1.map(c=>`<span class="chip" data-c="${c}">${c}</span>`).join('')}</div>`);
+  await wait(600);
+ },
+ async()=>{ setCap(LOCKS[1].cap);
+  const chip=chat.querySelector('[data-c="혈압 기록하기"]');chip.scrollIntoView({block:'center'});
+  await tap(chip);addUser('혈압 기록하기');await wait(400);
+  const f=addCard(`<div class="form"><div class="f"><div class="lab">수축기(최고)</div><div class="in"><div class="box" id="b1">입력</div><span>mmHg</span></div></div>
+   <div class="f"><div class="lab">이완기(최저)</div><div class="in"><div class="box" id="b2">입력</div><span>mmHg</span></div></div><div class="btn p" id="ok">확인</div></div>`);
+  await wait(500);const b1=f.querySelector('#b1'),b2=f.querySelector('#b2');
+  b1.classList.add('on');b1.textContent='';for(const c of '122'){b1.textContent+=c;await wait(120)}
+  b2.classList.add('on');b2.textContent='';for(const c of '80'){b2.textContent+=c;await wait(120)}
+  await tap(f.querySelector('#ok'));addUser('확인');await wait(400);
+  setCap('저장은 내가 확인할 때만');
+  const c=addCard(`<div class="big">혈압 122/80 mmHg (10/7 18:50 측정)으로 기록할까요?</div>
+   <div class="note" style="margin-top:8px">기록한 뒤에는 고치거나 지울 수 없어요. 값을 한 번 더 확인해 주세요.</div>
+   <div class="btn p" id="rec">기록하기</div><div class="btn s">다시 입력</div>`);
+  await wait(500);await tap(c.querySelector('#rec'));addUser('기록하기');await wait(400);
+  addCard(`<div class="big">기록했어요.</div><div class="sub"><div class="lab">최근 기록</div><div class="row">10/2 14:13 · 120/80 mmHg</div><div class="row" style="margin-top:4px;color:#FFD23F">10/7 18:50 · 122/80 mmHg</div></div>`);
+  await wait(600);
+ },
+ async()=>{ setCap(LOCKS[2].cap);
+  await send('요즘 무릎이 가끔 시큰해요');
+  const c=addCard(`<div>무릎이 시큰하시면 많이 불편하시겠어요 😢 혹시 갑자기 심해지거나 붓기·발열·걸을 수 없을 정도라면 꼭 의료진 상담을 권드려요.</div>
+   <div class="cf"><div class="q">이렇게 기억할까요?</div><div class="ck"><b>✓</b>통증·부상 (무릎)</div><div class="two"><div class="btn p" id="rem">기억하기</div><div class="btn s">아니요</div></div></div>`);
+  await wait(500);await tap(c.querySelector('#rem'));addUser('기억하기');await wait(400);
+  addCard(`<div class="big">기억했어요: 통증·부상 (무릎)</div>`);
+  await wait(600);
+ },
+ async()=>{ setCap(LOCKS[3].cap);
+  await wait(300);addUser('갑자기 가슴이 너무 아프고 숨이 안 쉬어져요');await wait(500);
+  addCard(`<div class="emg"><div class="h"><i>!</i>응급 안내</div><div>신체에 급한 이상이 느껴지면 망설이지 말고 119에 연락하시거나 가까운 응급실을 찾아주세요. 저는 응급 상황을 판단하거나 대신 처치해 드릴 수 없어요.</div><div class="btn">📞 119에 전화하기</div></div>`);
+  await wait(900);
+ },
+ async()=>{ setCap(LOCKS[4].cap);
+  chat.innerHTML='';el(`<div class="newchat">새 대화</div>`);await wait(500);
+  await send('지난번에 내가 몸 상태 뭐라고 했었지?');
+  addCard(`<div class="big">지난번에 말씀해 주신 건 무릎 통증이었어요. 10월 7일에 기록해 두셨더라고요. 지금은 좀 어떠세요? 많이 나아지셨길 바라요</div>`);
+  await wait(600);
+ },
+];
+
+/* ---------- 진행 ---------- */
+function activate(i){lockEl(i).classList.add('active');if(LOCKS[i].auto)lockEl(i).classList.add('alarm')}
+async function onLock(i){if(state!=='idle'||i!==cur)return;await playScene(i)}
+async function playScene(i){
+  state='scene';lockEl(i).classList.remove('active');
+  if(LOCKS[i].auto){$('#alarm').classList.add('on');setTimeout(()=>$('#alarm').classList.remove('on'),3000);await wait(1200)}
+  v5.classList.add('on');await wait(500);
+  await SCENES[i]();
+  await showCont();
+  cap.classList.remove('on');v5.classList.remove('on');await wait(450);
+  await giveKey(i);
+}
+function pos(e){const r=e.getBoundingClientRect(),s=screen.getBoundingClientRect();return{x:(r.left-s.left)/SCALE+(r.width/SCALE)/2,y:(r.top-s.top)/SCALE+(r.height/SCALE)/2}}
+async function giveKey(i){
+  const k=document.createElement('div');k.className='flykey';k.textContent='🔑';screen.appendChild(k);
+  const slot=$('#slot'+i),p1=pos(slot),p2=pos(lockEl(i).querySelector('.pad'));
+  k.style.left='200px';k.style.top='460px';
+  await k.animate([{transform:'scale(.3)',opacity:0},{transform:'scale(1.5)',opacity:1}],{duration:400,fill:'forwards'}).finished;
+  await k.animate([{left:'200px',top:'460px'},{left:(p1.x-22)+'px',top:(p1.y-26)+'px',transform:'scale(.6)'}],{duration:500,easing:'ease-in-out',fill:'forwards'}).finished;
+  slot.classList.add('got');slot.textContent='🔑';await wait(250);
+  await k.animate([{left:(p1.x-22)+'px',top:(p1.y-26)+'px',transform:'scale(.6)'},{left:(p2.x-22)+'px',top:(p2.y-26)+'px',transform:'scale(1)'}],{duration:600,easing:'ease-in-out',fill:'forwards'}).finished;
+  k.remove();lockEl(i).classList.add('open');lockEl(i).classList.remove('alarm');
+  await wait(600);
+  cur=i+1;
+  if(cur<LOCKS.length){activate(cur);if(LOCKS[cur].auto){state='scene';await wait(400);playScene(cur)}else state='idle'}
+  else{state='final';$('#final').classList.add('active')}
+}
+
+/* ---------- 마지막 문 ---------- */
+let tiles=['A','I','M'],sel=-1;const finalEl=$('#final');
+function drawTiles(){finalEl.querySelectorAll('.tile').forEach(t=>t.remove());tiles.forEach((ch,i)=>{const t=document.createElement('div');t.className='tile'+(i===sel?' sel':'');t.textContent=ch;t.addEventListener('click',()=>onTile(i));finalEl.appendChild(t)})}
+drawTiles();
+async function onTile(i){if(state!=='final')return;
+  if(sel<0){sel=i;drawTiles();return}
+  if(sel!==i){[tiles[sel],tiles[i]]=[tiles[i],tiles[sel]]}sel=-1;drawTiles();
+  if(tiles.join('')==='IAM'){solve()}
+}
+function solve(){state='done';finalEl.classList.add('solved');finalEl.classList.remove('active');setTimeout(openDoor,700)}
+async function openDoor(){clearInterval(timerId);$('#door').classList.add('open');await wait(1500);
+  const e=$('#ending');e.classList.add('on');$('#ftime').firstChild.nodeValue=fmt(Date.now()-t0);
+  $('#fkeys').innerHTML=LOCKS.map(l=>`<span>${l.key}</span>`).join('');
+  await wait(600);const iam=$('#iam');iam.classList.add('swap');await wait(1000);
+  iam.innerHTML='<span class="i" style="color:#FFD23F">I</span><span class="a">A</span><span class="m">M</span>';iam.classList.remove('swap');iam.classList.add('done');
+}
+
+$('#titleov').addEventListener('click',()=>{$('#titleov').style.display='none';homeScreen();startTimer();state='idle';activate(0)});
+$('#restart').addEventListener('click',()=>location.reload());
+addEventListener('keydown',e=>{
+  if(e.key==='r'||e.key==='R')location.reload();
+  if(state==='title'&&(e.key==='Enter'||e.key===' ')){$('#titleov').click();return}
+  if(e.key==='Enter'||e.key===' '||e.key==='a'||e.key==='A'){e.preventDefault();
+    if(adv){adv();return}
+    if(state==='idle')onLock(cur);
+    else if(state==='final'){tiles=['I','A','M'];sel=-1;drawTiles();solve()}
+  }
+});
+</script>
+</body>
+</html>

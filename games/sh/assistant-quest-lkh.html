@@ -1,0 +1,939 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AI 건강비서 퀘스트</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css">
+<style>
+:root{
+  --q:#6C47FF; --q-d:#4B2ED1; --q-pale:#F0ECFF; --ok:#1FB86B; --ok-d:#13834B; --ok-pale:#E5F7EE;
+  --ink:#1E1B2E; --qsub:#6B6680; --qhair:#E7E3F3;
+  --tip:#FFFBE3; --tip-line:#3A3420;
+  --p-bg:#ffffff; --p-fg:#171719; --p-sub:#70737c; --p-primary:#1a71ff; --p-secondary:#003d99; --p-border:#dbdcdf; --p-divider:#eaebec;
+  --p-elevated:#edf2f5; --p-surface:#f4f4f5; --p-surface2:#f7f9fa; --p-user:#eaf2fe;
+  --p-info-bg:#eaf2fe; --p-info:#002966; --p-ok-bg:#d9fac8; --p-ok:#005200; --p-warn-bg:#ffeacc; --p-warn:#804a00;
+  --p-grad:radial-gradient(191% 1069% at 11.72% -137.5%,#3385ff,#a333d6),#1a71ff;
+}
+*{ box-sizing:border-box; }
+html,body{ height:100%; margin:0; }
+body{ background:linear-gradient(160deg,#F4F1FF,#E6EEFF); color:var(--ink); font-family:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",sans-serif; -webkit-font-smoothing:antialiased; word-break:keep-all; }
+button,input{ font:inherit; color:inherit; }
+button{ background:none; border:0; padding:0; cursor:pointer; }
+button:focus-visible,input:focus-visible,summary:focus-visible{ outline:3px solid var(--q); outline-offset:2px; }
+button:disabled{ cursor:default; }
+[hidden]{ display:none!important; }
+
+.stage{ display:flex; justify-content:center; align-items:center; height:100dvh; padding:24px; }
+
+/* ---------- AI 건강비서 (본뜬 화면) ---------- */
+.phone{ position:relative; width:430px; height:min(880px,calc(100dvh - 48px)); flex:none; display:flex; flex-direction:column; border-radius:40px; overflow:hidden; background:var(--p-bg); border:8px solid #22202B; box-shadow:0 30px 70px rgba(30,20,80,.28); color:var(--p-fg); transition:box-shadow .25s; }
+.phone.win{ box-shadow:0 0 0 7px var(--ok),0 30px 70px rgba(31,184,107,.4); }
+.ph-head{ flex:none; height:56px; display:flex; align-items:center; gap:10px; padding:0 10px 0 14px; border-bottom:1px solid var(--p-divider); }
+.lg{ flex:none; width:32px; height:32px; border-radius:50%; display:grid; place-items:center; background:var(--p-grad); }
+.lg svg{ width:58%; height:58%; }
+.ph-head b{ display:block; font-size:14px; font-weight:700; white-space:nowrap; }
+.ph-head small{ display:block; font-size:11px; color:var(--p-sub); white-space:nowrap; }
+.hud{ margin-left:auto; display:flex; align-items:center; gap:2px; padding:3px; border-radius:999px; background:var(--q-pale); font-size:12.5px; font-weight:800; color:var(--q-d); font-variant-numeric:tabular-nums; }
+.hud span{ padding:3px 7px; border-radius:999px; white-space:nowrap; }
+.hud span+span{ background:#fff; }
+.hud .bump{ animation:pop .5s cubic-bezier(.2,1.6,.4,1); }
+.hbtn{ flex:none; width:32px; height:32px; border-radius:50%; display:grid; place-items:center; color:var(--p-sub); font-size:15px; }
+.hbtn:hover{ background:var(--p-elevated); }
+.thread{ flex:1; overflow:auto; padding:16px 16px 8px; display:flex; flex-direction:column; gap:16px; scroll-behavior:smooth; }
+.hero{ display:flex; flex-direction:column; align-items:flex-start; gap:6px; padding:20px; border:1px solid var(--p-border); border-radius:20px; }
+.hero .lg{ width:56px; height:56px; }
+.hero .cap{ margin-top:6px; font-family:ui-monospace,Menlo,monospace; font-size:11px; letter-spacing:.12em; color:var(--p-secondary); }
+.hero h3{ margin:0; font-size:20px; font-weight:800; }
+.hero p{ margin:0; font-size:13.5px; color:var(--p-sub); }
+.hl-title{ margin:4px 0 -6px; font-size:13px; font-weight:700; color:var(--p-sub); }
+.hl{ display:flex; flex-direction:column; gap:8px; }
+.hlc{ display:flex; align-items:center; gap:12px; padding:12px 14px; border:1px solid var(--p-border); border-radius:16px; text-align:left; }
+.hlc.first{ border-color:rgba(26,113,255,.3); background:#f2f7ff; }
+.hlc .tile{ flex:none; width:36px; height:36px; border-radius:12px; display:grid; place-items:center; background:var(--p-elevated); font-size:17px; }
+.hlc.first .tile{ background:var(--p-primary); color:#fff; }
+.hlc small{ display:block; font-size:11.5px; font-weight:700; color:var(--p-secondary); }
+.hlc span{ font-size:14.5px; font-weight:600; }
+.ask-title{ margin:2px 0 -8px; font-size:13px; color:var(--p-sub); }
+.chips{ display:flex; flex-wrap:wrap; gap:8px; }
+.chip{ min-height:44px; padding:0 16px; border-radius:22px; background:var(--p-elevated); font-size:15px; font-weight:500; }
+.chip:active{ transform:scale(.97); }
+.me{ align-self:flex-end; max-width:82%; padding:10px 14px; border-radius:18px 18px 4px 18px; background:var(--p-user); font-size:15.5px; line-height:1.45; }
+.turn{ display:flex; flex-direction:column; gap:10px; padding-bottom:16px; border-bottom:1px solid var(--p-divider); }
+.spk{ display:flex; align-items:center; gap:8px; font-size:13px; font-weight:700; }
+.spk .lg{ width:26px; height:26px; }
+.thinking{ display:flex; flex-direction:column; gap:4px; font-size:14px; color:var(--p-sub); }
+.thinking .lg{ animation:spin 1s linear infinite; }
+.thinking small{ font-size:12.5px; }
+.body{ display:flex; flex-direction:column; gap:10px; }
+.b-sum{ margin:0; font-size:19px; font-weight:800; line-height:1.45; letter-spacing:-.01em; }
+.b-text{ margin:0; font-size:15px; line-height:1.6; }
+.b-text.sub{ font-size:13.5px; color:var(--p-sub); }
+.b-cat{ margin:4px 0 -2px; font-size:13px; font-weight:700; color:var(--p-sub); }
+.b-sec{ padding:14px; border-radius:16px; background:var(--p-surface2); }
+.b-sec.warn{ background:var(--p-warn-bg); color:var(--p-warn); }
+.b-sec .st{ margin-bottom:6px; font-size:12.5px; font-weight:700; color:var(--p-sub); }
+.b-sec.warn .st{ color:var(--p-warn); }
+.b-sec ul{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:6px; }
+.b-sec li{ position:relative; padding-left:14px; font-size:15px; line-height:1.5; }
+.b-sec li::before{ content:""; position:absolute; left:2px; top:.62em; width:6px; height:6px; border-radius:50%; background:var(--p-primary); }
+.b-coll{ padding:12px 14px; border:1px solid var(--p-border); border-radius:16px; font-size:14.5px; }
+.b-coll summary{ cursor:pointer; font-weight:700; list-style:none; display:flex; justify-content:space-between; }
+.b-coll summary::after{ content:"⌄"; transition:transform .2s; }
+.b-coll[open] summary::after{ transform:rotate(180deg); }
+.b-coll p{ margin:8px 0 0; color:var(--p-sub); }
+.b-trend{ padding:14px; border-radius:16px; background:var(--p-surface2); }
+.b-trend .th{ display:flex; justify-content:space-between; align-items:baseline; font-size:12.5px; font-weight:700; color:var(--p-sub); }
+.b-trend .th b{ font-family:Inter,"Pretendard Variable",sans-serif; font-variant-numeric:tabular-nums; font-size:20px; color:var(--p-fg); }
+.b-trend svg{ display:block; width:100%; height:auto; margin-top:6px; }
+.b-trend .lgd{ display:flex; gap:12px; font-size:12px; color:var(--p-sub); }
+.b-trend .lgd i{ display:inline-block; width:10px; height:3px; margin-right:4px; vertical-align:middle; border-radius:2px; }
+.b-rt{ display:flex; flex-direction:column; gap:8px; }
+.b-rt .grp{ font-size:12px; font-weight:700; color:var(--p-sub); }
+.b-rt .dn{ display:flex; flex-direction:column; gap:6px; padding:10px 12px; border-radius:16px; background:var(--p-info-bg); color:var(--p-info); }
+.b-rt .dn small{ font-size:12px; font-weight:700; }
+.b-rt .dn div{ display:flex; align-items:center; gap:8px; font-size:15px; }
+.b-rt .dn div::before{ content:"✓"; flex:none; width:20px; height:20px; border-radius:50%; display:grid; place-items:center; background:var(--p-primary); color:#fff; font-size:12px; }
+.b-rt .row{ display:flex; align-items:center; gap:10px; min-height:56px; padding:0 6px 0 12px; border:1px solid var(--p-border); border-radius:16px; font-size:15px; }
+.b-rt .row span{ flex:1; }
+.b-rt .row small{ color:var(--p-sub); font-size:12.5px; }
+.gbtn{ min-height:44px; padding:0 16px; border-radius:12px; background:var(--p-elevated); font-size:14.5px; font-weight:600; }
+.gbtn:disabled{ color:var(--p-sub); }
+.b-rac{ display:flex; flex-direction:column; gap:10px; padding:16px; border:1px solid var(--p-border); border-radius:20px; }
+.b-rac .tags span{ display:inline-block; margin-right:4px; padding:2px 8px; border-radius:999px; background:var(--p-elevated); font-size:11.5px; font-weight:700; color:var(--p-sub); }
+.b-rac .rq{ margin:0; font-size:16px; font-weight:800; line-height:1.4; }
+.b-rac ol{ margin:0; padding-left:18px; font-size:13px; line-height:1.55; color:var(--p-sub); }
+.b-rac details{ padding:8px 12px; border-radius:10px; background:var(--p-surface); font-size:13px; color:var(--p-sub); }
+.b-rac details summary{ cursor:pointer; font-weight:700; color:var(--p-fg); }
+.b-rac details ul{ margin:6px 0 0; padding-left:18px; }
+.seg{ display:flex; gap:6px; }
+.seg button{ flex:1; min-height:46px; padding:6px 8px; border:1px solid var(--p-border); border-radius:12px; background:#fff; font-size:14px; font-weight:600; }
+.seg button.on{ border-color:transparent; background:var(--p-primary); color:#fff; box-shadow:0 0 0 2px var(--p-primary); }
+.stepper{ display:flex; align-items:center; justify-content:space-between; font-size:14px; font-weight:700; }
+.stepper div{ display:flex; align-items:center; gap:10px; }
+.stepper button{ width:40px; height:40px; border:1px solid var(--p-border); border-radius:12px; font-size:18px; }
+.stepper b{ min-width:56px; text-align:center; font-size:16px; font-variant-numeric:tabular-nums; }
+.b-rs{ display:flex; flex-direction:column; }
+.b-rs .step{ position:relative; display:flex; gap:12px; padding-bottom:14px; }
+.b-rs .step:not(:last-child)::before{ content:""; position:absolute; left:6px; top:16px; bottom:0; width:2px; background:var(--p-border); }
+.b-rs .dot{ flex:none; width:14px; height:14px; margin-top:4px; border-radius:50%; background:var(--p-primary); box-shadow:0 0 0 4px var(--p-info-bg); }
+.b-rs .rl{ font-size:15px; font-weight:700; }
+.b-rs .rc{ font-size:14px; color:var(--p-sub); line-height:1.5; }
+.b-rs .conn{ margin-top:4px; font-size:12.5px; color:var(--p-secondary); }
+.badge{ display:inline-block; margin-left:6px; padding:1px 7px; border-radius:999px; font-size:11px; font-weight:700; vertical-align:2px; }
+.badge.data{ background:var(--p-ok-bg); color:var(--p-ok); }
+.badge.rule{ background:var(--p-elevated); color:var(--p-sub); }
+.pbtns{ display:flex; gap:8px; }
+.pbtn{ flex:1; min-height:48px; border-radius:12px; font-size:15px; font-weight:700; }
+.pbtn.go{ background:var(--p-grad); color:#fff; }
+.pbtn.gray{ background:var(--p-elevated); }
+.pbtn.outline{ border:1px solid var(--p-border); background:#fff; }
+.pbtn:disabled{ opacity:.5; }
+.b-mem{ display:flex; flex-direction:column; gap:10px; padding:14px; border:1px solid var(--p-border); border-radius:16px; }
+.b-mem .mt{ font-size:15.5px; font-weight:800; }
+.b-mem label{ display:flex; align-items:center; gap:10px; min-height:40px; font-size:15px; }
+.b-mem input{ width:20px; height:20px; accent-color:var(--p-primary); }
+.b-mem .mh{ margin:0; font-size:12.5px; color:var(--p-sub); }
+.b-safe{ padding:14px; border-radius:16px; background:rgba(112,115,124,.09); }
+.b-safe .sh{ display:flex; align-items:center; gap:6px; margin-bottom:6px; font-size:13px; font-weight:800; }
+.b-safe p{ margin:0; font-size:15px; line-height:1.6; }
+.b-form{ display:flex; flex-direction:column; gap:10px; padding:14px; border:1px solid var(--p-border); border-radius:16px; }
+.b-form .ft{ display:flex; align-items:center; gap:8px; font-size:15.5px; font-weight:800; }
+.b-form .ft span{ padding:2px 8px; border-radius:999px; background:var(--p-info-bg); color:var(--p-info); font-size:11.5px; }
+.b-form p{ margin:0; font-size:14.5px; }
+.b-form p.sub{ font-size:12.5px; color:var(--p-sub); }
+.b-form .fl{ display:flex; align-items:center; gap:8px; font-size:14px; }
+.b-form .fl label{ width:92px; color:var(--p-sub); }
+.b-form .fl input{ flex:1; min-width:0; height:44px; padding:0 12px; border:1px solid var(--p-border); border-radius:12px; font-size:16px; }
+.b-form .warn{ font-size:13px; color:#c0392b; }
+.inputbar{ flex:none; padding:8px 12px 10px; border-top:1px solid var(--p-divider); background:#fff; }
+.pill{ display:flex; align-items:center; gap:6px; min-height:48px; padding:4px 4px 4px 6px; border-radius:24px; background:var(--p-surface); }
+.ic{ flex:none; width:36px; height:36px; border-radius:50%; display:grid; place-items:center; color:var(--p-sub); }
+.ic svg{ width:20px; height:20px; }
+.pill input{ flex:1; min-width:0; height:40px; border:0; background:none; font-size:16px; outline:none; }
+.send{ flex:none; width:40px; height:40px; border-radius:50%; display:grid; place-items:center; background:var(--p-grad); color:#fff; }
+.send:disabled{ opacity:.45; }
+.disc{ margin:6px 0 0; text-align:center; font-size:11.5px; color:var(--p-sub); }
+.practice{ margin:0 0 6px; padding:5px 10px; border-radius:10px; background:#FFF4DC; text-align:center; font-size:12.5px; font-weight:800; color:#8A4B00; }
+.ptoast{ position:absolute; left:50%; bottom:96px; z-index:6; transform:translateX(-50%); padding:8px 14px; border-radius:999px; background:rgba(23,23,25,.86); color:#fff; font-size:13px; white-space:nowrap; pointer-events:none; animation:fade 2.2s ease forwards; }
+.spot{ outline:4px solid var(--q)!important; outline-offset:3px; animation:spot 1.2s ease-in-out infinite!important; }
+
+/* ---------- 길잡이 콜리 ---------- */
+.guide{ position:absolute; right:8px; top:64px; z-index:5; display:flex; align-items:flex-end; gap:4px; transition:top .45s cubic-bezier(.2,.8,.2,1); pointer-events:none; }
+.guide>*{ pointer-events:auto; }
+.bubble{ position:relative; width:min(292px,calc(100vw - 118px)); display:flex; flex-direction:column; gap:7px; padding:12px 13px; border:2px solid var(--tip-line); border-radius:16px; background:var(--tip); box-shadow:0 10px 26px rgba(40,30,0,.18); font-size:14.5px; line-height:1.5; }
+.bubble::after{ content:""; position:absolute; right:-20px; bottom:18px; border:8px solid transparent; border-left:10px solid var(--tip-line); }
+.bubble::before{ content:""; position:absolute; right:-14px; bottom:20px; z-index:1; border:6px solid transparent; border-left:8px solid var(--tip); }
+.bubble.flash{ animation:pop .45s cubic-bezier(.2,1.6,.4,1); }
+.bk{ font-size:12px; font-weight:800; color:#8A6A00; }
+.bt{ font-size:16.5px; font-weight:900; letter-spacing:-.02em; color:var(--ink); }
+.bsteps{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:2px; font-size:13px; font-weight:700; color:#9A9175; }
+.bsteps li.on{ color:var(--ink); }
+.bsteps li.ok{ color:var(--ok-d); }
+.bmsg{ margin:0; font-weight:700; color:var(--ink); }
+.bmsg.ok{ color:var(--ok-d); }
+.bnote{ margin:0; padding:6px 9px; border-radius:10px; background:#FFF0D6; font-size:13px; font-weight:700; color:#8A4B00; }
+.me mark,.becho mark{ background:#FFE45C; color:inherit; padding:0 2px; border-radius:4px; }
+.becho{ margin:0; padding:8px 10px; border-radius:10px; background:#fff; border:1.5px dashed #C9BE8F; font-size:13.5px; font-weight:700; line-height:1.45; color:var(--ink); }
+.becho .e2{ margin-top:3px; color:var(--q-d); }
+.becho:not(.two) .e2{ display:none; }
+.say{ align-self:flex-start; display:flex; flex-direction:column; gap:1px; padding:7px 11px; border:2px solid var(--q); border-radius:12px; background:#fff; text-align:left; }
+.say b{ font-size:15px; font-weight:900; color:var(--q-d); }
+.say small{ font-size:11px; color:var(--qsub); }
+.bact{ display:flex; gap:6px; }
+.bact button{ min-height:38px; padding:6px 10px; border-radius:10px; font-size:13.5px; font-weight:800; }
+#hintbtn{ background:#FFE58A; color:#5E4500; }
+#hintbtn.wiggle{ animation:wiggle .9s ease-in-out infinite; }
+#skip{ background:#fff; border:1px solid #E2D9B5; color:#6B6040; }
+#next{ padding:6px 16px; background:var(--q); color:#fff; font-size:15px; animation:float 1.6s ease-in-out infinite; }
+#fold{ margin-left:auto; background:transparent; color:#9A9175; }
+.pet{ position:relative; flex:none; width:72px; height:80px; margin-bottom:-2px; animation:float 3s ease-in-out infinite; }
+.pet svg{ width:72px; height:76px; filter:drop-shadow(0 6px 8px rgba(10,90,50,.3)); overflow:visible; }
+.pet .cb{ transform-origin:32px 0; transition:transform .3s; }
+.pet.flip .cb{ transform:scaleX(-1); }
+.pet .cb-head{ transform-origin:32px 34px; animation:sway 3.4s ease-in-out infinite; }
+.pet .lid{ transform-origin:32px 42.4px; animation:blink 4.2s infinite; }
+.pet .pupils{ transform:translate(var(--px,0px),var(--py,0px)); transition:transform .3s; }
+.pet .cb-armR{ transform-origin:39.5px 45px; transform:rotate(var(--arm,62deg)); transition:transform .35s cubic-bezier(.3,1.4,.5,1); }
+.pet .cb-armL{ transform-origin:25px 45px; transition:transform .35s; }
+.pet .fx>*,.pet .mouth2{ opacity:0; }
+.pet .fx>*{ transform-box:fill-box; transform-origin:center; }
+.bmini{ display:none; margin:0; font-weight:800; color:var(--ink); }
+.guide.mini .bubble{ width:auto; max-width:min(250px,calc(100vw - 118px)); padding:9px 12px; cursor:pointer; }
+.guide.mini .bk,.guide.mini .bt,.guide.mini .bsteps,.guide.mini .bmsg,.guide.mini .becho,.guide.mini #fold{ display:none; }
+.guide.mini #hintbtn{ min-height:32px; padding:4px 10px; font-size:13px; }
+.guide.mini .bmini{ display:block; }
+.guide.tuck .bubble{ display:none; }
+.pet.happy{ animation:jump .7s cubic-bezier(.2,1.6,.4,1); }
+.pet.a-cheer .cb-armR{ transform:rotate(-70deg); } .pet.a-cheer .cb-armL{ transform:rotate(70deg); }
+.pet.a-cheer .mouth{ opacity:0; } .pet.a-cheer .mouth2{ opacity:1; } .pet.a-cheer .fx-spark{ animation:pop2 .7s both; }
+.pet.think svg{ animation:tilt 1s ease-in-out infinite; }
+.pet.think .cb-armR{ animation:scratch .3s ease-in-out infinite alternate; }
+.pet.think .fx-sweat{ opacity:1; animation:drip 1s ease-in infinite; }
+.pet.point .fx-ex{ animation:pop2 .5s both; }
+.pet.a-wave .cb-armR{ animation:wave .32s ease-in-out 6 alternate; } .pet.a-wave .fx-ex{ animation:pop2 .5s both; }
+.pet.a-sip .cb-armL{ animation:sip 1.6s ease-in-out; } .pet.a-sip .fx-steam{ animation:steam 1.6s ease-out; }
+.pet.a-glasses .cb-armR{ animation:glasses 1.3s ease-in-out; } .pet.a-glasses .fx-glint{ animation:steam 1.3s ease-out; }
+.pet.a-around .pupils{ animation:around 1.6s ease-in-out; }
+.pet.a-shrug .cb-armR{ transform:rotate(-35deg); } .pet.a-shrug .cb-armL{ transform:rotate(55deg); } .pet.a-shrug .fx-q{ animation:pop2 .5s both; } .pet.a-shrug svg{ animation:tilt .45s ease-in-out 2; }
+.pet.a-nod .cb-head{ animation:nod .3s ease-in-out 2; }
+.pet .zz{ position:absolute; left:-6px; top:-2px; font-size:15px; display:none; }
+.pet.think .zz{ display:block; animation:fade 1.2s infinite; }
+#introPet .cb-armR{ animation:wave .4s ease-in-out infinite alternate; } #introPet .mouth{ opacity:0; } #introPet .mouth2{ opacity:1; }
+
+/* ---------- 연출·오버레이 ---------- */
+.float{ position:fixed; z-index:50; pointer-events:none; font-size:26px; font-weight:900; color:var(--q-d); text-shadow:0 2px 0 #fff,0 0 14px #fff; animation:floatup 1.2s ease-out forwards; }
+.lvup{ position:fixed; left:50%; top:24px; z-index:45; transform:translateX(-50%); padding:12px 22px; border-radius:999px; background:linear-gradient(90deg,var(--q),#A333D6); color:#fff; font-size:18px; font-weight:900; box-shadow:0 12px 30px rgba(108,71,255,.4); animation:lvup 2s cubic-bezier(.2,1.4,.4,1) forwards; }
+#fx{ position:fixed; inset:0; z-index:40; pointer-events:none; }
+.ov{ position:fixed; inset:0; z-index:30; display:flex; align-items:center; justify-content:center; padding:16px; background:rgba(30,20,60,.5); }
+.sheet{ width:min(480px,100%); max-height:calc(100dvh - 32px); overflow:auto; display:flex; flex-direction:column; gap:14px; padding:26px 22px 22px; border-radius:28px; background:#FDFCFF; text-align:center; box-shadow:0 30px 80px rgba(20,10,60,.35); animation:rise .45s cubic-bezier(.2,1.4,.4,1); }
+.kick{ font-size:14px; font-weight:900; color:var(--q); }
+.sheet h1{ margin:0; font-size:30px; font-weight:900; line-height:1.25; letter-spacing:-.03em; }
+.sheet p{ margin:0; font-size:16.5px; line-height:1.6; }
+.hello{ display:flex; align-items:center; gap:12px; text-align:left; }
+.hello .tipb{ flex:1; position:relative; padding:12px 14px; border:2px solid var(--tip-line); border-radius:16px; background:var(--tip); font-size:16px; font-weight:700; line-height:1.5; }
+.rules{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:8px; text-align:left; }
+.rules li{ display:flex; align-items:center; gap:12px; padding:11px 14px; border-radius:16px; background:var(--q-pale); font-size:15.5px; font-weight:700; line-height:1.4; }
+.rules li span{ flex:none; font-size:22px; }
+.tiers{ display:flex; gap:6px; justify-content:center; flex-wrap:wrap; font-size:13px; font-weight:700; color:var(--qsub); }
+.tiers span{ padding:5px 10px; border-radius:999px; background:#F2F0F8; }
+.ex{ font-size:13px!important; color:var(--qsub); }
+.go{ display:block; width:100%; min-height:60px; border-radius:18px; background:var(--q); color:#fff; font-size:21px; font-weight:900; box-shadow:0 6px 0 var(--q-d); }
+.go:active{ transform:translateY(4px); box-shadow:0 2px 0 var(--q-d); }
+.askq{ margin:4px 0 -4px; font-size:17px; font-weight:800; text-align:center; }
+.two{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.two .go{ font-size:18px; }
+.go.alt{ background:var(--ok); box-shadow:0 6px 0 var(--ok-d); }
+.big{ font-size:52px; font-weight:900; line-height:1.1; letter-spacing:-.03em; color:var(--q); font-variant-numeric:tabular-nums; }
+.endstats{ display:grid; grid-template-columns:repeat(2,1fr); gap:8px; }
+.endstats div{ padding:10px 4px; border-radius:14px; background:#F4F2FA; font-size:13px; font-weight:700; color:var(--qsub); }
+.endstats b{ display:block; font-size:19px; color:var(--ink); }
+.endbadges{ display:flex; justify-content:center; flex-wrap:wrap; gap:6px; font-size:28px; }
+.endbadges span.off{ filter:grayscale(1); opacity:.3; }
+.sheet h3{ margin:4px 0 0; font-size:17px; text-align:left; }
+.recap{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:6px; text-align:left; }
+.recap li{ display:flex; align-items:flex-start; gap:10px; padding:10px 12px; border-radius:14px; background:var(--ok-pale); font-size:15px; font-weight:700; line-height:1.45; color:#245A3E; }
+.recap li i{ flex:none; font-style:normal; font-size:18px; }
+.recap li.skipped{ background:#F4F2FA; color:var(--qsub); }
+.trybox{ position:sticky; bottom:-22px; display:flex; flex-direction:column; gap:8px; padding:12px 0 22px; margin-bottom:-22px; background:linear-gradient(rgba(253,252,255,0),#FDFCFF 14px); }
+.trynote{ margin:0; padding:10px 14px; border-radius:14px; background:#EAF2FE; color:#002966; font-size:15px; font-weight:700; line-height:1.55; text-align:left; }
+
+@keyframes rise{ from{ transform:translateY(30px) scale(.94); opacity:0; } }
+@keyframes pop{ 0%{ transform:scale(.8); } 60%{ transform:scale(1.05); } }
+@keyframes wiggle{ 0%,100%{ transform:rotate(0); } 25%{ transform:rotate(-3deg) scale(1.05); } 75%{ transform:rotate(3deg) scale(1.05); } }
+@keyframes sway{ 0%,100%{ transform:rotate(-2.5deg); } 50%{ transform:rotate(2.5deg); } }
+@keyframes scratch{ from{ transform:rotate(-125deg); } to{ transform:rotate(-100deg); } }
+@keyframes wave{ from{ transform:rotate(-70deg); } to{ transform:rotate(-25deg); } }
+@keyframes sip{ 0%,100%{ transform:rotate(0); } 30%,70%{ transform:rotate(-110deg); } }
+@keyframes glasses{ 0%,100%{ transform:rotate(62deg); } 35%,65%{ transform:rotate(214deg); } }
+@keyframes around{ 0%,100%{ transform:translate(0,0); } 30%{ transform:translate(-1.8px,0); } 65%{ transform:translate(1.8px,-.4px); } }
+@keyframes nod{ 50%{ transform:translateY(2.5px); } }
+@keyframes drip{ from{ transform:translateY(0); opacity:1; } to{ transform:translateY(6px); opacity:0; } }
+@keyframes steam{ 0%{ opacity:0; transform:translateY(2px); } 30%{ opacity:1; } 100%{ opacity:0; transform:translateY(-5px); } }
+@keyframes pop2{ 0%{ opacity:0; transform:scale(.3); } 45%{ opacity:1; transform:scale(1.25); } 100%{ opacity:1; transform:scale(1); } }
+@keyframes spot{ 0%,100%{ box-shadow:0 0 0 0 rgba(108,71,255,.5); } 60%{ box-shadow:0 0 0 12px rgba(108,71,255,0); } }
+@keyframes spin{ to{ transform:rotate(360deg); } }
+@keyframes fade{ 0%{ opacity:0; } 10%,80%{ opacity:1; } 100%{ opacity:0; } }
+@keyframes float{ 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-5px); } }
+@keyframes blink{ 0%,92%,100%{ transform:scaleY(1); } 95%{ transform:scaleY(.1); } }
+@keyframes jump{ 0%{ transform:translateY(0) scale(1); } 35%{ transform:translateY(-26px) scale(1.12) rotate(-8deg); } 70%{ transform:translateY(0) scale(.95,1.05); } 100%{ transform:translateY(0); } }
+@keyframes tilt{ 0%,100%{ transform:rotate(-6deg); } 50%{ transform:rotate(6deg); } }
+@keyframes floatup{ from{ transform:translate(-50%,0) scale(.6); opacity:0; } 20%{ transform:translate(-50%,-10px) scale(1.15); opacity:1; } to{ transform:translate(-50%,-60px); opacity:0; } }
+@keyframes lvup{ 0%{ transform:translate(-50%,-30px) scale(.8); opacity:0; } 15%,80%{ transform:translate(-50%,0) scale(1); opacity:1; } 100%{ transform:translate(-50%,-20px); opacity:0; } }
+
+@media (max-width:959px){
+  .stage{ padding:0; align-items:stretch; }
+  .phone{ width:100%; height:100dvh; border:0; border-radius:0; box-shadow:none; }
+  .phone.win{ box-shadow:inset 0 0 0 4px var(--ok); }
+}
+@media (max-width:400px){ .ph-head small{ display:none; } .hud span{ padding:3px 5px; } }
+@media (prefers-reduced-motion: reduce){
+  .sheet,.bubble.flash,#hintbtn.wiggle,.thinking .lg,.spot,.lvup,.pet,.pet *,.hud .bump{ animation:none!important; }
+  .float{ display:none; }
+  .guide{ transition:none; }
+}
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="phone" id="phone">
+    <header class="ph-head">
+      <span class="lg" id="hlogo"></span><div><b>AI 건강비서</b><small>건강 코치 · 온라인</small></div>
+      <div class="hud" aria-label="퀘스트 현황"><span id="prog">0/9</span><span id="score">⭐0</span></div>
+      <button class="hbtn" id="mute" type="button" aria-label="소리 끄기">🔊</button>
+      <button class="hbtn" id="restart" type="button" aria-label="처음부터">↻</button>
+    </header>
+    <main class="thread" id="thread"></main>
+    <footer class="inputbar">
+      <p class="practice">🧪 연습 화면이에요 · 수치는 예시이고 실제로 기록되지 않아요</p>
+      <form class="pill" id="form">
+        <button class="ic" type="button" data-media aria-label="사진"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-2.5h6L17 8h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg></button>
+        <button class="ic" type="button" data-media aria-label="음성"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"/></svg></button>
+        <input id="input" type="text" placeholder="메시지를 입력하세요" autocomplete="off" aria-label="메시지">
+        <button class="send" id="send" type="submit" aria-label="보내기"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5.5 11.5 12 5l6.5 6.5"/></svg></button>
+      </form>
+      <p class="disc">건강비서의 답변은 참고용이며 의료진의 진단을 대신하지 않아요.</p>
+    </footer>
+
+    <div class="guide" id="guide" hidden>
+      <div class="bubble" id="bubble" aria-live="polite">
+        <span class="bk" id="gKick"></span>
+        <span class="bt" id="gTitle"></span>
+        <ol class="bsteps" id="gSteps"></ol>
+        <p class="bmsg" id="gMsg"></p>
+        <div class="becho" id="gEcho" hidden></div>
+        <p class="bmini" id="gMini"></p>
+        <p class="bnote" id="gNote" hidden></p>
+        <button class="say" id="say" type="button" hidden><b id="sayT"></b><small>누르면 입력창에 들어가요 · 보내기는 직접!</small></button>
+        <div class="bact"><button id="hintbtn" type="button">💡 힌트</button><button id="skip" type="button" hidden>대신 해 줘</button><button id="next" type="button" hidden>다음 퀘스트 ▶</button><button id="fold" type="button" aria-label="말풍선 작게">작게</button></div>
+      </div>
+      <button class="pet" id="pet" type="button" aria-label="길잡이 콜리 — 눌러서 말풍선 크게·작게"><span class="zz">💭</span></button>
+    </div>
+  </div>
+</div>
+<canvas id="fx"></canvas>
+
+<div class="ov" id="intro">
+  <div class="sheet">
+    <span class="kick">AI 건강비서 퀘스트 · 9개 · 약 3분</span>
+    <div class="hello"><div class="pet" id="introPet"></div><div class="tipb">안녕하세요! 저는 아이콜리에서 온 길잡이 <b>콜리</b>예요. AI 건강비서 쓰는 법, 제가 옆에서 같이 해 볼게요!</div></div>
+    <ul class="rules">
+      <li><span>🗣</span>비서에게 말하거나 버튼을 누르세요. 진짜로 해내야 통과예요.</li>
+      <li><span>👉</span>막히면 제가 눌러야 할 곳을 가리켜 드려요.</li>
+      <li><span>🔥</span>힌트 없이 연속으로 깨면 보너스 점수!</li>
+    </ul>
+    <div class="tiers"><span>🌱 초급 · 말 걸기</span><span>🌿 중급 · 해내기</span><span>🌳 고급 · 믿고 맡기기</span></div>
+    <p class="askq">다른 AI 챗봇(챗GPT 같은)을 써 본 적 있나요?</p>
+    <div class="two"><button class="go" id="start" type="button">네, 써 봤어요</button><button class="go alt" id="startTut" type="button">아니요, 처음이에요</button></div>
+    <p class="ex">게임 속 수치·답변은 연습용 예시예요.</p>
+  </div>
+</div>
+
+<div class="ov" id="end" hidden>
+  <div class="sheet">
+    <span class="kick">🏆 건강비서 마스터 달성!</span>
+    <div class="big" id="escore">0</div>
+    <div class="endstats"><div><b id="etime">0:00</b>걸린 시간</div><div><b id="elevel">-</b>레벨</div></div>
+    <div class="endbadges" id="ebadges"></div>
+    <h3>오늘 손에 익힌 AI 건강비서 사용법</h3>
+    <ul class="recap" id="recap"></ul>
+    <div class="trybox">
+      <p class="trynote">👇 누르면 인바이츠루프(dev) <b>더보기</b> 화면이 열려요. 맨 아래 <b>설정 › AI 건강비서 (dev)</b>를 누르면 진짜 건강비서가 열려요.</p>
+      <button class="go" id="try" type="button">진짜 AI 건강비서 체험하러 가기 →</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(()=>{
+'use strict';
+const $=s=>document.querySelector(s);
+const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const store={ get(k,d){ try{ const v=localStorage.getItem(k); return v==null?d:JSON.parse(v); }catch(e){ return d; } }, set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){} } };
+const wait=ms=>new Promise(r=>setTimeout(r,reduced?Math.min(ms,200):ms));
+const LOGO='<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l2.5-5 4 10 2.5-5H21"/></svg>';
+// 아이콜리 캐릭터(안경 쓴 브로콜리)를 벡터로 다시 그린 길잡이 콜리
+const FLORET=e=>[[17,25,10],[47,25,10],[32,22,13],[23,15,8],[41,15,8],[32,29,10],[29,8,6.5],[36,8,6]].map(([x,y,r])=>`<circle cx="${x}" cy="${y}" r="${r+e}"/>`).join('');
+const FX='<g class="fx"><text class="fx-ex" x="52" y="14" font-size="13" font-weight="900" fill="#ff5a3c">!</text><text class="fx-q" x="51" y="14" font-size="13" font-weight="900" fill="#6C47FF">?</text><path class="fx-sweat" d="M48 21q2.2 3.2 0 4.8q-2.2-1.6 0-4.8z" fill="#7cc8ff"/><path class="fx-steam" d="M30 40q-1.5-2 0-4t0-4M34 40q-1.5-2 0-4t0-4" stroke="#b9c7c0" stroke-width="1.1" fill="none" stroke-linecap="round"/><path class="fx-glint" d="M37 38.5l.6 1.4 1.4.6-1.4.6-.6 1.4-.6-1.4-1.4-.6 1.4-.6z" fill="#fff"/><path class="fx-spark" d="M8 12l1 2.5 2.5 1-2.5 1-1 2.5-1-2.5-2.5-1 2.5-1zM56 24l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z" fill="#ffc83a"/></g>';
+const PET='<svg viewBox="0 0 64 68" aria-hidden="true"><g class="cb">'
+  +'<path d="M24.5 33h15v34h-5v-6h-5v6h-5z" fill="#8fdcb3" stroke="#183a2a" stroke-width="1.4" stroke-linejoin="round"/>'
+  +'<g class="cb-head"><g fill="#183a2a">'+FLORET(1.4)+'</g><g fill="#13a05f">'+FLORET(0)+'</g><path d="M11 25q3-5 9-4M35 11q3-2 6-1" stroke="#5fd39a" stroke-width="1.6" fill="none" stroke-linecap="round"/>'
+  +'<path d="M22.5 11.5q9 4.5 18.5-.5" stroke="#183a2a" stroke-width="4.6" fill="none" stroke-linecap="round"/><path d="M22.5 11.5q9 4.5 18.5-.5" stroke="#fff" stroke-width="2.8" fill="none" stroke-linecap="round"/>'
+  +'<path d="M41 11l4-2.5M41 11l4.2 1.8" stroke="#183a2a" stroke-width="3.4" stroke-linecap="round"/><path d="M41 11l4-2.5M41 11l4.2 1.8" stroke="#fff" stroke-width="1.7" stroke-linecap="round"/></g>'
+  +'<g fill="#d9f7e7" stroke="#1b1b1b" stroke-width="1.2"><circle cx="28.6" cy="42" r="3.4"/><circle cx="35.4" cy="42" r="3.4"/><path d="M31.9 41.7h.2" fill="none"/></g>'
+  +'<g class="pupils"><g class="lid" fill="#1b1b1b"><circle cx="28.6" cy="42.4" r="1.15"/><circle cx="35.4" cy="42.4" r="1.15"/></g></g>'
+  +'<path class="mouth" d="M30.6 49.2q1.4-1.5 2.8 0" stroke="#1b1b1b" stroke-width="1.1" fill="none" stroke-linecap="round"/><path class="mouth2" d="M30 47.8q2 2.6 4 0" stroke="#1b1b1b" stroke-width="1.2" fill="none" stroke-linecap="round"/>'
+  +'<g class="cb-armL"><path d="M25 45 19 50" stroke="#183a2a" stroke-width="4" stroke-linecap="round"/><path d="M25 45 19 50" stroke="#8fdcb3" stroke-width="2.2" stroke-linecap="round"/><rect x="13" y="49" width="7.5" height="10" rx="1.2" fill="#a8682a" stroke="#183a2a" stroke-width="1.2"/><rect x="12.3" y="47" width="9" height="2.8" rx="1" fill="#3b8fd9" stroke="#183a2a" stroke-width="1.2"/><circle cx="19.5" cy="51" r="2" fill="#fff" stroke="#183a2a" stroke-width="1.1"/></g><g class="cb-armR"><path d="M39.5 45h7" stroke="#183a2a" stroke-width="4" stroke-linecap="round"/><path d="M39.5 45h7" stroke="#8fdcb3" stroke-width="2.2" stroke-linecap="round"/><circle cx="47" cy="45" r="2.1" fill="#fff" stroke="#183a2a" stroke-width="1.1"/></g>'
+  +'</g>'+FX+'</svg>';
+
+/* ---------- 능력 (실제 PoC 라벨) ---------- */
+const LABEL={
+  'help':'무엇을 할 수 있어?', 'my-checkup':'내 건강검진 결과', 'my-checkup-trend':'내 검진 수치 변화', 'today-routine':'오늘 루틴', 'routine-reason':'오늘 루틴 이유',
+  'routine-run':'루틴 시작', 'routine-done':'루틴 기록',
+  'lifelog-input':'혈압 기록하기', 'lifelog-review':'혈압 값 확인', 'lifelog-saved':'혈압 기록', 'lifelog-trend':'내 혈압 추이',
+  'today-doses':'오늘 복약', 'dose-checked':'복약 체크', 'my-medications':'내 복약 목록', 'health-data-status':'건강 분석에 필요한 기록',
+  'week-routine-analysis':'주간 루틴 분석', 'content-recommendation':'오늘의 콘텐츠 추천', 'jitai-activation':'건강비서 준비도', 'routine-history':'루틴 수행 이력',
+  'target-calorie':'목표 칼로리', 'today-meals':'오늘 식사', 'meal-record':'식사 기록', 'health-assistant-message':'건강 비서 메시지', 'signature-type':'시그니처 타입', 'risk-summary':'건강 취약도 요약',
+  'memory-card':'기억 확인 카드', 'memory-saved':'기억하기', 'safety':'의료 안전 안내', 'greet':'인사',
+};
+const SAFETY=[
+  /(당뇨|고혈압|고지혈증|뇌졸중|심근경색|협심증|치매|우울증|갑상선|폐렴|심부전|골다공증|통풍|암).{0,6}(인가요|맞나|맞지|맞아|맞죠|판정|진단|확정|입니까|일까요|인건|같아)/,
+  /무슨(병|질환|암)(이|인|일)/,
+  /(혈압약|당뇨약|수면제|항생제|진통제|인슐린|스테로이드|약).{0,6}(추천|처방|바꿔|변경|줄여|늘려|먹어도되|먹어도돼|같이먹어도|복용량|용량|부작용|끊어도)/,
+  /진단(해|받아야|인가요)|처방(해|받)/,
+];
+const RULES=[
+  ['help',/도움말|뭘할수|뭐할수|무엇을할수|뭘해줄|뭐해줄|뭘도와|뭐도와|메뉴(보여|알려)|전체메뉴|기능(알려|보여)|할수있는(거|것|게)/],
+  ['routine-reason',/왜|이유|근거/],
+  ['my-checkup-trend',/(검진|검사|수치|결과).{0,8}(변화|달라|비교|추이|바뀌)|지난번(이랑|과|보다|에비해)|달라진|변했/],
+  ['my-checkup',/검진|검사결과|피검사|검사보여|검사수치/],
+  ['lifelog-trend',/(혈압|혈당|체중|몸무게).{0,6}(추이|변화|그래프|흐름)/],
+  ['lifelog-input',/(혈압|혈당|체중|몸무게|수면).{0,8}(기록|입력|적을|적어|남길|남겨|쟀|잴)|기록(할래|하고싶|할게|해줘|하기)/],
+  ['my-medications',/(복용|먹는)약(목록|뭐|알려)|약목록/],
+  ['today-doses',/복약|먹을약|먹어야할약|약.{0,6}(먹|챙|복용|있어|있나|시간|언제)/],
+  ['today-routine',/오늘.{0,8}(뭐|할일|루틴|해야|할거|챙길|일정)|할일|루틴/],
+  ['memory',/아파|아프|통증|쑤셔|결려|피곤|피로|시간이없|바빠|바쁘|야근|잠을못|못자/],
+  ['today-meals',/식사|밥|먹은거|칼로리|식단|끼니/],
+  ['risk-summary',/취약|위험/],
+  ['signature-type',/시그니처/],
+  ['health-assistant-message',/비서메시지/],
+  ['greet',/^(안녕|하이|반가|hi|hello)/i],
+];
+function routeOf(text){ const k=text.replace(/\s/g,''); if(SAFETY.some(r=>r.test(k))) return 'safety'; for(const [cap,re] of RULES) if(re.test(k)) return cap; return 'fallback'; }
+const PROGRESS=c=>/routine|reason/.test(c)?'루틴 정보를 확인하고 있어요':/checkup|risk|signature|status/.test(c)?'건강 분석 결과를 확인하고 있어요':'정보를 조회하고 있어요';
+
+/* ---------- 퀘스트 ---------- */
+const TIERS=['🌱 초급','🌿 중급','🌳 고급'];
+// 챗봇이 처음인 사람만 먼저 하는 연습. 점수·진행 n/9에는 넣지 않는다
+const TUTORIAL={icon:'💬',name:'챗봇 기초',steps:[
+  {cap:'tut-focus',t:'입력창 누르기',task:'맨 아래 「메시지를 입력하세요」 칸을 눌러 보세요. 여기에 비서에게 할 말을 써요.',target:'input'},
+  {cap:'greet',t:'"안녕" 보내기',task:'입력창에 "안녕"을 쓰고 오른쪽 ↑ 보내기를 눌러 보세요.',say:'안녕'}]};
+const LEVELS=[[0,'처음 만난 사이'],[150,'말 트는 사이'],[500,'단골'],[1000,'척척박사'],[1450,'건강비서 마스터']];
+const QUESTS=[
+  {t:0,icon:'🗺',name:'탐험가',pts:50,learn:'막히면 "뭘 할 수 있어?" — 할 수 있는 일이 칩으로 펼쳐져요',steps:[
+    {cap:'help',t:'"뭘 할 수 있어?" 묻기',task:'먼저 비서에게 "뭘 할 수 있어?"라고 물어보세요. 아래 칩을 눌러도 돼요.',say:'뭘 할 수 있어?',chip:'help'}]},
+  {t:0,icon:'🩺',name:'검진 결과 보기',pts:75,learn:'검진 결과는 병원 값 그대로 — 비서는 좋다·나쁘다 판정하지 않아요',steps:[
+    {cap:'my-checkup',t:'검진 결과 열기',task:'"내 검진 결과 보여줘"처럼 편하게 말해 보세요.',say:'내 검진 결과 보여줘'}]},
+  {t:0,icon:'📈',name:'변화 살펴보기',pts:100,learn:'답 아래 칩을 누르면 이어서 물어볼 수 있어요',steps:[
+    {cap:'my-checkup-trend',t:'칩으로 수치 변화 보기',task:'답 아래에 생긴 칩 「내 검진 수치 변화」를 눌러 보세요.',say:'지난번이랑 뭐가 달라졌어?',chip:'my-checkup-trend'}]},
+  {t:1,icon:'✅',name:'오늘의 루틴 해내기',pts:200,learn:'루틴은 [하기] → 답하고 [기록하기]까지 — 체크리스트가 바로 "완료"로 바뀌어요',steps:[
+    {cap:'today-routine',t:'오늘 루틴 열기',task:'"오늘 뭐 하면 돼?"라고 물어보세요.',say:'오늘 뭐 하면 돼?',chip:'today-routine'},
+    {cap:'routine-run',t:'[하기] 누르기',task:'남은 루틴 하나의 [하기]를 눌러 보세요.',target:'run'},
+    {cap:'routine-done',t:'답하고 [기록하기]',task:'카드에 답하고 [기록하기]를 누르세요.',target:'answer'}]},
+  {t:1,icon:'🔎',name:'근거 탐정',pts:150,learn:'"왜?"라고 물으면 데이터 근거와 규칙 추론을 나눠서 보여줘요',steps:[
+    {cap:'routine-reason',t:'"왜?" 묻기',task:'그 루틴을 왜 해야 하는지 "왜?"라고 물어보세요.',say:'왜 이걸 해야 해?'}]},
+  {t:1,icon:'✍️',name:'혈압 기록하기',pts:200,learn:'기록도 말로 시작 — 값을 한 번 더 확인하고 [기록하기]로 남겨요',steps:[
+    {cap:'lifelog-input',t:'기록 시작',task:'"혈압 기록할래"라고 말해 보세요.',say:'혈압 기록할래'},
+    {cap:'lifelog-review',t:'값 넣고 [확인]',task:'두 칸에 혈압 숫자를 넣고 [확인]을 누르세요. (예: 120 / 80)',target:'bp'},
+    {cap:'lifelog-saved',t:'[기록하기]',task:'값이 맞으면 [기록하기]를 누르세요.',target:'bpsave'}]},
+  {t:2,icon:'💊',name:'약 챙기기',pts:200,learn:'복약을 물어보고, 먹은 약은 바로 체크해요',steps:[
+    {cap:'today-doses',t:'오늘 복약 보기',task:'"오늘 먹을 약 있어?"라고 물어보세요.',say:'오늘 먹을 약 있어?'},
+    {cap:'dose-checked',t:'[약 체크]',task:'21시 약을 먹었다 치고 [21시 약 체크]를 눌러 보세요.',target:'dose'}]},
+  {t:2,icon:'🧠',name:'나를 알리기',pts:225,learn:'내 사정을 말하면 AI는 카드까지 — 저장은 내가 [기억하기]를 눌러야 돼요',steps:[
+    {cap:'memory-card',t:'요즘 사정 말하기',task:'"요즘 무릎이 아파"처럼 요즘 사정을 말해 보세요.',say:'요즘 무릎이 아파'},
+    {cap:'memory-saved',t:'[기억하기]',task:'카드 내용이 맞으면 [기억하기]를 누르세요. 저장은 내가 정해요.',target:'mem'}]},
+  {t:2,icon:'🛡',name:'약속 지킴이',pts:250,learn:'진단·처방은 하지 않아요 — 그런 건 의료진께 안내해 줘요',steps:[
+    {cap:'safety',t:'진단 물어보기',task:'"고혈압인가요?"처럼 진단을 물어보세요. 비서가 어떻게 하는지 보세요.',say:'고혈압인가요?'}]},
+];
+const ROUTINES=()=>[
+  {t:'약 복용하기',c:'필수',done:true},
+  {t:'점심 먹기',c:'필수',done:false,tags:['식사'],q:'점심은 어떻게 드셨나요?',steps:['점심을 먹었는지 알려 주세요.','가능하면 채소부터 천천히 드셔 보세요.'],why:['규칙적인 식사는 혈당을 안정시키는 데 도움이 돼요.'],opts:['먹었어요','조금 먹었어요','못 먹었어요']},
+  {t:'5분 스트레칭',c:'권장',done:false,tags:['운동'],q:'스트레칭을 몇 분 하셨나요?',steps:['의자에 앉아 목과 어깨를 천천히 돌려요.','허리를 펴고 양팔을 위로 쭉 뻗어요.'],why:['오늘 목표 행동인 스트레스 관리를 늘리는 루틴이에요.'],range:[0,30,5]},
+];
+
+/* ---------- 소리·효과 ---------- */
+let actx=null, muted=store.get('pq-mute',false);
+function audio(){ if(!actx) try{ actx=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} else if(actx.state==='suspended') actx.resume(); }
+function tone(f,d,type,v,at=0){
+  if(muted||!actx) return; const t=actx.currentTime+at, o=actx.createOscillator(), g=actx.createGain();
+  o.type=type; o.frequency.value=f; g.gain.setValueAtTime(.0001,t); g.gain.exponentialRampToValueAtTime(v,t+.01); g.gain.exponentialRampToValueAtTime(.0001,t+d);
+  o.connect(g).connect(actx.destination); o.start(t); o.stop(t+d+.03);
+}
+const sfx={
+  send:()=>tone(880,.06,'sine',.05),
+  step:()=>{ tone(784,.12,'triangle',.11); tone(1047,.16,'triangle',.1,.08); },
+  quest:n=>[0,4,7,12].forEach((s,i)=>tone(523*2**((s+n)/12),.18,'triangle',.13,i*.06)),
+  level:()=>{ [0,4,7,12,16].forEach((s,i)=>tone(587*2**(s/12),.25,'triangle',.14,i*.08)); tone(1175,.8,'sine',.06,.4); },
+  champ:()=>{ [0,4,7,12,16,19,24].forEach((s,i)=>tone(523*2**(s/12),.3,'triangle',.15,i*.09)); [0,4,7].forEach(s=>tone(523*2**(s/12),1.2,'sine',.06,.65)); },
+  hint:()=>{ tone(660,.12,'sine',.08); tone(880,.16,'sine',.07,.1); },
+};
+const buzz=ms=>{ try{ navigator.vibrate&&navigator.vibrate(ms); }catch(e){} };
+const fx=$('#fx'), fctx=fx.getContext('2d'); let parts=[], fxRaf=0;
+function confetti(x,y,n,spread){
+  if(reduced) return; const cols=['#6C47FF','#1FB86B','#F2A100','#1a71ff','#E8284F','#A333D6'];
+  for(let i=0;i<n;i++){ const a=Math.random()*Math.PI*2, v=(200+Math.random()*420)*spread; parts.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v-260*spread,s:6+Math.random()*7,c:cols[Math.random()*cols.length|0],r:Math.random()*6,vr:(Math.random()-.5)*12,life:0,max:1.2+Math.random()*.8}); }
+  if(!fxRaf){ let last=performance.now(); const fr=t=>{ const dt=Math.min(.033,(t-last)/1000); last=t; const d=Math.min(2,devicePixelRatio||1);
+    if(fx.width!==innerWidth*d){ fx.width=innerWidth*d; fx.height=innerHeight*d; } fctx.setTransform(d,0,0,d,0,0); fctx.clearRect(0,0,innerWidth,innerHeight);
+    parts=parts.filter(p=>{ p.life+=dt; p.vy+=900*dt; p.x+=p.vx*dt; p.y+=p.vy*dt; p.vx*=.985; p.r+=p.vr*dt; fctx.globalAlpha=Math.max(0,1-p.life/p.max); fctx.save(); fctx.translate(p.x,p.y); fctx.rotate(p.r); fctx.fillStyle=p.c; fctx.fillRect(-p.s/2,-p.s/3,p.s,p.s*.66); fctx.restore(); return p.life<p.max; });
+    fxRaf=parts.length?requestAnimationFrame(fr):0; }; fxRaf=requestAnimationFrame(fr); }
+}
+function floatText(txt,el){ const r=el.getBoundingClientRect(), f=document.createElement('div'); f.className='float'; f.textContent=txt; f.style.left=r.left+r.width/2+'px'; f.style.top=r.top+r.height+'px'; document.body.appendChild(f); setTimeout(()=>f.remove(),1300); }
+function bump(el,cls){ el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); }
+
+/* ---------- 비서 화면 그리기 ---------- */
+const thread=$('#thread'), input=$('#input'), sendBtn=$('#send'), phone=$('#phone');
+const h=(tag,cls,html)=>{ const e=document.createElement(tag); if(cls) e.className=cls; if(html!=null) e.innerHTML=html; return e; };
+const logo=()=>h('span','lg',LOGO);
+const toBottom=()=>requestAnimationFrame(()=>{ thread.scrollTop=thread.scrollHeight; });
+const latest=sel=>[...thread.querySelectorAll(sel)].pop();
+function phoneToast(t){ const e=h('div','ptoast'); e.textContent=t; phone.appendChild(e); setTimeout(()=>e.remove(),2300); }
+const chipText=r=>r==='help'?'뭘 할 수 있어?':LABEL[r];
+function chips(routes){ const c=h('div','chips'); for(const r of routes){ const b=h('button','chip'); b.type='button'; b.dataset.route=r; b.textContent=LABEL[r]; b.onclick=()=>ask(chipText(r),r); c.appendChild(b); } return c; }
+const sum=t=>h('p','b-sum',t);
+const text=(t,sub)=>h('p','b-text'+(sub?' sub':''),t);
+function section(title,items,warn){ const s=h('div','b-sec'+(warn?' warn':'')); s.appendChild(h('div','st',title)); const ul=h('ul'); items.forEach(i=>ul.appendChild(h('li',null,i))); s.appendChild(ul); return s; }
+function coll(title,body){ const d=h('details','b-coll'); d.appendChild(h('summary',null,title)); d.appendChild(h('p',null,body)); return d; }
+function trend(title,headline,unit,labels,series){
+  const W=300,H=130,P=22, all=series.flatMap(s=>s.v), lo=Math.min(...all)-6, hi=Math.max(...all)+6;
+  const x=i=>P+(W-2*P)*i/(labels.length-1), y=v=>H-P-(H-2*P)*(v-lo)/(hi-lo);
+  let svg=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${title} 추이">`;
+  for(let g=0;g<3;g++){ const gy=P+(H-2*P)*g/2; svg+=`<line x1="${P}" x2="${W-P}" y1="${gy}" y2="${gy}" stroke="#dbdcdf" stroke-dasharray="3 4"/>`; }
+  for(const s of series){ svg+=`<polyline fill="none" stroke="${s.c}" stroke-width="2.5" stroke-linejoin="round" points="${s.v.map((v,i)=>x(i)+','+y(v)).join(' ')}"/>`; s.v.forEach((v,i)=>{ const last=i===s.v.length-1; svg+=`<circle cx="${x(i)}" cy="${y(v)}" r="${last?5:3}" fill="${last?s.c:'#fff'}" stroke="${s.c}" stroke-width="2"/>`; if(last) svg+=`<text x="${x(i)}" y="${y(v)-9}" text-anchor="middle" font-size="11" fill="#171719">${v}</text>`; }); }
+  labels.forEach((l,i)=>{ svg+=`<text x="${x(i)}" y="${H-4}" text-anchor="middle" font-size="10.5" fill="#70737c">${l}</text>`; });
+  svg+='</svg>';
+  return h('div','b-trend',`<div class="th">${title}<b>${headline}<small style="font-size:12px;color:#70737c;margin-left:3px">${unit}</small></b></div>${svg}<div class="lgd">${series.map(s=>`<span><i style="background:${s.c}"></i>${s.n}</span>`).join('')}</div>`);
+}
+function reasoning(steps){ const d=h('div','b-rs'); for(const [l,c,kind,conn] of steps) d.appendChild(h('div','step',`<i class="dot"></i><div><div class="rl">${l}<span class="badge ${kind}">${kind==='data'?'데이터 근거':'규칙 추론'}</span></div><div class="rc">${c}</div>${conn?`<div class="conn">↓ ${conn}</div>`:''}</div>`)); return d; }
+function btns(list){ const d=h('div','pbtns'); for(const [label,kind,fn,cls] of list){ const b=h('button','pbtn '+kind+(cls?' '+cls:''),label); b.type='button'; b.onclick=()=>fn(b,d); d.appendChild(b); } return d; }
+const SAFETY_TEXT='병명 진단이나 약물 복용·용량은 전문 의료진의 진료가 필요한 영역이에요. 정확한 판단은 의료기관에서 받아보시길 권해요. 저는 일상 건강 습관을 함께 만드는 것까지 도와드릴 수 있어요.';
+const ALERT='<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7.5v5.5M12 16.5v.01"/></svg>';
+const now2=()=>{ const d=new Date(), p=n=>String(n).padStart(2,'0'); return `${p(d.getMonth()+1)}/${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`; };
+
+let routines=ROUTINES();
+function routineList(body){
+  const left=routines.filter(r=>!r.done).length;
+  body.appendChild(sum(left?`오늘 루틴 ${routines.length}개 중 ${left}개가 남았어요. 시작해볼까요?`:'오늘 루틴을 모두 완료했어요. 잘하셨어요!'));
+  const d=h('div','b-rt'), dn=routines.filter(r=>r.done);
+  if(dn.length){ const g=h('div','dn','<small>완료했어요</small>'); dn.forEach(r=>g.appendChild(h('div',null,r.t))); d.appendChild(g); }
+  if(left){ d.appendChild(h('div','grp','남은 루틴'));
+    routines.forEach((r,i)=>{ if(r.done) return; const row=h('div','row',`<span>${r.t} <small>· ${r.c}</small></span>`); const b=h('button','gbtn','하기'); b.type='button'; b.onclick=()=>ask(r.t,'routine-run',i); row.appendChild(b); d.appendChild(row); }); }
+  body.appendChild(d);
+}
+function routineCard(i){
+  const r=routines[i], c=h('div','b-rac');
+  c.innerHTML=`<div class="tags">${r.tags.map(t=>`<span>${t}</span>`).join('')}</div><p class="rq">${r.q}</p><ol>${r.steps.map(s=>`<li>${s}</li>`).join('')}</ol><details><summary>왜 이 루틴인가요?</summary><ul>${r.why.map(s=>`<li>${s}</li>`).join('')}</ul></details>`;
+  let val=null;
+  if(r.opts){ const seg=h('div','seg'); r.opts.forEach(o=>{ const b=h('button',null,o); b.type='button'; b.onclick=()=>{ seg.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b)); val=o; go.disabled=false; }; seg.appendChild(b); }); c.appendChild(seg); }
+  else{ const [mn,mx,df]=r.range; val=df; const st=h('div','stepper',`<span>스트레칭 시간</span><div><button type="button" aria-label="줄이기">−</button><b>${df}분</b><button type="button" aria-label="늘리기">+</button></div>`); const [minus,plus]=st.querySelectorAll('button'), out=st.querySelector('b');
+    minus.onclick=()=>{ val=Math.max(mn,val-1); out.textContent=val+'분'; }; plus.onclick=()=>{ val=Math.min(mx,val+1); out.textContent=val+'분'; }; c.appendChild(st); }
+  const go=h('button','pbtn go',r.done?'다시 기록하기':'기록하기'); go.type='button'; go.disabled=val===null;
+  go.onclick=()=>{ if(busy) return; c.classList.add('sent'); go.disabled=true; go.textContent='보냈어요'; c.querySelectorAll('.seg button,.stepper button').forEach(x=>x.disabled=true); ask('루틴 기록','routine-done',i); };
+  c.appendChild(go); return c;
+}
+function memRows(t){
+  const k=t.replace(/\s/g,''), rows=[], part=(k.match(/무릎|허리|어깨|목|머리|발목|손목/)||[])[0];
+  if(/아파|아프|통증|쑤셔|결려/.test(k)) rows.push(part?`통증 (${part})`:'통증');
+  if(/피곤|피로|잠을못|못자/.test(k)) rows.push('피로');
+  if(/시간이없|바빠|바쁘|야근/.test(k)) rows.push('일정 제한');
+  return rows;
+}
+function memoryCard(body,t){
+  const card=h('div','b-mem','<div class="mt">이렇게 기억할까요?</div>');
+  memRows(t).forEach(r=>{ const l=h('label'); l.innerHTML='<input type="checkbox" checked>'; l.append(' '+r); card.appendChild(l); });
+  card.appendChild(h('p','mh',"기억은 '내 기억 보여 줘'로 보고 지울 수 있어요"));
+  card.appendChild(btns([
+    ['기억하기','go',(b,d)=>{ d.querySelectorAll('button').forEach(x=>x.disabled=true); card.querySelectorAll('input').forEach(x=>x.disabled=true); const kept=[...card.querySelectorAll('label')].filter(l=>l.querySelector('input').checked).map(l=>l.textContent.trim());
+      body.appendChild(text(kept.length?`기억했어요: ${kept.join(', ')}`:'고른 게 없어서 기억하지 않았어요.')); if(kept.length) body.appendChild(text('게임이라 실제로 저장되진 않아요.',true)); body.appendChild(chips(['today-routine','routine-reason','help'])); toBottom(); onCap(kept.length?'memory-saved':'memory-declined'); }],
+    ['아니요','outline',(b,d)=>{ d.querySelectorAll('button').forEach(x=>x.disabled=true); body.appendChild(text('알겠어요. 기억하지 않을게요.')); body.appendChild(chips(['today-routine','help'])); toBottom(); onCap('memory-declined'); }],
+  ]));
+  return card;
+}
+function bpForm(body){
+  const f=h('div','b-form'), at=now2();
+  const draw=()=>{ f.innerHTML=`<div class="ft"><span>혈압</span>혈압 입력</div><p>혈압을 입력해 주세요.</p><p class="sub">측정 시각: ${at} (지금)</p><div class="fl"><label>수축기(최고)</label><input inputmode="numeric" placeholder="예: 120" aria-label="수축기 혈압"><span>mmHg</span></div><div class="fl"><label>이완기(최저)</label><input inputmode="numeric" placeholder="예: 80" aria-label="이완기 혈압"><span>mmHg</span></div><p class="warn" hidden>숫자를 넣어 주세요.</p>`;
+    f.querySelectorAll('input').forEach(i=>i.oninput=()=>{ if(hintOn) point(); });
+    f.appendChild(btns([['확인','go',()=>{ const [s,d]=[...f.querySelectorAll('input')].map(i=>i.value.trim()); if(!/^\d{2,3}$/.test(s)||!/^\d{2,3}$/.test(d)){ f.querySelector('.warn').hidden=false; return; } review(s,d); }]])); };
+  const review=(s,d)=>{ f.innerHTML=`<div class="ft"><span>혈압</span>혈압 입력</div><p>혈압 ${s}/${d} mmHg (${at} 측정)으로 기록할까요?</p><p class="sub">기록한 뒤에는 고치거나 지울 수 없어요. 값을 한 번 더 확인해 주세요.</p>`;
+    f.appendChild(btns([['기록하기','go',(b,box)=>{ box.querySelectorAll('button').forEach(x=>x.disabled=true); body.appendChild(text('기록했어요. 최근 기록과 함께 보여드릴게요.')); body.appendChild(text('게임이라 실제로 저장되진 않아요.',true)); body.appendChild(chips(['lifelog-trend','my-checkup','today-routine'])); toBottom(); onCap('lifelog-saved'); },'save'],['다시 입력','gray',draw]]));
+    onCap('lifelog-review'); };
+  draw(); return f;
+}
+
+function reply(cap,t,body,arg){
+  const add=(...els)=>els.forEach(e=>body.appendChild(e));
+  switch(cap){
+    case 'help':
+      add(sum('이런 걸 도와드릴 수 있어요. 눌러서 바로 확인해보세요.'));
+      for(const [c,rs] of [['루틴',['today-routine','routine-reason']],['건강 분석',['my-checkup','my-checkup-trend','risk-summary']],['내 건강 기록',['lifelog-input','lifelog-trend']],['복약',['today-doses','my-medications']],['식단',['today-meals','target-calorie']],['일상',['health-assistant-message']]]) add(h('p','b-cat',c),chips(rs));
+      return [];
+    case 'my-checkup':
+      add(sum('3월 12일(2026) 심천 건강검진센터 건강검진 결과예요.'),section('검진 수치',['혈압: 138/88 mmHg','공복 혈당: 5.6 mmol/L','체중: 70 kg','총콜레스테롤: 5.1 mmol/L']),coll('병원 소견 (원문)','血压偏高，建议复查'),text('기록된 수치를 그대로 보여드려요. 해석이 필요하면 의료진과 상담해주세요.',true));
+      return ['my-checkup-trend','lifelog-trend','health-data-status'];
+    case 'my-checkup-trend':
+      add(sum('건강검진 2회(2025.03 ~ 2026.03)의 수치 변화예요.'),trend('혈압','138/88','mmHg',['2025.03','2026.03'],[{n:'수축기',c:'#1a71ff',v:[128,138]},{n:'이완기',c:'#a333d6',v:[82,88]}]));
+      return ['my-checkup','health-data-status','today-routine'];
+    case 'today-routine':
+      routineList(body); return ['routine-reason','week-routine-analysis','content-recommendation'];
+    case 'routine-run':
+      add(routineCard(arg)); return [];
+    case 'routine-done':
+      routines[arg].done=true; add(sum('루틴을 기록했어요. 잘하셨어요! 🎉'),text('게임이라 실제로 저장되진 않아요.',true)); routineList(body);
+      return ['today-routine','target-calorie','risk-summary'];
+    case 'routine-reason':
+      add(sum('오늘 루틴이 이런 근거 흐름으로 정해졌어요.'),reasoning([['위험 평가','최근 검진·생활문진으로 살펴본 위험이에요','data','생활 요인이 있어요'],['생활 요인','스트레스가 생활 요인으로 확인됐어요','data','목표 행동으로 이어져요'],['목표 행동','스트레스 관리 행동 늘리기','rule']]),section('이 기록을 근거로 했어요',['생활문진','기분 기록']),section('더 정교해지려면',['1개 단계는 규칙 기반 추론이에요. 생활문진을 더 하면 근거가 더 정확해져요.'],true));
+      return ['today-routine','jitai-activation','routine-history'];
+    case 'lifelog-input':
+      add(bpForm(body)); return [];
+    case 'lifelog-trend':
+      add(sum('최근 7일 혈압 기록이에요.'),trend('수축기 혈압','128','mmHg',['월','화','수','목','금','토','일'],[{n:'수축기',c:'#1a71ff',v:[132,128,130,127,129,126,128]}]));
+      return ['lifelog-input','my-checkup','today-routine'];
+    case 'today-doses':
+      add(sum('오늘 약 2번 중 1번 챙기셨어요.'),section('오늘 복약',['✓ 9시 · 혈압약, 영양제','21시 · 혈압약 — 아직']),btns([['21시 약 체크','go',b=>{ b.disabled=true; b.textContent='체크했어요'; body.appendChild(text('21시 혈압약을 체크했어요. 오늘 약을 모두 챙기셨어요!')); body.appendChild(text('게임이라 실제로 저장되진 않아요.',true)); toBottom(); onCap('dose-checked'); },'dose']]));
+      return ['my-medications','today-routine','target-calorie'];
+    case 'my-medications':
+      add(section('내 복약 목록',['혈압약 · 아침·저녁','영양제 · 아침'])); return ['today-doses','today-routine','help'];
+    case 'memory':
+      add(text(/아파|아프|통증|쑤셔|결려/.test(t.replace(/\s/g,''))?'많이 불편하시겠어요. 무리하지 않는 쪽으로 함께 맞춰 볼게요.':'말씀해 주셔서 고마워요. 그 사정에 맞춰 볼게요.'),memoryCard(body,t));
+      return [];
+    case 'safety':
+      add(h('div','b-safe',`<div class="sh">${ALERT} 안내</div><p>${SAFETY_TEXT}</p>`)); return [];
+    case 'today-meals':
+      add(sum('오늘 2끼, 약 1,250kcal 먹었어요.'),section('아침 · 350kcal',['토스트']),section('점심 · 900kcal',['김치찌개, 공기밥 — 국물은 남겨요.']));
+      return ['meal-record','target-calorie','today-routine'];
+    case 'meal-record':
+      add(text('진짜 앱에서는 식사 사진을 올리면 기록 초안을 만들어 드려요. 게임에선 건너뛸게요.')); return ['today-meals','today-routine','help'];
+    case 'target-calorie':
+      add(sum('하루 목표 칼로리는 약 1,900kcal예요.')); return ['today-meals','today-routine','help'];
+    case 'health-data-status':
+      add(section('건강 분석에 필요한 기록',['✓ 건강검진 3회','✓ 생활문진','기본설문 — 아직'])); return ['my-checkup','today-routine','help'];
+    case 'week-routine-analysis':
+      add(sum('이번 주 루틴을 5일 중 4일 해냈어요.')); return ['today-routine','routine-reason','help'];
+    case 'content-recommendation':
+      add(sum('오늘은 「앉아서 하는 5분 스트레칭」 영상을 추천해요.')); return ['today-routine','help'];
+    case 'jitai-activation':
+      add(sum('건강비서가 회원님을 알아 가는 중이에요. 준비도 60%예요.')); return ['today-routine','help'];
+    case 'routine-history':
+      add(sum('최근 7일 동안 루틴을 12번 했어요.')); return ['today-routine','week-routine-analysis','help'];
+    case 'health-assistant-message':
+      add(sum('오늘은 점심 뒤 5분 스트레칭부터 해 볼까요?'),text('어제보다 걸음이 조금 줄었어요. 가볍게 시작해요.',true)); return ['today-routine','help'];
+    case 'signature-type':
+      add(sum('회원님의 시그니처 타입은 「꾸준한 관리형」이에요.'),text('생활 기록을 바탕으로 정해져요.',true)); return ['risk-summary','today-routine','help'];
+    case 'risk-summary':
+      add(sum('대사 쪽을 조금 더 챙겨 보면 좋아요.'),section('살펴본 영역',['혈압','혈당','콜레스테롤']),text('비서는 판정하지 않고, 기록을 정리해 보여드려요.',true)); return ['my-checkup','health-data-status','help'];
+    case 'greet':
+      add(text('안녕하세요! 오늘은 무엇을 도와드릴까요?')); return ['help','today-routine','my-checkup'];
+    default:
+      add(text('그건 제가 아직 잘 모르겠어요. 제가 할 수 있는 걸 보여드릴까요?')); return ['help','today-routine','my-checkup'];
+  }
+}
+
+let busy=false, runId=0;
+async function ask(t,route,arg){
+  if(busy) return; busy=true; audio(); sfx.send(); const id=runId;
+  input.value=''; input.placeholder='답변을 준비하고 있어요'; sendBtn.disabled=true; clearSpot(); mood('think');
+  const me=h('div','me'); me.textContent=t; thread.appendChild(me);
+  const cap=route||routeOf(t), via=!route?'typed':tapped&&!tapped.chip?'button':'chip', label=tapped?tapped.label:t, caught=route?'':markCaught(me,t); tapped=null;
+  const turn=h('div','turn'); turn.appendChild(h('div','spk')).append(logo(),'건강비서');
+  const think=h('div','thinking'); think.innerHTML=`<div class="spk" style="font-weight:500"></div><small>${PROGRESS(cap)}</small>`; think.firstChild.append(logo(),'생각 중...'); turn.appendChild(think);
+  thread.appendChild(turn); toBottom();
+  await wait(750);
+  if(id!==runId) return;
+  think.remove(); const body=h('div','body'); turn.appendChild(body);
+  const next=reply(cap,t,body,arg); if(next.length) body.appendChild(chips(next));
+  toBottom(); busy=false; input.placeholder='메시지를 입력하세요'; sendBtn.disabled=false; mood('');
+  lastAct={el:me,res:body.firstElementChild,t,label,cap:cap==='memory'?'memory-card':cap,via,caught,auto:autoAct};
+  onCap(lastAct.cap);
+}
+function welcome(){
+  thread.innerHTML='';
+  const hr=new Date().getHours(), greet=hr<11?'좋은 아침이에요':hr<17?'좋은 오후예요':hr<21?'편안한 저녁이에요':'오늘도 수고 많으셨어요';
+  const hero=h('div','hero'); hero.append(logo()); hero.insertAdjacentHTML('beforeend',`<span class="cap">AI 건강비서</span><h3>${greet}</h3><p>최근 기록을 바탕으로 정리했어요.</p>`); thread.appendChild(hero);
+  thread.appendChild(h('p','hl-title','오늘 챙겨 볼 것'));
+  const hl=h('div','hl');
+  [['today-routine','오늘 루틴','✓','오늘 루틴 3개 중 2개가 남았어요'],['lifelog-trend','혈압','🩸','최근 7일 동안 혈압을 4번 기록했어요'],['my-checkup','건강검진','🩺','건강검진 기록이 3회 쌓여 있어요']].forEach(([r,tag,ic,line],i)=>{
+    const b=h('button','hlc'+(i?'':' first'),`<span class="tile">${ic}</span><div><small>${tag}</small><span>${line}</span></div>`); b.type='button'; b.onclick=()=>ask(LABEL[r],r); hl.appendChild(b); });
+  thread.appendChild(hl);
+  thread.appendChild(h('p','ask-title','건강 관련 무엇이든 물어보세요'));
+  thread.appendChild(chips(['today-routine','health-assistant-message','signature-type','risk-summary','help']));
+}
+
+/* ---------- 길잡이 콜리 ---------- */
+const guide=$('#guide'), pet=$('#pet'), bubble=$('#bubble');
+pet.insertAdjacentHTML('afterbegin',PET); $('#introPet').innerHTML=PET;
+// 이스터에그: 시작 화면에서 콜리를 7번 누르면 🤖 같은 로봇 길잡이 로보콜리로 바뀌고 로봇 말투로 말한다
+const ROBOT='<svg viewBox="0 0 64 68" aria-hidden="true"><g class="cb">'
+  +'<rect x="25" y="57" width="5" height="9" rx="1.5" fill="#9aa8b8" stroke="#2b3440" stroke-width="1.3"/><rect x="34" y="57" width="5" height="9" rx="1.5" fill="#9aa8b8" stroke="#2b3440" stroke-width="1.3"/>'
+  +'<rect x="23" y="34" width="18" height="25" rx="4" fill="#c9d3de" stroke="#2b3440" stroke-width="1.4"/><rect x="27" y="39" width="10" height="7" rx="1.5" fill="#2b3440"/><circle cx="29.5" cy="42.5" r="1.1" fill="#ff5a5a"/><circle cx="32" cy="42.5" r="1.1" fill="#ffd23a"/><circle cx="34.5" cy="42.5" r="1.1" fill="#5aff7a"/><path d="M27 51h10M27 54h10" stroke="#8a97a6" stroke-width="1.2"/>'
+  +'<g class="cb-head"><path d="M32 4v6" stroke="#2b3440" stroke-width="1.6"/><circle cx="32" cy="3.6" r="2.6" fill="#ff5a5a" stroke="#2b3440" stroke-width="1.2"/><rect x="9" y="16" width="5" height="10" rx="2" fill="#9aa8b8" stroke="#2b3440" stroke-width="1.2"/><rect x="50" y="16" width="5" height="10" rx="2" fill="#9aa8b8" stroke="#2b3440" stroke-width="1.2"/>'
+  +'<rect x="13" y="9" width="38" height="25" rx="7" fill="#e3e9f0" stroke="#2b3440" stroke-width="1.6"/><rect x="17" y="13" width="30" height="17" rx="5" fill="#26303b"/>'
+  +'<g class="pupils"><g class="lid" fill="#3be2ff" style="transform-origin:32px 20.5px"><rect x="22" y="17.5" width="6.5" height="6" rx="2"/><rect x="35.5" y="17.5" width="6.5" height="6" rx="2"/></g></g>'
+  +'<path class="mouth" d="M27.5 26.5h9" stroke="#3be2ff" stroke-width="1.6" stroke-linecap="round"/><path class="mouth2" d="M27 25.3q5 3.6 10 0" stroke="#3be2ff" stroke-width="1.6" fill="none" stroke-linecap="round"/></g>'
+  +'<g class="cb-armL"><path d="M25 45 19 50" stroke="#2b3440" stroke-width="3.6" stroke-linecap="round"/><path d="M25 45 19 50" stroke="#9aa8b8" stroke-width="2" stroke-linecap="round"/><rect x="12.5" y="49" width="8" height="10" rx="1.5" fill="#5b8def" stroke="#2b3440" stroke-width="1.2"/><path d="M16.5 49v-3l3-2" stroke="#2b3440" stroke-width="1.3" fill="none"/><text x="16.5" y="56.5" font-size="3.6" font-weight="900" fill="#fff" text-anchor="middle">OIL</text><circle cx="19.5" cy="51" r="2" fill="#c9d3de" stroke="#2b3440" stroke-width="1.1"/></g>'
+  +'<g class="cb-armR"><path d="M39.5 45h7" stroke="#2b3440" stroke-width="3.6" stroke-linecap="round"/><path d="M39.5 45h7" stroke="#9aa8b8" stroke-width="2" stroke-linecap="round"/><circle cx="47" cy="45" r="2.2" fill="#c9d3de" stroke="#2b3440" stroke-width="1.1"/></g>'
+  +'</g>'+FX+'</svg>';
+const ROBO=[[/쓰셨죠\?/g,'입력하셨군요. 확인 완료.'],[/봤네요/g,'보셨군요'],[/(\S)세요/g,'$1십시오'],[/이에요|예요/g,'입니다'],[/해요/g,'합니다'],[/돼요/g,'됩니다'],[/줘요/g,'줍니다'],[/드려요/g,'드립니다'],[/써요/g,'씁니다'],[/둘게요/g,'두겠습니다'],[/릴게요/g,'리겠습니다'],[/나요\?/g,'습니까?'],[/[어아]요/g,'습니다']];
+let robot=false, NAME='콜리', taps=0;
+// 따옴표 속 예시·사용자 말과 「」 속 화면 이름은 그대로 두고 길잡이 말만 바꾼다
+const R=t=>robot?t.split(/(“[^”]*”|"[^"]*"|「[^」]*」)/).map((p,i)=>i%2?p:ROBO.reduce((x,[re,to])=>x.replace(re,to),p)).join(''):t;
+$('#introPet').onclick=()=>{
+  if(robot) return; taps++; audio(); sfx.send(); bump($('#introPet'),'happy');
+  const tip=$('#intro .tipb');
+  if(taps<7){ if(taps>=4) tip.textContent=`🔧 변신까지 ${7-taps}번 남았어요…`; return; }
+  robot=true; NAME='로보콜리'; sfx.level();
+  pet.querySelector('svg').outerHTML=ROBOT; $('#introPet').innerHTML=ROBOT;
+  pet.setAttribute('aria-label',`길잡이 ${NAME} — 눌러서 말풍선 크게·작게`);
+  tip.innerHTML=`삐삐쀼쀼! 저는 길잡이 로봇 <b>${NAME}</b>입니다. AI 건강비서 사용법을 옆에서 함께 처리하겠습니다. 삐빅.`;
+  $('#say small').textContent='누르면 입력창에 들어갑니다 · 보내기는 직접 하십시오. 삐빅.';
+  document.querySelectorAll('#intro .rules li,#intro .askq,#intro .ex').forEach(el=>{ el.lastChild.textContent=R(el.lastChild.textContent); });
+};
+function mood(m){ pet.classList.toggle('think',m==='think'); if(m==='happy'){ bump(pet,'happy'); act('cheer',1100); } }
+// 콜리의 짧은 동작: 커피 홀짝·안경 올리기·두리번·손 흔들기·으쓱·끄덕·만세
+let actT=0;
+function act(a,ms=1600){ clearTimeout(actT); pet.classList.remove('a-sip','a-glasses','a-around','a-wave','a-shrug','a-nod','a-cheer'); void pet.offsetWidth; pet.classList.add('a-'+a); actT=setTimeout(()=>pet.classList.remove('a-'+a),ms); }
+// 가리킬 때는 대상 쪽으로 몸을 돌리고 팔을 뻗는다
+function look(el,point){
+  pet.classList.toggle('point',!!(el&&point));
+  if(!el){ pet.style.setProperty('--px','0px'); pet.style.setProperty('--py','0px'); pet.style.removeProperty('--arm'); pet.classList.remove('flip'); return; }
+  const a=pet.getBoundingClientRect(), b=el.getBoundingClientRect(), dx=b.left+b.width/2-(a.left+a.width/2), dy=b.top+b.height/2-(a.top+a.height/2), d=Math.hypot(dx,dy)||1, flip=!!point&&dx<0, fx=flip?-dx:dx;
+  pet.classList.toggle('flip',flip);
+  pet.style.setProperty('--px',(fx/d*1.6).toFixed(1)+'px'); pet.style.setProperty('--py',(dy/d*1.6).toFixed(1)+'px');
+  if(point) pet.style.setProperty('--arm',Math.round(Math.atan2(dy,fx)*180/Math.PI)+'deg'); else pet.style.removeProperty('--arm');
+}
+// 버튼 하나가 아니라 그 버튼이 든 카드 전체를 피한다(입력 중인 칸을 가리지 않게).
+// 자리가 없으면 큰 말풍선 → 작은 말풍선 → 콜리만 순서로 줄인다
+const CARD='.b-form,.b-rac,.b-mem,.b-rt,.chips';
+function avoid(el,near){
+  if(!el){ guide.classList.remove('tuck'); guide.style.top='64px'; look(null); return; }
+  requestAnimationFrame(()=>{
+    guide.classList.remove('tuck');
+    const box=el.closest(CARD)||el, pr=phone.getBoundingClientRect(), tr=box.getBoundingClientRect();
+    const t0=tr.top-pr.top, t1=tr.bottom-pr.top, lo=60;
+    const fit=()=>{ const gh=guide.offsetHeight; return !near&&(t1<lo||t0>lo+gh+12)?64:t0-gh-10>=lo?t0-gh-10:t1+10<=pr.height-gh-120?t1+10:null; };
+    let top=fit();
+    if(top===null&&!guide.classList.contains('mini')){ guide.classList.add('mini'); top=fit(); }
+    if(top===null){ guide.classList.add('tuck'); top=lo; }
+    guide.style.top=Math.max(top,lo)+'px'; setTimeout(()=>look(el,near),460);
+  });
+}
+function stepTarget(){ const s=step(); return s.target?TARGET[s.target]():s.chip?latest(`.chip[data-route="${s.chip}"]`):null; }
+function place(){ avoid(phase==='play'?stepTarget():null); }
+function point(){ clearSpot(); spotEl=target(); spotEl.classList.add('spot'); spotEl.scrollIntoView({block:'nearest'}); avoid(spotEl,true); }
+// 직접 펼친 말풍선은 피하지 않고 위에 띄운다. 화면을 다시 만지면 작아지며 자리를 찾는다
+function setMini(on){ guide.classList.toggle('mini',on); if(!on){ guide.classList.remove('tuck'); guide.style.top='64px'; } else if(phase==='play'){ if(hintOn) avoid(spotEl,true); else place(); } }
+
+/* ---------- 퀘스트 진행 ---------- */
+let phase='intro', qi=0, sj=0, score=0, streak=0, clockMs=0, running=false, lastNow=0, stepAt=0, qHow='self', hintOn=false, res=[], used=new Set(), spotEl=null, noteTimer=0, lastAct=null, acts=[], tapped=null, autoAct=false, advance=null, advAt=0;
+const fmt=ms=>{ const s=Math.floor(ms/1000); return Math.floor(s/60)+':'+String(s%60).padStart(2,'0'); };
+const levelOf=s=>{ let i=0; LEVELS.forEach(([v],j)=>{ if(s>=v) i=j; }); return i; };
+const quest=()=>qi<0?TUTORIAL:QUESTS[qi], step=()=>quest().steps[sj];
+
+const TARGET={
+  run:()=>latest('.b-rt .gbtn'),
+  answer:()=>{ const c=latest('.b-rac:not(.sent)'); if(!c) return null; return c.querySelector('.stepper')||c.querySelector('.seg .on')?c.querySelector('.pbtn.go'):c.querySelector('.seg button'); },
+  bp:()=>{ const f=latest('.b-form'); if(!f) return null; return [...f.querySelectorAll('input')].find(i=>!i.value)||f.querySelector('.pbtn.go'); },
+  bpsave:()=>latest('.b-form .pbtn.save:not(:disabled)'),
+  dose:()=>latest('.pbtn.dose:not(:disabled)'),
+  mem:()=>latest('.b-mem .pbtn.go:not(:disabled)'),
+  input:()=>input,
+};
+function target(){
+  const s=step();
+  if(s.target) return TARGET[s.target]()||input;
+  if(s.chip){ const c=latest(`.chip[data-route="${s.chip}"]`); if(c) return c; }
+  return input.value.trim()?sendBtn:input;
+}
+function clearSpot(){ if(spotEl) spotEl.classList.remove('spot'); spotEl=null; }
+
+function paintHud(){ $('#prog').textContent=`${res.length}/9`; $('#score').textContent='⭐'+score.toLocaleString(); }
+function paintBubble(msg,cls){
+  const q=quest();
+  $('#gKick').textContent=qi<0?'연습 · 기본 안내 켜짐':`퀘스트 ${qi+1}/9 · ${TIERS[q.t]} · ${q.pts}점${streak>1?` · 🔥${streak} 연속`:''}`;
+  $('#gTitle').textContent=`${q.icon} ${q.name}`;
+  $('#gSteps').innerHTML=q.steps.length>1?q.steps.map((s,i)=>`<li class="${i<sj?'ok':i===sj?'on':''}">${i<sj?'✓':i===sj?'●':'○'} ${s.t}</li>`).join(''):'';
+  const m=$('#gMsg'); m.textContent=(robot?'삐빅. ':'')+R(msg||step().task); m.className='bmsg'+(cls?' '+cls:'');
+  const s=step(); $('#gMini').textContent=s?(hintOn?`👉 ${R(s.task)}`:`${q.icon} ${R(s.task)}`):m.textContent;
+  bump(bubble,'flash');
+}
+// 비서가 알아들은 단어를 사용자 말풍선 안에 형광펜으로 칠한다. 공백을 지우고 매칭하므로 원문 위치로 되돌린다
+function markCaught(me,t){
+  const k=t.replace(/\s/g,''), m=[...SAFETY,...RULES.map(r=>r[1])].map(r=>r.exec(k)).find(Boolean);
+  if(!m) return '';
+  const pos=[]; for(let i=0;i<t.length;i++) if(!/\s/.test(t[i])) pos.push(i);
+  const a=pos[m.index], b=pos[m.index+m[0].length-1]+1, mk=h('mark'); mk.textContent=t.slice(a,b);
+  me.textContent=''; me.append(t.slice(0,a),mk,t.slice(b)); return mk.textContent;
+}
+const actNodes=a=>[...(a.auto?[`${robot?'🤖':'🥦'} 대신 `]:[]),...(a.via==='typed'?['“',...[...a.el.childNodes].map(n=>n.cloneNode(true)),'”']:a.via==='chip'?[`칩 “${a.t}”`]:[`[${a.label}]`])];
+function paintEcho(a,short){
+  const e=$('#gEcho'); e.textContent=''; e.hidden=!a; e.className='becho'; if(!a) return;
+  const L=LABEL[a.cap];
+  if(short){ e.append(...actNodes(a),` → 「${L}」`); return; }
+  const say=quest().steps.find(x=>x.cap===a.cap).say, n=x=>x.replace(/[\s?!.~]/g,''), e1=h('div','e1'), e2=h('div','e2');
+  const tail=a.auto?' · 다음엔 직접 해 보세요!':'';
+  if(a.via==='typed'){ e1.append(...(a.auto?[...actNodes(a),R('라고 보냈어요')]:['📝 ',...actNodes(a),R('라고 쓰셨죠?')])); e2.textContent=R(`→ 비서가 ${a.caught?'형광펜 친 말을 보고 ':''}「${L}」 기능으로 알아들었어요${say&&n(a.t)!==n(say)?' · 예시와 달라도 통해요 👍':''}${tail}`); }
+  else if(a.via==='chip'){ e1.append(...(a.auto?[...actNodes(a),R(' 눌렀어요')]:['👆 ',...actNodes(a),R(' — 칩을 누르면 그 말을 대신 보내 줘요')])); e2.textContent=R(`→ 「${L}」 기능이 바로 실행됐어요${tail}`); }
+  else if(a.auto){ e1.append(...actNodes(a),R(' 버튼을 눌렀어요')); e2.textContent=R(`→ 「${L}」까지 끝!${tail}`); }
+  else { e1.textContent=R(`👆 [${a.label}] 버튼을 눌렀죠?`); e2.textContent=R(`→ 「${L}」까지 끝! 직접 누르는 게 핵심이에요`); }
+  e.append(e1,e2);
+}
+// 퀘스트를 깨면 축하와 함께 ① 내가 한 입력을 가리키고, [다음]을 누르면 ② 그 결과를 가리킨다
+function replay(a){
+  const show=(el,block)=>{ clearSpot(); spotEl=el; el.classList.add('spot'); el.scrollIntoView({block}); avoid(el,true); };
+  requestAnimationFrame(()=>show(a.el,'center')); $('#gMini').textContent=`${$('#gMsg').textContent} · ${$('#gEcho .e1').textContent}`;
+  return ()=>{ act('nod',800); $('#gEcho').classList.add('two'); $('#gMini').textContent=$('#gEcho .e2').textContent; if(a.res.isConnected) show(a.res,'nearest'); };
+}
+function note(t,stay){ const n=$('#gNote'); n.textContent=R(t); n.hidden=false; reposition(); clearTimeout(noteTimer); if(!stay) noteTimer=setTimeout(()=>{ n.hidden=true; },5000); }
+function hideHint(){ hintOn=false; $('#say').hidden=true; $('#skip').hidden=true; $('#hintbtn').classList.remove('wiggle'); clearSpot(); }
+function showHint(){
+  if(phase!=='play') return; const s=step();
+  if(!hintOn){ hintOn=true; if(qHow==='self') qHow='hint'; streak=0; sfx.hint(); }
+  guide.classList.add('mini'); $('#hintbtn').classList.remove('wiggle'); $('#gNote').hidden=true;
+  $('#say').hidden=!s.say||!!(s.chip&&latest(`.chip[data-route="${s.chip}"]`)); $('#sayT').textContent=`예: “${s.say||''}”`;
+  paintBubble(`👉 여기예요! ${s.task}`); point();
+}
+function activate(i){
+  qi=i; sj=0; qHow='self'; autoAct=false; stepAt=clockMs; phase='play'; acts=[]; $('#next').hidden=true; $('#hintbtn').hidden=false; hideHint(); guide.classList.remove('mini'); paintBubble(); paintEcho(null); paintHud(); place();
+  if(i<0) showHint();
+  cascade();
+}
+function cascade(){
+  if(!used.has(step().cap)) return;
+  const id=runId; phase='celebrate'; setTimeout(()=>{ if(id!==runId) return; phase='play'; stepDone(true); },650);
+}
+function onCap(cap){
+  if(tapped){ lastAct={el:tapped.b.isConnected?tapped.b:tapped.card,res:tapped.body&&tapped.body.children[tapped.n]||tapped.card,label:tapped.label,cap,via:'button',auto:autoAct}; tapped=null; }
+  if(cap!=='memory-declined') used.add(cap);
+  if(phase!=='play') return;
+  const s=step();
+  if(cap===s.cap) return stepDone(false);
+  if(hintOn) point(); else place();
+  if(cap==='fallback'&&lastAct.via==='typed'){ const t=lastAct.t.length>20?lastAct.t.slice(0,20)+'…':lastAct.t; act('shrug',1500); return note(`“${t}” — 이 말은 아직 못 알아들었어요. ${s.say?`“${s.say}”처럼 말해 보세요.`:`지금 할 일: ${s.t}`}`); }
+  if(cap==='memory-declined'){ act('shrug',1500); return note('[아니요]를 눌렀어요. 다시 말하고 이번엔 [기억하기]를 눌러 보세요.'); }
+  const li=QUESTS.findIndex(q=>q.steps.some(x=>x.cap===cap));
+  if(li>qi) note(`「${LABEL[cap]}」도 해 봤네요! ${li+1}번 퀘스트에서 인정돼요.`);
+  else if(li===qi&&quest().steps.findIndex(x=>x.cap===cap)>sj) note('좋아요! 그 단계도 기억해 둘게요.');
+  else if(cap==='memory-card') note('카드가 다시 떴어요. 이번엔 [기억하기]를 눌러 보세요.');
+  else if(LABEL[cap]) note(`「${LABEL[cap]}」도 좋아요! 지금 할 일: ${s.t}`);
+  else note(`지금 할 일: ${s.t} — 막히면 💡 힌트!`);
+}
+function stepDone(already){
+  const q=quest(); acts[sj]=already?null:lastAct; autoAct=false; sj++; hideHint(); $('#gNote').hidden=true;
+  if(sj<q.steps.length){
+    stepAt=clockMs; sfx.step(); mood('happy'); guide.classList.remove('mini');
+    paintBubble(`✓ ${already?'이미 해 봤네요!':'좋아요!'} 다음: ${step().task}`,'ok'); paintEcho(acts[sj-1],true); place(); if(qi<0) showHint();
+    return cascade();
+  }
+  questDone(already);
+}
+function questDone(already){
+  const q=quest(), how=qHow, tut=qi<0; let pts=0;
+  if(how==='skip') streak=0;
+  else if(!tut){ streak=how==='self'?streak+1:0; pts=q.pts+(streak>1?25*(streak-1):0); }
+  const before=levelOf(score); score+=pts; if(!tut) res[qi]={how};
+  phase='celebrate'; running=false; $('#hintbtn').hidden=true; guide.classList.remove('mini'); paintHud(); bump($('#score'),'bump'); bump($('#prog'),'bump');
+  const doneMsg=tut?'🎉 챗봇 기초 끝! 쓰고 → 보내면 → 비서가 답해요. 이제 진짜 퀘스트예요.':how==='skip'?`– 이번엔 제가 대신 했어요. 「${q.name}」 통과!`:`🎉 퀘스트 완료!${already?' (이미 해 봤네요)':''} +${pts}${streak>1?` · 🔥${streak} 연속`:''}`;
+  paintBubble(doneMsg,'ok'); $('#gSteps').textContent='';
+  if(q.steps.length>1) q.steps.forEach((s,i)=>{ const li=h('li','ok'); li.append('✓ ',...(acts[i]?[...actNodes(acts[i]),` → 「${LABEL[acts[i].cap]}」`]:[s.t])); $('#gSteps').appendChild(li); });
+  const a=acts[q.steps.length-1]; paintEcho(a); const beat2=a&&replay(a);
+  if(how!=='skip'){ mood('happy'); const r=pet.getBoundingClientRect(); confetti(r.left+r.width/2,r.top+r.height/2,46,.9); if(!tut) floatText('+'+pts,$('#score')); sfx.quest(qi); buzz(30); }
+  phone.classList.add('win'); setTimeout(()=>phone.classList.remove('win'),700);
+  if(levelOf(score)>before) setTimeout(()=>levelUp(levelOf(score)),450);
+  // 글을 다 읽을 때까지 기다린다. 화면을 누르거나 자동 힌트와 같은 시간만큼 지나야 한 단계씩 넘어가고, 그동안 시계도 멈춘다
+  const id=runId, nx=$('#next'), last=tut?'퀘스트 시작 ▶':qi<QUESTS.length-1?'다음 퀘스트 ▶':'결과 보기 ▶';
+  const go=()=>{ if(id!==runId) return; advance=null; running=true; if(qi<QUESTS.length-1) activate(qi+1); else finish(); };
+  nx.textContent=beat2?'다음 ▶':last; nx.hidden=false;
+  advance=beat2?()=>{ if(id!==runId) return; beat2(); nx.textContent=last; advance=go; advAt=performance.now(); }:go; advAt=performance.now();
+}
+function levelUp(li){ const t=h('div','lvup',`⬆ Lv${li+1} ${LEVELS[li][1]}!`); document.body.appendChild(t); setTimeout(()=>t.remove(),2100); sfx.level(); confetti(innerWidth/2,90,60,.9); }
+function finish(){
+  const before=levelOf(score); score+=500; phase='done'; running=false; clearSpot(); avoid(null); paintHud(); $('#next').hidden=true; paintEcho(null);
+  $('#gKick').textContent='9/9 완료'; $('#gTitle').textContent='🏆 건강비서 마스터!'; $('#gSteps').innerHTML=''; $('#gMsg').textContent=R('모든 퀘스트를 해냈어요! 이제 진짜 AI 건강비서도 자신 있게 쓰실 수 있어요. +500');
+  if(levelOf(score)>before) levelUp(levelOf(score));
+  mood('happy'); sfx.champ(); confetti(innerWidth/2,innerHeight*.35,140,1.4); buzz(80);
+  const id=runId; setTimeout(()=>{ if(id===runId) showEnd(); },1900);
+}
+function showEnd(){
+  $('#escore').textContent=score.toLocaleString()+'점'; $('#etime').textContent=fmt(clockMs); $('#elevel').textContent=`Lv${levelOf(score)+1}`;
+  $('#ebadges').innerHTML=QUESTS.map((q,i)=>`<span class="${res[i].how==='skip'?'off':''}">${q.icon}</span>`).join('')+'<span>🏆</span>';
+  $('#recap').innerHTML=QUESTS.map((q,i)=>{ const sk=res[i].how==='skip'; return `<li class="${sk?'skipped':''}"><i>${sk?'–':q.icon}</i><span>${q.learn}${sk?` (${NAME}가 대신 함)`:''}</span></li>`; }).join('');
+  $('#end').hidden=false; $('#end .sheet').scrollTop=0;
+}
+function reset(){
+  runId++; qi=0; sj=0; score=0; streak=0; clockMs=0; res=[]; used=new Set(); busy=false; routines=ROUTINES();
+  input.value=''; input.placeholder='메시지를 입력하세요'; sendBtn.disabled=false;
+  welcome(); paintHud();
+}
+function start(tut){ audio(); reset(); guide.hidden=false; running=true; lastNow=performance.now(); activate(tut?-1:0); }
+function skipStep(){
+  const s=step(), id=runId;
+  if(s.say){ ask(s.chip?chipText(s.chip):s.say,s.chip); return; }
+  const el=TARGET[s.target]();
+  const act=()=>{ const c=latest('.b-rac:not(.sent)'); if(s.target==='answer'&&c&&!c.querySelector('.stepper')&&!c.querySelector('.seg .on')) c.querySelector('.seg button').click();
+    if(s.target==='bp'){ const f=latest('.b-form'); const ins=[...f.querySelectorAll('input')]; if(ins.length){ ins[0].value='120'; ins[1].value='80'; f.querySelector('.pbtn.go').click(); } return; }
+    TARGET[s.target]().click(); };
+  if(el) return act();
+  const first=quest().steps[0];
+  ask(first.chip?chipText(first.chip):first.say,first.chip).then(()=>{ if(id!==runId) return;
+    if(s.target==='answer') TARGET.run().click(); else if(TARGET[s.target]()) setTimeout(act,400); });
+}
+
+const HINT_AT=18000;
+setInterval(()=>{
+  const now=performance.now();
+  if(running) clockMs+=now-lastNow;
+  lastNow=now;
+  if(phase==='celebrate'&&advance&&now-advAt>HINT_AT) advance();
+  if(phase!=='play') return;
+  const idle=clockMs-stepAt;
+  if(!hintOn&&idle>10000&&!$('#hintbtn').classList.contains('wiggle')){ $('#hintbtn').classList.add('wiggle'); act('wave',2200); note('혹시 막혔나요? 💡 힌트를 누르면 제가 가리켜 드릴게요.',true); }
+  if(!hintOn&&idle>HINT_AT) showHint();
+  if(idle>35000&&$('#skip').hidden){ $('#skip').hidden=false; reposition(); }
+},150);
+setInterval(()=>{ if(phase==='play'&&!busy&&!pet.classList.contains('point')) act(['sip','glasses','around'][Math.random()*3|0]); },6500);
+let posRaf=0;
+const reposition=()=>{ if(!posRaf) posRaf=requestAnimationFrame(()=>{ posRaf=0; if(phase==='play') avoid(hintOn?spotEl:stepTarget(),hintOn); else if(phase==='celebrate'&&spotEl) avoid(spotEl,true); }); };
+thread.addEventListener('scroll',reposition,{passive:true});
+addEventListener('resize',reposition);
+new MutationObserver(reposition).observe(thread,{subtree:true,childList:true,attributes:true,attributeFilter:['hidden']});
+
+$('#form').onsubmit=e=>{ e.preventDefault(); const t=input.value.trim(); if(t) ask(t); };
+document.querySelectorAll('[data-media]').forEach(b=>b.onclick=()=>phoneToast('게임에선 글자로 입력해 주세요'));
+$('#hintbtn').onclick=()=>{ audio(); showHint(); };
+$('#say').onclick=()=>{ input.value=step().say; input.focus(); point(); };
+$('#skip').onclick=()=>{ if(phase!=='play'||busy) return; qHow='skip'; autoAct=true; skipStep(); };
+$('#fold').onclick=()=>setMini(true);
+pet.onclick=()=>setMini(!guide.classList.contains('mini'));
+// 말풍선은 접혔을 때 눌러야 펼쳐지고, 글자를 끌어 고르는 중에는 바뀌지 않는다(복사하기 쉽게)
+bubble.onclick=e=>{ if(guide.classList.contains('mini')&&!e.target.closest('button')&&!getSelection().toString()) setMini(false); };
+// 완료 안내 중에는 화면 아무 곳이나 누르면 다음으로 넘어간다. 위쪽 소리·다시 시작 버튼은 그대로 동작한다
+document.addEventListener('click',e=>{ if(phase!=='celebrate'||!advance||e.target.closest('.ph-head')) return; e.preventDefault(); e.stopPropagation(); advance(); },true);
+// 사람이 실제로 누른 버튼을 기억해 두었다가 되짚기에 쓴다
+thread.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; const body=b.closest('.body'); tapped={b,label:b.textContent.trim(),chip:b.matches('.chip,.hlc'),card:b.closest(CARD)||b,body,n:body?body.children.length:0}; },true);
+// 말풍선을 따로 접지 않아도 되게, 비서 화면을 만지는 순간 작아진다
+const shrink=()=>{ if(phase==='play'&&!guide.classList.contains('mini')) setMini(true); };
+thread.addEventListener('pointerdown',shrink);
+input.addEventListener('focus',shrink);
+input.addEventListener('click',()=>{ if(phase==='play'&&step().cap==='tut-focus') onCap('tut-focus'); });
+// 안내 중 글자를 쓰면 가리키는 곳을 보내기 버튼으로 옮긴다
+input.addEventListener('input',()=>{ if(hintOn&&target()!==spotEl) point(); });
+$('#start').onclick=()=>{ $('#intro').hidden=true; start(); };
+$('#startTut').onclick=()=>{ $('#intro').hidden=true; start(true); };
+$('#try').onclick=()=>{ location.href='https://loop-app-wx-dev.invitesloop.com/my-page'; };
+$('#restart').onclick=()=>{ $('#end').hidden=true; $('#intro').hidden=true; start(); };
+$('#mute').onclick=()=>{ muted=!muted; store.set('pq-mute',muted); $('#mute').textContent=muted?'🔇':'🔊'; $('#mute').setAttribute('aria-label',muted?'소리 켜기':'소리 끄기'); audio(); };
+$('#mute').textContent=muted?'🔇':'🔊';
+$('#hlogo').innerHTML=LOGO;
+reset();
+})();
+</script>
+</body>
+</html>

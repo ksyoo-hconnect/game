@@ -8,7 +8,7 @@ export async function POST(request:Request){
  if(!request.headers.get('Content-Type')?.startsWith('application/json'))return reply(request,{error:'JSON 형식으로 제출해 주세요.'},415);
  const header=request.headers.get('Authorization')||'';if(!header.startsWith('Bearer ')||header.length>200)return reply(request,{error:'제출 토큰이 필요합니다. 다시 시도해 주세요.'},401);
  let payload:ReturnType<typeof validateResult>;
- try{const raw=await request.text();if(raw.length>10000)return reply(request,{error:'제출 내용이 너무 큽니다.'},413);payload=validateResult(JSON.parse(raw));}catch(e){return reply(request,{error:e instanceof Error?e.message:'결과가 올바르지 않습니다.'},400);}
+ try{const raw=await request.text();if(raw.length>100000)return reply(request,{error:'제출 내용이 너무 큽니다.'},413);payload=validateResult(JSON.parse(raw));}catch(e){return reply(request,{error:e instanceof Error?e.message:'결과가 올바르지 않습니다.'},400);}
  let recorded=false;
  try{
  const hash=await digest(JSON.stringify(payload));const existing=await db().prepare('SELECT id, payload_hash FROM results WHERE id = ?').bind(payload.id).first<{id:string,payload_hash:string}>();
