@@ -1,0 +1,9 @@
+const test=require('node:test'),assert=require('node:assert/strict');
+const {parseCSV,aggregate}=require('../ranking-data.js');
+const games=[{id:'yks'},{id:'kgt'},{id:'ksi'},{id:'ojh'},{id:'psj'},{id:'ksw'},{id:'ldy'},{id:'lsl'}];
+const header='\ufeff"submission_id","nickname","winner_game_id","winner_game_title","game_author","submitted_at_kst"\r\n';
+function row(id,game,nickname='참가자'){return {submission_id:id,nickname,winner_game_id:game,winner_game_title:'이름',game_author:'제작자',submitted_at_kst:'2026-10-21T15:00:00+09:00'};}
+test('empty CSV remains empty with no invented winner or ranking',()=>{const data=aggregate(parseCSV(header),games);assert.equal(data.total,0);assert(data.standings.every(r=>r.rank===null&&r.count===0&&r.share===0));});
+test('count final winners and assign tied competition ranks',()=>{const data=aggregate([row('1','yks'),row('2','kgt'),row('3','yks'),row('4','ksi'),row('5','kgt')],games);assert.equal(data.total,5);assert.deepEqual(data.standings.slice(0,3).map(r=>[r.id,r.count,r.rank,r.share]),[['yks',2,1,40],['kgt',2,1,40],['ksi',1,3,20]]);assert.equal(data.latestSubmittedAt,'2026-10-21T06:00:00.000Z');});
+test('CSV handles BOM, Korean, quoted commas, quotes and embedded newlines',()=>{const rows=parseCSV(header+'"a","닉네임, ""A""\n다음줄","yks","게임","제작자","2026-10-21T15:00:00+09:00"\r\n');assert.equal(rows[0].nickname,'닉네임, "A"\n다음줄');assert.equal(aggregate(rows,games).total,1);});
+test('invalid data never silently becomes zero or inflated counts',()=>{for(const text of ['<html>error</html>',header+'"unterminated',header+'x,y,z\n',header+'"a"oops,b,c,d,e,f\n'])assert.throws(()=>parseCSV(text));assert.throws(()=>aggregate([row('1','unknown')],games));assert.throws(()=>aggregate([row('1','yks'),row('1','yks')],games));assert.throws(()=>aggregate([{...row('1','yks'),submitted_at_kst:'not a date'}],games));});
