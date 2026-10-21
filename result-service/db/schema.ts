@@ -8,3 +8,6 @@ export const tickets = sqliteTable('tickets', {
  tokenHash: text('token_hash').primaryKey(), requesterHash: text('requester_hash').notNull(),
  createdAt: integer('created_at').notNull(), expiresAt: integer('expires_at').notNull(), claimedBy: text('claimed_by'),
 },t=>[index('tickets_requester_created').on(t.requesterHash,t.createdAt)]);
+export const appSettings = sqliteTable('app_settings', {
+ key: text('key').primaryKey(), value: text('value').notNull(), updatedAt: text('updated_at').notNull(),
+});

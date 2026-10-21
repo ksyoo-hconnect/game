@@ -1,6 +1,12 @@
 'use strict';
 const RANKING_CSV_URL='https://raw.githubusercontent.com/ksyoo-hconnect/game/main/results/results.csv';
+const LIVE_RANKING_URL='https://loop-play-results.devyks-com.chatgpt.site/api/rankings';
 let rankingSnapshot=null,rankingRequest=null;
+function applyLiveRankings(data){
+ if(!data||!Number.isSafeInteger(data.total)||data.total<0||!Array.isArray(data.standings)||data.standings.length!==GAMES.length)return false;
+ const ids=data.standings.map(row=>row.id);if(new Set(ids).size!==GAMES.length||ids.some(id=>!byId(id))||data.standings.some(row=>!Number.isSafeInteger(row.count)||row.count<0)||data.standings.reduce((total,row)=>total+row.count,0)!==data.total)return false;
+ rankingSnapshot={...data,checkedAt:new Date().toISOString()};renderRankings();return true;
+}
 function rankingTime(value){return new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date(value))+' (한국 시간)';}
 function rankingPercent(value){return (Number.isInteger(value)?value.toFixed(0):value.toFixed(1))+'%';}
 function renderRankings(){
@@ -17,9 +23,10 @@ function renderRankings(){
 }
 async function loadRankings(){
  if(rankingRequest)return rankingRequest;
- $('#ranking-refresh').disabled=true;$('#ranking-status').textContent='GitHub 결과 파일을 확인하고 있습니다.';
+ $('#ranking-refresh').disabled=true;$('#ranking-status').textContent='실시간 누적 결과를 확인하고 있습니다.';
  if(!rankingSnapshot)renderRankings();
  rankingRequest=(async()=>{const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),15000);try{
+  try{const live=await fetch(LIVE_RANKING_URL,{mode:'cors',credentials:'omit',cache:'no-store',signal:controller.signal});if(live.ok&&applyLiveRankings(await live.json())){$('#ranking-status').textContent=rankingSnapshot.source==='github-confirmed'?'GitHub 기록을 완료한 실시간 결과입니다.':'제출 서버에 저장된 실시간 결과입니다.';return;}}catch(error){if(controller.signal.aborted)throw error;}
   const response=await fetch(RANKING_CSV_URL+'?refresh='+Math.floor(Date.now()/60000),{mode:'cors',credentials:'omit',cache:'no-store',signal:controller.signal});
   if(!response.ok)throw new Error('결과 파일을 불러오지 못했습니다.');
   const rows=RankingData.parseCSV(await response.text());rankingSnapshot={...RankingData.aggregate(rows,GAMES),checkedAt:new Date().toISOString()};renderRankings();
@@ -29,4 +36,4 @@ async function loadRankings(){
  return rankingRequest;
 }
 document.addEventListener('click',event=>{if(event.target.closest('#ranking-refresh'))loadRankings();});
-setInterval(()=>{if(document.visibilityState==='visible'&&['#ranking','#home',''].includes(location.hash))loadRankings();},60000);
+setInterval(()=>{if(document.visibilityState==='visible'&&['#ranking','#home',''].includes(location.hash))loadRankings();},5000);
