@@ -20,9 +20,7 @@ GitHub Pages를 사용하려면 저장소 **Settings → Pages → Build and dep
 
 ## 월드컵 결과
 
-**현재 상태:** 결과 서버는 사용자 요청에 따라 비공개로 유지하고 있습니다. GitHub에는 익명 제출 코드와 결과 파일이 반영되어 있으나, 실제 우승 화면에는 ‘공용 결과 제출 준비 중’으로 표시합니다. 현재 결과는 브라우저에만 저장됩니다.
-
-서버 연결 후에는 우승 화면의 **우승 결과 제출** 버튼으로 계정 없이 공용 결과를 저장할 수 있습니다. 닉네임은 선택이며, 미입력 시 익명으로 기록됩니다.
+**현재 상태:** 로그인 없는 결과 제출을 활성화했습니다. 우승 화면의 **우승 결과 제출** 버튼으로 공용 결과를 저장할 수 있습니다. 닉네임은 선택이며, 미입력 시 익명으로 기록됩니다.
 
 - 공용 결과 CSV: https://loop-play-results.devyks-com.chatgpt.site/results.csv
 - 실시간 결과 요약: https://loop-play-results.devyks-com.chatgpt.site/
@@ -32,7 +30,7 @@ GitHub Pages를 사용하려면 저장소 **Settings → Pages → Build and dep
 
 서버에서 같은 접수 번호와 동일 내용을 다시 제출하면 중복 저장하지 않습니다. 실패 시 우승 화면에서 다시 시도할 수 있습니다. 계정 없이 참여하므로 사람당 한 번만 참여했는지를 보장하지는 않습니다.
 
-실제 연결 시에는 `submission.js`의 `RESULTS_ENABLED`를 `true`로 바꾸고, GitHub 저장소의 Actions 변수 `RESULTS_SYNC_ENABLED`를 `true`로 설정합니다. 현재 두 기능은 비공개 서버로 요청하지 않도록 꺼두었습니다.
+실제 연결 시에는 `submission.js`의 `RESULTS_ENABLED`를 `true`로 바꾸고, GitHub 저장소의 Actions 변수 `RESULTS_SYNC_ENABLED`를 `true`로 설정합니다. 현재 결과 제출과 자동 동기화가 활성화되어 있습니다.
 
 활성화 후 GitHub Actions의 `Sync public tournament results`가 5분 주기로 공용 CSV를 저장소에 동기화합니다. GitHub의 실행 대기 상황에 따라 실제 반영은 더 늦을 수 있습니다. Actions에서 `Run workflow`로 수동 동기화할 수도 있습니다.
 

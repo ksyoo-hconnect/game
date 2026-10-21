@@ -1,6 +1,6 @@
 'use strict';
 // Enable only after the result server permits anonymous public submissions.
-const RESULTS_ENABLED=false;
+const RESULTS_ENABLED=true;
 const RESULTS_ORIGIN='https://loop-play-results.devyks-com.chatgpt.site';
 const RESULT_RECORDS_KEY='loop-play-submissions-v1';
 let resultRecords={};
