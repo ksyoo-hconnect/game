@@ -1,0 +1,3 @@
+
+# Preserve supplied standalone game files, including original line endings.
+games/** -text
