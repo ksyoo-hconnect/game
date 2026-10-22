@@ -220,5 +220,11 @@
     "team": "대전팀",
     "title": "LOOP 플레이",
     "author": "대전팀 공동 제작"
+  },
+  {
+    "id": "sop-ktw",
+    "team": "서비스운영기획팀",
+    "title": "루프 점프 · VISTA 건강비서",
+    "author": "구태우"
   }
 ]

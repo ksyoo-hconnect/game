@@ -43,4 +43,4 @@ async function loadRankings(){
 document.addEventListener('click',event=>{const button=event.target.closest('[data-ranking-team]');if(button){rankingTeam=button.dataset.rankingTeam;document.querySelectorAll('[data-ranking-team]').forEach(b=>b.setAttribute('aria-pressed',String(b===button)));renderRankings();}if(event.target.closest('#ranking-refresh'))loadRankings();});
 setInterval(()=>{if(document.visibilityState==='visible'&&['#ranking','#home',''].includes(location.hash))loadRankings();},5000);
 
-document.querySelector('#ranking-team-filters').innerHTML=['all','SiBC팀','iCHMS팀','SH팀','대전팀'].map(t=>`<button class="filter" data-ranking-team="${t}" aria-pressed="${t==='all'}">${t==='all'?'전체 팀':t}</button>`).join('');
+document.querySelector('#ranking-team-filters').innerHTML=['all',...new Set(GAMES.map(g=>g.team))].map(t=>`<button class="filter" data-ranking-team="${t}" aria-pressed="${t==='all'}">${t==='all'?'전체 팀':t}</button>`).join('');

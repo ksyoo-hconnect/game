@@ -493,5 +493,18 @@ const GAMES = [
     "external": false,
     "image": "images/dj-loop-play.jpg",
     "introUrl": "games/daejeon/대전팀.html"
+  },
+  {
+    "id": "sop-ktw",
+    "team": "서비스운영기획팀",
+    "author": "구태우",
+    "title": "루프 점프 · VISTA 건강비서",
+    "genre": "점프 · 대화형 온보딩",
+    "time": "게임 한 판 60초",
+    "url": "games/service-planning/vista.html",
+    "desc": "건강비서와 대화하며 내 공간과 말투를 고르고, 같은 화면에서 60초 스낵 게임 루프 점프를 즐깁니다. 질환 위험 장애물을 피하고 건강 습관을 모은 뒤, 보던 대화로 돌아와 실제 루틴으로 이어가는 경험을 담았습니다. 가족 순위와 도전장으로 한 판의 재미도 더했어요.",
+    "controls": "‘먼저 써볼게요’ 또는 내 공간 만들기를 마친 뒤 ‘게임 할래’로 시작해요. 탭·클릭 또는 Space·위쪽 방향키로 점프하고, 두 번 눌러 2단 점프해요.",
+    "image": "images/sop-ktw.jpg",
+    "external": false
   }
 ];
