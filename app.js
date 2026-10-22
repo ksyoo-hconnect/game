@@ -4,7 +4,7 @@ const byId=id=>GAMES.find(g=>g.id===id), KEY='loop-play-worldcup-v2';
 const TEAMS=[...new Set(GAMES.map(g=>g.team))];
 const roundName=n=>n===2?'결승':`${n}강`;
 let filter='all',teamFilter='all',snapshots=[],storageAvailable=true;
-function valid(s){try{if(!s||!Array.isArray(s.order)||!(s.order.length===GAMES.length||(s.order.length===37&&s.order.every(id=>id!=='sop-ktw')))||!s.order.every(id=>byId(id)))return false;const replay=TournamentCore.replay(s.order,s.log);return ['queue','winners','roundSize','byes','champion'].every(k=>JSON.stringify(replay[k])===JSON.stringify(s[k]));}catch{return false;}}
+function valid(s){try{if(!s||!Array.isArray(s.order)||s.order.length!==GAMES.length||!s.order.every(id=>byId(id)))return false;const replay=TournamentCore.replay(s.order,s.log);return ['queue','winners','roundSize','byes','champion'].every(k=>JSON.stringify(replay[k])===JSON.stringify(s[k]));}catch{return false;}}
 try{let saved=JSON.parse(localStorage.getItem(KEY)||'null');
 
  if(saved&&Array.isArray(saved.snapshots)&&saved.snapshots.length&&saved.snapshots.length<=GAMES.length&&saved.snapshots.every(valid)&&saved.snapshots.every((s,i)=>s.log.length===i&&JSON.stringify(s.order)===JSON.stringify(saved.snapshots[0].order)&&JSON.stringify(s.log.slice(0,-1))===JSON.stringify(i?saved.snapshots[i-1].log:[])))snapshots=saved.snapshots;

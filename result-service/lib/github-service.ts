@@ -1,3 +1,4 @@
+import {ELECTION} from '@/lib/election-reset.mjs';
 import {ensureFullCatalogElection} from '@/lib/election';
 import {env} from 'cloudflare:workers';
 import {db} from '@/lib/server';
@@ -12,7 +13,7 @@ export async function syncGitHub(candidateToken?:string){
  const local=await db().prepare('SELECT id,nickname,champion,title,author,submitted_at FROM results ORDER BY submitted_at,id').all<{id:string;nickname:string;champion:string;title:string;author:string;submitted_at:string}>();
  const localRows=local.results.map(r=>({submission_id:r.id,nickname:r.nickname,winner_game_id:r.champion,winner_game_title:r.title,game_author:r.author,submitted_at_kst:new Date(Date.parse(r.submitted_at)+32400000).toISOString().replace('Z','+09:00')}));
  const archived=await db().prepare('SELECT id FROM archived_results').all<{id:string}>();
- const written=await writeGitHubCSV({token,localRows,excludedIds:archived.results.map(r=>r.id),force:!!candidateToken});const rankings={...RankingData.aggregate(RankingData.parseCSV(written.csv),games),source:'github-confirmed',election:'all-37-v1',checkedAt:new Date().toISOString()};
+ const written=await writeGitHubCSV({token,localRows,excludedIds:archived.results.map(r=>r.id),force:!!candidateToken});const rankings={...RankingData.aggregate(RankingData.parseCSV(written.csv),games),source:'github-confirmed',election:ELECTION,checkedAt:new Date().toISOString()};
  await db().prepare("INSERT INTO app_settings (key,value,updated_at) VALUES ('github_snapshot',?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value,updated_at=excluded.updated_at WHERE json_extract(app_settings.value,'$.total') <= json_extract(excluded.value,'$.total')").bind(JSON.stringify(rankings),new Date().toISOString()).run();
  return {rankings,commitSha:written.commitSha};
 }

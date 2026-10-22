@@ -29,6 +29,13 @@
       "when": 1792651555832,
       "tag": "0003_expand_full_catalog",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1792652069635,
+      "tag": "0004_full_38_only",
+      "breakpoints": true
     }
   ]
 }
