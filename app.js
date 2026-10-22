@@ -3,6 +3,18 @@ const $=s=>document.querySelector(s), esc=s=>String(s).replace(/[&<>"']/g,c=>({'
 const byId=id=>GAMES.find(g=>g.id===id), KEY='loop-play-worldcup-v2';
 const TEAMS=[...new Set(GAMES.map(g=>g.team))];
 const roundName=n=>n===2?'결승':`${n}강`;
+function refreshHomeThumbnails(){
+ const shots=[...document.querySelectorAll('.hero-art .mini-shot')];
+ let previous=[];
+ try{const saved=JSON.parse(sessionStorage.getItem('loop-play-home-previews')||'[]');if(Array.isArray(saved))previous=saved;}catch{}
+ const fresh=GAMES.filter(g=>!previous.includes(g.id));
+ const pool=[...(fresh.length>=shots.length?fresh:GAMES)];
+ for(let i=pool.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]];}
+ const selected=pool.slice(0,shots.length);
+ shots.forEach((shot,i)=>{const game=selected[i];if(game){shot.src=game.image;shot.alt=`${game.team} · ${game.author} — ${game.title} 게임 화면`;}});
+ try{sessionStorage.setItem('loop-play-home-previews',JSON.stringify(selected.map(g=>g.id)));}catch{}
+}
+refreshHomeThumbnails();
 let filter='all',teamFilter='all',snapshots=[],storageAvailable=true;
 function valid(s){try{if(!s||!Array.isArray(s.order)||s.order.length!==GAMES.length||!s.order.every(id=>byId(id)))return false;const replay=TournamentCore.replay(s.order,s.log);return ['queue','winners','roundSize','byes','champion'].every(k=>JSON.stringify(replay[k])===JSON.stringify(s[k]));}catch{return false;}}
 try{let saved=JSON.parse(localStorage.getItem(KEY)||'null');
